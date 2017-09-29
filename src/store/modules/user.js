@@ -1,11 +1,12 @@
 import { login, getQrcode, logout, getInfo } from '@/api/login'
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import { getToken, setToken, removeToken, setUserid } from '@/utils/auth'
 
 const user = {
   state: {
     token: getToken(),
     name: '',
     avatar: '',
+    useinfo: {},
     roles: []
   },
 
@@ -18,6 +19,9 @@ const user = {
     },
     SET_AVATAR: (state, avatar) => {
       state.avatar = avatar
+    },
+    SET_USEINFO: (state, useinfo) => {
+      state.useinfo = useinfo
     },
     SET_ROLES: (state, roles) => {
       state.roles = roles
@@ -32,6 +36,7 @@ const user = {
         login(username, userInfo.pwd).then(response => {
           const data = response.info
           setToken(data.access_token)
+          setUserid(data._id)
           commit('SET_TOKEN', data.access_token)
           resolve()
         }).catch(error => {
@@ -44,22 +49,28 @@ const user = {
       return new Promise((resolve, reject) => {
         getQrcode(key).then(response => {
           const data = response.info
-          setToken(data.access_token)
-          commit('SET_TOKEN', data.access_token)
-          resolve()
+          if (data) {
+            setToken(data.access_token)
+            setUserid(data._id)
+            commit('SET_TOKEN', data.access_token)
+            resolve()
+          }
+          reject()
         }).catch(error => {
           reject(error)
         })
       })
     },
     // 获取用户信息
-    GetInfo({ commit, state }) {
+    GetInfo({ commit }, _id) {
       return new Promise((resolve, reject) => {
-        getInfo(state.token).then(response => {
+        getInfo(_id).then(response => {
           const data = response.info
-          commit('SET_ROLES', data.role)
+          const role = ['admin'] // 暂时写死权限
+          commit('SET_USEINFO', data)
+          commit('SET_ROLES', role)
           commit('SET_NAME', data.name)
-          commit('SET_AVATAR', data.avatar)
+          commit('SET_AVATAR', data._id)
           resolve(response)
         }).catch(error => {
           reject(error)

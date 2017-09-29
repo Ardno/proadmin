@@ -19,11 +19,13 @@ export function getQrcode(key) {
     }
   })
 }
-export function getInfo(mobile) {
+export function getInfo(_id) {
   return fetch({
     url: 'people/get',
-    method: 'get',
-    params: { mobile }
+    method: 'post',
+    data: {
+      _id
+    }
   })
 }
 

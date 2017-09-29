@@ -6,20 +6,22 @@
     <div class="main-container">
       <navbar></navbar>
       <app-main></app-main>
+      <footbar></footbar>   
     </div>
   </div>
 </template>
 
 
 <script>
-import { Navbar, Sidebar, AppMain } from '@/views/layout'
+import { Navbar, Sidebar, AppMain ,Footbar} from '@/views/layout'
 
 export default {
   name: 'layout',
   components: {
     Navbar,
     Sidebar,
-    AppMain
+    AppMain,
+    Footbar
   },
   computed: {
     sidebar() {
@@ -36,6 +38,7 @@ export default {
         position: relative;
         height: 100%;
         width: 100%;
+        overflow: hidden;
         &.hideSidebar {
             .sidebar-wrapper {
                 transform: translate(-140px, 0);
@@ -70,10 +73,11 @@ export default {
             bottom: 0;
             left: 0;
             right: -17px;
+            overflow: hidden;
             overflow-y: scroll;
         }
         .main-container {
-            min-height: 100%;
+            height: 100%;
             transition: all .28s ease-out;
             margin-left: 180px;
         }

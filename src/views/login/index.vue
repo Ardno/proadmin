@@ -112,7 +112,7 @@ export default {
           this.needRresh=true
           clearInterval(this.timeout)
        }
-     }, 6000);
+     }, 180000);
     },
     closeQrcode(){
       this.show=false

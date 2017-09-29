@@ -36,9 +36,10 @@
           <el-radio label="Venue"></el-radio>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="Activity form">
+      <el-form-item v-for="o in 8" :key="o" label="Activity form">
         <el-input type="textarea" v-model="form.desc"></el-input>
       </el-form-item>
+      
       <el-form-item>
         <el-button type="primary" @click="onSubmit">Create</el-button>
         <el-button>Cancel</el-button>

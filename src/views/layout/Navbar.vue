@@ -4,16 +4,16 @@
     <levelbar></levelbar>
     <el-dropdown class="avatar-container" trigger="click">
       <div class="avatar-wrapper">
-        <img class="user-avatar" :src="avatar+'?imageView2/1/w/80/h/80'">
+        <img class="user-avatar" :src="avatar ? 'http://gridmap-file.xiaoketech.com/images/user/'+avatar+'.png':avatarm">
         <i class="el-icon-caret-bottom"></i>
       </div>
       <el-dropdown-menu class="user-dropdown" slot="dropdown">
         <router-link class='inlineBlock' to="/">
           <el-dropdown-item>
-            Home
+            主页
           </el-dropdown-item>
         </router-link>
-        <el-dropdown-item divided><span @click="logout" style="display:block;">LogOut</span></el-dropdown-item>
+        <el-dropdown-item divided><span @click="logout" style="display:block;">退出登录</span></el-dropdown-item>
       </el-dropdown-menu>
     </el-dropdown>
   </el-menu>
@@ -23,8 +23,13 @@
 import { mapGetters } from 'vuex'
 import Levelbar from './Levelbar'
 import Hamburger from '@/components/Hamburger'
-
+import avatarm from '@/assets/login_images/avatar.png'
 export default {
+  data() {
+    return {
+       avatarm
+     }
+  },
   components: {
     Levelbar,
     Hamburger
@@ -32,7 +37,8 @@ export default {
   computed: {
     ...mapGetters([
       'sidebar',
-      'avatar'
+      'avatar',
+      'name'
     ])
   },
   methods: {
@@ -40,7 +46,7 @@ export default {
       this.$store.dispatch('ToggleSideBar')
     },
     logout() {
-      this.$store.dispatch('LogOut').then(() => {
+      this.$store.dispatch('FedLogOut').then(() => {
         location.reload()  // 为了重新实例化vue-router对象 避免bug
       })
     }
