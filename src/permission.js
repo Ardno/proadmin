@@ -2,7 +2,7 @@ import router from './router'
 import store from './store'
 import NProgress from 'nprogress' // Progress 进度条
 import 'nprogress/nprogress.css'// Progress 进度条样式
-import { getToken, getUserid } from '@/utils/auth' // 验权
+import { getToken, getUserid } from '@/utils/auth' // 验权新时代
 
 const whiteList = ['/login']
 router.beforeEach((to, from, next) => {
