@@ -1,13 +1,14 @@
 import fetch from '@/utils/fetch'
 
-export function login(mobile, pwd) {
+export function loginByUsername(mobile, pwd) {
+  const data = {
+    mobile,
+    pwd
+  }
   return fetch({
     url: 'people/login',
     method: 'post',
-    data: {
-      mobile,
-      pwd
-    }
+    data
   })
 }
 export function getQrcode(key) {
@@ -19,7 +20,7 @@ export function getQrcode(key) {
     }
   })
 }
-export function getInfo(_id) {
+export function getUserInfo(_id) {
   return fetch({
     url: 'people/get',
     method: 'post',

@@ -9,6 +9,7 @@ export function getToken() {
 export function setToken(token) {
   return Cookies.set(TokenKey, token)
 }
+
 export function getUserid() {
   return Cookies.get('Userid')
 }

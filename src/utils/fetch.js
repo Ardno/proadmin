@@ -1,7 +1,7 @@
 import axios from 'axios'
 import qs from 'qs'
 import { Message, MessageBox } from 'element-ui'
-import store from '../store'
+import store from '@/store'
 import { getToken } from '@/utils/auth'
 
 // 创建axios实例
@@ -20,8 +20,9 @@ const service = axios.create({
 
 // request拦截器
 service.interceptors.request.use(config => {
+  // Do something before request is sent
   if (store.getters.token) {
-    config.headers['access_token'] = getToken() // 让每个请求携带自定义token 请根据实际情况自行修改
+    config.headers['access_token'] = getToken() // 让每个请求携带token--['X-Token']为自定义key 请根据实际情况自行修改
   }
   return config
 }, error => {
@@ -33,9 +34,9 @@ service.interceptors.request.use(config => {
 // respone拦截器
 service.interceptors.response.use(
   response => {
-  /**
-  * code为非200是抛错
-  */
+    /**
+    * code为非200是抛错
+    */
     const res = response.data
     if (res.code !== 200) {
       if (res.code === 1000) {

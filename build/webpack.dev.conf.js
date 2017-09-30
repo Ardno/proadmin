@@ -7,21 +7,24 @@ var baseWebpackConfig = require('./webpack.base.conf')
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 var FriendlyErrorsPlugin = require('friendly-errors-webpack-plugin')
 
-function resolveApp(relativePath) {
-  return path.resolve(relativePath);
-}
-
 // add hot-reload related code to entry chunks
 Object.keys(baseWebpackConfig.entry).forEach(function (name) {
   baseWebpackConfig.entry[name] = ['./build/dev-client'].concat(baseWebpackConfig.entry[name])
 })
 
+function resolveApp(relativePath) {
+  return path.resolve(relativePath);
+}
+
 module.exports = merge(baseWebpackConfig, {
   module: {
-    rules: utils.styleLoaders({ sourceMap: config.dev.cssSourceMap })
+    rules: utils.styleLoaders({
+      sourceMap: config.dev.cssSourceMap
+    })
   },
-  // cheap-module-eval-source-map is faster for development
-  devtool: '#cheap-module-eval-source-map',
+  // cheap-source-map is faster for development
+  devtool: '#cheap-source-map',
+  cache: true,
   plugins: [
     new webpack.DefinePlugin({
       'process.env': config.dev.env
@@ -34,8 +37,10 @@ module.exports = merge(baseWebpackConfig, {
       filename: 'index.html',
       template: 'index.html',
       favicon: resolveApp('favicon.ico'),
-      inject: true
+      inject: true,
+      path: config.dev.assetsPublicPath + config.dev.assetsSubDirectory
     }),
     new FriendlyErrorsPlugin()
   ]
 })
+
