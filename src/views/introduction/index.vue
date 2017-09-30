@@ -1,26 +1,103 @@
 <template>
   <div class="app-container">
     <div class="wrapper">
-      <code>
-      这半年来一直在用vue写管理后台，目前后台已经有百来个个页面，十几种权限，但维护成本依然很低，所以准备开源分享一下后台开发的经验和成果。目前的技术栈主要的采用vue+element+axios由webpack2打包.由于是个人项目，所以数据请求都是用了mockjs模拟。注意：在次项目基础上改造开发时请移除mock文件。
-      写了一个系列的教程配套文章，如何从零构建后一个完整的后台项目:
-        <ul>
-          <li><a target='_blank' class='lin' href="https://github.com/PanJiaChen/vue-element-admin/">项目地址</a></li>
-          <li><a target='_blank' class='lin' href="https://github.com/PanJiaChen/vue-element-admin/wiki">wiki</a></li>
-          <li><a target='_blank' href="https://juejin.im/post/59097cd7a22b9d0065fb61d2">手摸手，带你用 vue 撸后台 系列一(基础篇)</a></li>
-          <li><a target='_blank' href="https://juejin.im/post/591aa14f570c35006961acac">手摸手，带你用 vue 撸后台 系列二(登录权限篇)</a></li>
-          <li><a target='_blank' href="https://juejin.im/post/593121aa0ce4630057f70d35">手摸手，带你用 vue 撸后台 系列三 (实战篇)</a></li>
-           <li><a target='_blank' href="https://juejin.im/post/595b4d776fb9a06bbe7dba56">手摸手，带你用vue撸后台 系列四(vueAdmin 一个极简的后台基础模板)</a></li>
-          <li><a target='_blank' href="https://segmentfault.com/a/1190000009090836">手摸手，带你封装一个vue component</a></li>
-        </ul>
-      </code>
+        <div class="pestwar">
+          <el-row type="flex" class="row-bg" justify="center">
+          <el-col :span="9">
+            <div class="tc pt20">
+             <img :src="avatar ? 'http://gridmap-file.xiaoketech.com/images/user/'+useinfo._id+'.png':avatarm">
+            </div>
+          </el-col>
+          <el-col :span="15">
+            <ul>
+             <li>
+               <h3>部门</h3>
+               <p>{{useinfo.department.name}}</p>
+             </li>
+             <li>
+               <h3>姓名</h3>
+               <p>{{useinfo.name}}</p>
+             </li>
+             <li>
+               <h3>性别</h3>
+               <p>{{useinfo.sex?'女':'男'}}</p>
+             </li>
+             <li>
+               <h3>手机号</h3>
+               <p>{{useinfo.mobile}}</p>
+             </li>
+           </ul>
+          </el-col>
+        </el-row>  
+        </div>
     </div>
   </div>
 </template>
-
-<style scoped>
+<script>
+import { mapGetters } from 'vuex'
+import avatarm from '@/assets/login_images/avatar.png'
+export default {
+  data() {
+    return {
+      avatarm
+    }
+  },
+  computed: {
+    ...mapGetters([
+      'useinfo',
+      'avatar'
+    ])
+  }
+}
+</script>
+<style lang="scss">
+  html,body,#app,.main-container,.app-container{
+    height: 100%;
+  }
+  .app-main{
+    min-height: auto !important;
+    height: calc(100% - 50px);
+  }
   .wrapper{
-    width: 800px;
-    margin: 30px auto;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: url(../../assets/images/atlas_book-wallpaper-1920x1080.jpg) no-repeat center;
+    background-size: cover;
+    &:after{
+      content: '';
+      display: block;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,.2)
+    }
+    .pestwar{
+      position: absolute;
+      top: 50%;
+      left:50%;
+      width: 450px;
+      padding:30px 20px;
+      background-color: rgba(255,255,255,.2);
+      transform: translate(-50%,-50%);
+      ul{
+        padding:0;
+      }
+      li{
+        width: 200px;
+        list-style: none;
+        h3{
+          color: #fff;
+          font-size: 15px;
+          margin-top: 10px;
+          font-weight: normal;
+        }
+        p{
+          font-size: 13px;
+          color: rgba(255,255,255,.6);
+          padding: 10px 0;
+          border-bottom: 1px dashed rgba(255,255,255,.6);
+        }
+      }
+    }
   }
 </style>

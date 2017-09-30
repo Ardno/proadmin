@@ -34,7 +34,15 @@ export const constantRouterMap = [
     redirect: '/introduction/index',
     icon: 'people',
     noDropdown: true,
-    children: [{ path: 'index', component: _import('introduction/index'), name: '简述' }]
+    children: [{ path: 'index', component: _import('introduction/index'), name: '个人信息' }]
+  },
+  {
+    path: '/map',
+    component: Layout,
+    redirect: '/map/index',
+    icon: 'zujian',
+    noDropdown: true,
+    children: [{ path: 'index', component: _import('map/index'), name: '网格地图' }]
   }
 ]
 
