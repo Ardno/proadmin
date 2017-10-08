@@ -23,7 +23,7 @@ VueAMap.initAMapApiLoader({
   plugin: ['AMap.Scale', 'AMap.OverView', 'AMap.ToolBar', 'AMap.MapType',
     'AMap.CustomLayer', 'AMap.DistrictSearch', 'AMap.Geolocation',
     'AMap.AdvancedInfoWindow', 'AMap.PolyEditor', 'AMap.CircleEditor', 'AMap.Geocoder'],
-  uiVersion: '1.4.0' // 版本号
+  uiVersion: '1.0' // 版本号
 })
 Vue.config.productionTip = false
 

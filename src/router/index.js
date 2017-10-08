@@ -106,28 +106,16 @@ export const asyncRouterMap = [
     ]
   },
   {
-    path: '/example',
+    path: '/staff',
     component: Layout,
-    redirect: 'noredirect',
-    name: '综合实例',
+    redirect: '/staff/index',
+    name: '部门管理',
     icon: 'example',
     children: [
-      {
-        path: '/example/table',
-        component: _import('example/table/index'),
-        redirect: '/example/table/table',
-        name: 'Table',
-        icon: 'table',
-        children: [
-          { path: 'dynamictable', component: _import('example/table/dynamictable/index'), name: '动态table' },
-          { path: 'dragtable', component: _import('example/table/dragTable'), name: '拖拽table' },
-          { path: 'inline_edit_table', component: _import('example/table/inlineEditTable'), name: 'table内编辑' },
-          { path: 'table', component: _import('example/table/table'), name: '综合table' }
-        ]
-      },
-      { path: 'form/edit', icon: 'form', component: _import('example/form'), name: '编辑Form', meta: { isEdit: true }},
-      { path: 'form/create', icon: 'form', component: _import('example/form'), name: '创建Form' },
-      { path: 'tab/index', icon: 'tab', component: _import('example/tab/index'), name: 'Tab' }
+      { path: 'index', component: _import('staff/index'), name: '人员信息' },
+      { path: 'form/edit', icon: 'form', component: _import('staff/form'), name: '编辑Form', meta: { isEdit: true }},
+      { path: 'form/create', icon: 'form', component: _import('staff/form'), name: '创建Form' },
+      { path: 'tab/index', icon: 'tab', component: _import('staff/tab/index'), name: 'Tab' }
     ]
   },
   {
