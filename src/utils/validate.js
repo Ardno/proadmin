@@ -17,7 +17,11 @@ export function validateMblNo(mblno) {
   const reg = /^\d{11}$/
   return reg.test(mblno)
 }
-
+/* 身份证号*/
+export function validateIdNum(idNum) {
+  const reg = /^(\d{15}$|^\d{18}$|^\d {17}(\d|X|x))$/
+  return reg.test(idNum)
+}
 /* 小写字母*/
 export function validateLowerCase(str) {
   const reg = /^[a-z]+$/

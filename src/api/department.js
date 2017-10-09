@@ -23,4 +23,10 @@ export function fetchRoles(query) { // 获取职务集合
     data: query
   })
 }
-
+export function updatePeInfo(data) { // 修改个人信息
+  return fetch({
+    url: 'people/update',
+    method: 'post',
+    data: data
+  })
+}

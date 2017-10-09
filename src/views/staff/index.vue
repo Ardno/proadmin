@@ -1,13 +1,12 @@
 <template>
   <div class="app-container calendar-list-container">
     <div class="filter-container">
-      <el-autocomplete class="inline-input vt" v-model="listQuery.department_id" :fetch-suggestions="querySearch" placeholder="请输入部门" :trigger-on-focus="false" @select="handleSelect"></el-autocomplete>
+      <el-autocomplete class="inline-input vt" v-model="listQuery.department" :fetch-suggestions="querySearch" placeholder="请输入部门" :trigger-on-focus="false" @select="handleSelect"></el-autocomplete>
       <el-select clearable class="filter-item" style="width: 130px" v-model="listQuery.roleid" placeholder="职位">
         <el-option v-for="item in  solerr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" @click="handleCreate" type="primary" icon="edit">添加</el-button>
     </div>
 
     <el-table :key='tableKey' :data="list" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
@@ -54,30 +53,118 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="150">
         <template scope="scope">
-          <el-button v-if="scope.row.status!='published'" size="small" type="success" @click="handleModifyStatus(scope.row,'published')">发布
-          </el-button>
-          <el-button v-if="scope.row.status!='deleted'" size="small" type="danger" @click="handleModifyStatus(scope.row,'deleted')">删除
+          <el-button  size="small" type="success" @click="handleUpdateDa(scope.row)">修改
           </el-button>
         </template>
       </el-table-column>
     </el-table>
+
+    <el-dialog title="修改信息" @close="closeCall" :visible.sync="dialogFormVisible">
+      <el-form class="small-space" :model="temp"  :rules="infoRules" ref="infoForm" label-position="left" label-width="80px" style='width: 400px; margin-left:50px;'>
+        <el-form-item label="部门">
+          <el-select class="filter-item" v-model="temp.department_id" placeholder="请选择">
+            <el-option v-for="item in  restaurants" :key="item._id" :label="item.value" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="姓名" prop="name">
+          <el-input v-model="temp.name"></el-input>
+        </el-form-item>
+        <el-form-item label="性别">
+          <el-radio class="radio" v-model="temp.sex" :label="0">男</el-radio>
+          <el-radio class="radio" v-model="temp.sex" :label="1">女</el-radio>
+        </el-form-item>
+        <el-form-item label="民族" prop="nation">
+          <el-input v-model="temp.nation"></el-input>
+        </el-form-item>
+        <el-form-item label="出生日期" >
+          <el-date-picker v-model="temp.birthday" type="date" :editable="false" :clearable="false" @change="formatDate" placeholder="出生日期">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="身份证号" prop="idNum">
+          <el-input v-model="temp.idNum"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号码" prop="mobile">
+          <el-input v-model="temp.mobile"></el-input>
+        </el-form-item>
+        <el-form-item label="登录密码" prop="pwd">
+          <el-input v-model="temp.pwd"></el-input>
+        </el-form-item>
+        <el-form-item label="当前职位">
+          <el-select class="filter-item" v-model="temp.roleid" placeholder="职位">
+            <el-option v-for="item in  solerr" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="当前状态">
+          <el-input v-model="temp.status"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button  type="primary" @click="handleUpdate">确 定</el-button>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
 <script>
-import { fetchList, fetchDepartments, fetchRoles } from '@/api/department'
+import { fetchList, fetchDepartments, fetchRoles, updatePeInfo} from '@/api/department'
 import { parseTime } from '@/utils'
-
+import { validateMblNo, validateIdNum} from '@/utils/validate'
 export default {
   data() {
+    const validateUserIdNum = (rule, value, callback) => {
+      if (!validateIdNum(value)) {
+        callback(new Error('请输入正确的身份证号码'))
+      } else {
+        callback()
+      }
+    }
+    const validateUsername = (rule, value, callback) => {
+      if (!validateMblNo(value)) {
+        callback(new Error('请输入正确的手机号'))
+      } else {
+        callback()
+      }
+    }
+    const validatePassword = (rule, value, callback) => {
+      if (value.length < 6) {
+        callback(new Error('请输入6位密码'))
+      } else {
+        callback()
+      }
+    }
     return {
       restaurants: [],
       solerr: [],
       listQuery: {
+        department:'',
         department_id: '',
         roleid: ''
       },
+      dialogFormVisible: false,
       list: null,
+      temp: {
+        "department_id": '',
+        "name": "",
+        "sex": '0',
+        "nation": '汉',
+        "birthday": '',
+        "idNum": "",
+        "mobile": "",
+        "pwd": '',
+        "roleid": '',
+        "status": '',
+      },
+      infoRules: {
+        name: [{ required: true, message: '请输入姓名', trigger: 'blur' },],
+        nation: [{ required: true, trigger: 'blur',message: '请输入民族', }],
+        idNum: [{ required: true, trigger: 'blur', validator: validateUserIdNum }],
+        mobile: [{ required: true, trigger: 'blur', validator: validateUsername }],
+        pwd: [{ required: true, trigger: 'blur', validator: validatePassword }]
+      },
       listLoading: true,
       tableKey: 0
     }
@@ -127,7 +214,8 @@ export default {
           let arrs=[]
           array.forEach(function(element) {
             let obj={
-              value:element.name
+              value:element.name,
+              _id:element._id
             }
             arrs.push(obj)
           }, this);
@@ -141,11 +229,53 @@ export default {
     handleQuery() {
       this.getList()
     },
-    handleCreate() {
-      console.log(2)
+    handleUpdateDa(item) { // 修改人员信息  
+      this.temp = Object.assign({}, item)
+      this.dialogFormVisible = true
+    },
+    closeCall(){
+      this.$refs.infoForm.resetFields()
+    },
+    handleUpdate() { // 修改人员信息
+       this.$refs.infoForm.validate(valid => {
+        if (valid) {
+          　this.$confirm('确认修改？').then(() => {
+              updatePeInfo(this.temp).then(response => {
+                this.dialogFormVisible = false
+                this.$message({
+                  message: '信息修改成功！',
+                  type: 'success',
+                  duration: 4 * 1000
+                })
+                this.getList()
+              }).catch(() => {
+                this.$message({
+                  message: '修改信息失败，请稍后再试',
+                  type: 'error',
+                  duration: 4 * 1000
+                })
+              });
+            }).catch(() => {console.log('取消修改')});
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
+    formatDate(te) {
+      console.log(te);
+      console.log(Date.parse(te))
+      console.log(new Date(te).getTime())
     },
     getList() {
       this.listLoading = true
+      let array=this.restaurants
+      this.listQuery.department_id=this.listQuery.department
+      array.forEach(function(element) {//在已有部门查找是否存在该部门，
+        if(this.listQuery.department=== element.value){
+          this.listQuery.department_id=element._id
+        }
+      }, this);
       fetchList(this.listQuery).then(response => {
         this.list = response.info
         this.listLoading = false
@@ -157,3 +287,11 @@ export default {
   },
 }
 </script>
+<style lang="css">
+  .el-form-item.is-required .el-form-item__label:before{
+    content:'';
+    color:#fff;
+    margin-right: 0;
+  }
+</style>
+
