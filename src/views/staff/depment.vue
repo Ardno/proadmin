@@ -3,7 +3,7 @@
     <el-row>
       <el-col :span="8">
         <div class="grid-content bg-purple">
-          <el-tree :data="data2" :props="defaultProps" show-checkbox node-key="id" default-expand-all :expand-on-click-node="false" :render-content="renderContent">
+          <el-tree :data="depList" :props="defaultProps" show-checkbox node-key="id" default-expand-all :expand-on-click-node="false" :render-content="renderContent">
           </el-tree>
           <el-button type="primary" @click="dialogFormVisible = true">添加部门</el-button>
         </div>
@@ -13,10 +13,10 @@
       </el-col>
     </el-row>
     <el-dialog title="添加部门"  :visible.sync="dialogFormVisible">
-      <el-form class="small-space" :model="depmentinfo" :rules="infoRules" ref="infoForm" label-position="left" label-width="80px" style='width: 400px; margin-left:50px;'>
+      <el-form class="small-space" :model="depmentinfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="80px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="上级部门">
           <el-select class="filter-item" v-model="depmentinfo.parent" placeholder="请选择">
-            <el-option v-for="item in  restaurants" :key="item._id" :label="item.value" :value="item._id">
+            <el-option v-for="item in  restaurants" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -39,9 +39,25 @@
 </template>
 
 <script>
+import { fetchDepartments, createDep, updateDep } from '@/api/department'
+import { treeUtil, deepClone } from '@/utils/index'
 let id = 1000
 export default {
   data() {
+    const validateUsername = (rule, value, callback) => {
+      const arr = this.restaurants
+      if (!value) {
+        callback(new Error('请输入部门名称'))
+        return
+      }
+      arr.forEach(function(element) {
+        if (element.name === value) {
+          callback(new Error('部门名字已存在'))
+          return
+        }
+      }, this)
+      callback()
+    }
     return {
       dialogFormVisible: false,
       depmentinfo: {
@@ -52,43 +68,9 @@ export default {
       },
       restaurants: [],
       infoRules: {
-        name: [{ required: true, message: '请输入部门名称', trigger: 'blur' }]
+        name: [{ required: true, message: '请输入部门名称', trigger: 'blur', validator: validateUsername }]
       },
-      data2: [{
-        id: 1,
-        label: '一级 1',
-        children: [{
-          id: 4,
-          label: '二级 1-1',
-          children: [{
-            id: 9,
-            label: '三级 1-1-1'
-          }, {
-            id: 10,
-            label: '三级 1-1-2'
-          }]
-        }]
-      }, {
-        id: 2,
-        label: '一级 2',
-        children: [{
-          id: 5,
-          label: '二级 2-1'
-        }, {
-          id: 6,
-          label: '二级 2-2'
-        }]
-      }, {
-        id: 3,
-        label: '一级 3',
-        children: [{
-          id: 7,
-          label: '二级 3-1'
-        }, {
-          id: 8,
-          label: '二级 3-2'
-        }]
-      }],
+      depList: [],
       defaultProps: {
         children: 'children',
         label: 'label'
@@ -114,11 +96,42 @@ export default {
           </span>
         </span>)
     },
-    handleCreate() {
-
+    loadDps() { // 获取部门集合
+      fetchDepartments('').then(response => {
+        this.restaurants = response.info
+        const map = { name: 'label', _id: 'id' }
+        const list = deepClone(response.info)
+        const tree1 = new treeUtil(list, '_id', 'parent', map)
+        this.depList = tree1.toTree()
+      })
+    },
+    handleCreate() { // 创建部门
+      this.$refs.infoForm.validate(valid => {
+        if (valid) {
+          createDep(this.depmentinfo).then(response => {
+            this.dialogFormVisible = false
+            this.loadDps()
+            this.$message({
+              message: '创建部门成功',
+              type: 'success',
+              duration: 4 * 1000
+            })
+          }).catch(() => {
+            this.$message({
+              message: '创建部门失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
+          })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
     }
   },
-  computed: {
+  created() {
+    this.loadDps()
   }
 }
 </script>

@@ -32,7 +32,7 @@ export function getUserInfo(_id) {
 
 export function logout() {
   return fetch({
-    url: '/user/logout',
+    url: 'user/logout',
     method: 'post'
   })
 }

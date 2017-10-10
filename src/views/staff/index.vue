@@ -61,7 +61,7 @@
     </el-table>
 
     <el-dialog title="修改信息" @close="closeCall" :visible.sync="dialogFormVisible">
-      <el-form class="small-space" :model="temp" :rules="infoRules" ref="infoForm" label-position="left" label-width="80px" style='width: 400px; margin-left:50px;'>
+      <el-form class="small-space" :model="temp" :rules="infoRules" ref="infoForm" label-position="left"  label-width="80px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="部门">
           <el-select class="filter-item" v-model="temp.department_id" placeholder="请选择">
             <el-option v-for="item in  restaurants" :key="item._id" :label="item.value" :value="item._id">
