@@ -113,6 +113,7 @@ export const asyncRouterMap = [
     icon: 'example',
     children: [
       { path: 'index', component: _import('staff/index'), name: '人员信息' },
+      { path: 'depment', component: _import('staff/depment'), name: '部门信息' },
       { path: 'form/edit', icon: 'form', component: _import('staff/form'), name: '编辑Form', meta: { isEdit: true }},
       { path: 'form/create', icon: 'form', component: _import('staff/form'), name: '创建Form' },
       { path: 'tab/index', icon: 'tab', component: _import('staff/tab/index'), name: 'Tab' }
