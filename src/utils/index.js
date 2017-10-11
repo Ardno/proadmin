@@ -292,7 +292,7 @@ export function uuid(len, radix) {
   *parentKey，父字段
   *map,需要将原始属性名称转换为什么名称
   */
-export function treeUtil(data, key, parentKey, map) {
+export function TreeUtil(data, key, parentKey, map) {
   this.data = data
   this.key = key
   this.parentKey = parentKey

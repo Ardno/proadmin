@@ -16,7 +16,7 @@
           <span>{{scope.row._id}}</span>
         </template>
       </el-table-column>
-      <el-table-column width="180px" align="center" label="时间">
+      <el-table-column width="180px" align="center" label="加入时间">
         <template scope="scope">
           <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
         </template>
@@ -44,6 +44,11 @@
       <el-table-column align="center" width="110px" label="生日">
         <template scope="scope">
           <span>{{scope.row.birthday | parseTime('{y}-{m}-{d}')}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" width="110px" label="状态">
+        <template scope="scope">
+          <span>{{scope.row.status | statusFilter}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="部门">
@@ -95,7 +100,10 @@
           </el-select>
         </el-form-item>
         <el-form-item label="当前状态">
-          <el-input v-model="temp.status"></el-input>
+          <el-select class="filter-item" v-model="temp.status" placeholder="状态">
+            <el-option v-for="item in  statusArr" :key="item.id" :label="item.text" :value="item.id">
+            </el-option>
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -128,6 +136,11 @@ export default {
     }
     return {
       restaurants: [],
+      statusArr: [
+        { id: 0, text: '正常' },
+        { id: 1, text: '离职' },
+        { id: 2, text: '审核中' }
+      ],
       solerr: [],
       listQuery: {
         department: '',
@@ -160,11 +173,7 @@ export default {
   },
   filters: {
     statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'gray',
-        deleted: 'danger'
-      }
+      const statusMap = ['正常', '离职', '待审核']
       return statusMap[status]
     },
     sexFileter(status) {
@@ -201,11 +210,13 @@ export default {
           const array = response.info
           const arrs = []
           array.forEach(function(element) {
-            const obj = {
-              value: element.name,
-              _id: element._id
+            if (!element.status) {
+              const obj = {
+                value: element.name,
+                _id: element._id
+              }
+              arrs.push(obj)
             }
-            arrs.push(obj)
           }, this)
           this.restaurants = arrs
         }
@@ -281,9 +292,7 @@ export default {
       })
     },
     formatDate(te) {
-      console.log(te)
-      console.log(Date.parse(te))
-      console.log(new Date(te).getTime())
+      this.temp.birthday = new Date(te).getTime()
     },
     getList() {
       this.listLoading = true

@@ -40,12 +40,15 @@
             <el-form-item label="部门人数">
               <span  class="g6">{{depInfo.count ? depInfo.count:'暂无人员'}}</span>
             </el-form-item>
+            <el-form-item label="部门状态">
+              <span  class="g6">{{depInfo.status ? '解散':'正常'}}</span>
+            </el-form-item>
             <el-form-item label="录入时间">
               <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
             </el-form-item>
             <el-form-item style="border:none">
               <el-button type="primary" v-show="firstflg" @click="updateInfo">{{infoupdate?'修改':'保存'}}</el-button>
-              <el-button v-show="firstflg" @click="updateDtpsate">修改部门状态</el-button>
+              <el-button v-show="firstflg && infoupdate" @click="updateDtpsate">修改部门状态</el-button>
               <el-button v-show="!infoupdate" @click="resetForm">取消</el-button>
             </el-form-item>
           </el-form>
@@ -103,7 +106,7 @@
 
 <script>
 import { fetchDepartments, createDep, fetchList, updateDep } from '@/api/department'
-import { treeUtil, deepClone } from '@/utils/index'
+import { TreeUtil, deepClone } from '@/utils/index'
 import axios from 'axios'
 
 let id = 1000
@@ -167,7 +170,6 @@ export default {
         create_time: '',
         count: 0
       },
-      message: '2131',
       depList: [],
       defaultProps: {
         children: 'children',
@@ -177,27 +179,41 @@ export default {
   },
   methods: {
     updateDtpsate() {
+      debugger
+      if (this.depInfo.children.length) { // 存在子元素不能解散
+        this.$message({
+          message: '该部门不是一个空部门，无法解散',
+          type: 'warning'
+        })
+        return
+      }
       const data = {
         _id: this.depInfo._id,
         status: 1
       }
-      const str = '是否解散当前部门？'
-      // if (this.depInfo.status) {
-      //   const str = '是否解散当前部门？'
-      // }
+      let str = '是否解散当前部门？'
+      if (this.depInfo.status) {
+        data.status = 0
+        str = '是否恢复当前部门'
+      }
       this.$confirm(str, '修改部门状态', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'info'
       }).then(() => {
-        this.$message({
-          type: 'success',
-          message: '删除成功!'
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消删除'
+        updateDep(data).then(response => {
+          this.loadDps()
+          this.$message({
+            message: '修改成功',
+            type: 'success',
+            duration: 4 * 1000
+          })
+        }).catch(() => {
+          this.$message({
+            message: '修改失败，请稍后再试',
+            type: 'error',
+            duration: 4 * 1000
+          })
         })
       })
     },
@@ -318,10 +334,13 @@ export default {
           </span>
         </span>)
       } else {
+        let cls = 'g6'
+        if (data.status) {
+          cls = 'g9'
+        }
         return (
         <span>
-          <span class='g6'>
-            <icon-svg class='f14 mr5' icon-class='component' />
+          <span class={cls}>
             <span>{node.label}</span>
           </span>
           <span style='float: right; margin-right: 20px'>
@@ -334,7 +353,12 @@ export default {
       axios.all([fetchDepartments(''), fetchList('')])
       .then(axios.spread((acct, perms) => {
         var data = perms.info
-        this.restaurants = acct.info
+        this.restaurants = []
+        acct.info.forEach(function(element) {
+          if (!element.status) {
+            this.restaurants.push(element)
+          }
+        }, this)
         data.forEach(function(element) { // 将用户对象修改成带parent的对象以便和部门对象数组合并
           for (const key in element) {
             if (key === '_id') {
@@ -356,7 +380,7 @@ export default {
           }
         }, this)
         list.push(...data)
-        const tree1 = new treeUtil(list, '_id', 'parent', map)
+        const tree1 = new TreeUtil(list, '_id', 'parent', map)
         this.depList = tree1.toTree()
       })).catch(() => {
         this.$message({
@@ -419,7 +443,7 @@ export default {
     min-height: 100%;
     .left-side{
       position: absolute;
-      top: 33px;
+      top: 35px;
       left: 0px;
       width: 400px;
       min-height:calc(100% - 33px);
