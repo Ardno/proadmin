@@ -1,17 +1,80 @@
 <template>
   <div class="app-container">
-    <el-row>
-      <el-col :span="8">
+    <div class="lr-ct">
+      <div class="bbd pt5 pb5">
+        <span class="mr10 ">
+          单位部门结构
+        </span>
+        <el-button type="primary" size="mini" @click="dialogFormVisible = true">添加部门</el-button>
+      </div>
+      <div class="left-side">
         <div class="grid-content bg-purple">
-          <el-tree :data="depList" :props="defaultProps" show-checkbox node-key="id" default-expand-all :expand-on-click-node="false" :render-content="renderContent">
+          <el-tree :data="depList" :props="defaultProps" node-key="id" default-expand-all :expand-on-click-node="false" :render-content="renderContent">
           </el-tree>
-          <el-button type="primary" @click="dialogFormVisible = true">添加部门</el-button>
+        </div>
+      </div>
+      <el-col class="rt-ct">
+        <div class="grid-content bg-purple-light" >
+          <h4 v-show="infotype" class="n g3 pt10 pb10">单位或机构信息</h4>
+          <h4 v-show="!infotype" class="n g3 pt10 pb10">单位人员信息 </h4>
+          <el-form v-if="infotype" :key="'1'" label-position="top" label-width="80px" :rules="infodepRules"  ref="depUpateFrom" :model="depInfo" v-loading="fromloading"  class="w400 pl10 cusfom">
+            <el-form-item  label="部门名称" prop="name">
+              <span v-if="infoupdate" class="g6">{{depInfo.name}}</span>
+              <el-input  v-else v-model="depInfo.name"></el-input>
+            </el-form-item>
+            <el-form-item label="上级部门">
+              <span v-if="infoupdate" class="g6">{{depFilter(depInfo.parent)}}</span>
+              <el-select v-else class="filter-item" v-model="depInfo.parent" placeholder="请选择" >
+                <el-option v-for="item in  depmenArr" :key="item._id" :label="item.name" :value="item._id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="描述信息">
+              <span v-if="infoupdate" class="g6">{{depInfo.info ? depInfo.info:'暂无描述信息'}}</span>
+              <el-input v-else v-model="depInfo.info"></el-input>
+            </el-form-item>
+            <el-form-item label="部门链接">
+              <span v-if="infoupdate" class="g6">{{depInfo.infoLink ? depInfo.infoLink:'暂无链接'}}</span>
+              <el-input v-else v-model="depInfo.infoLink"></el-input>
+            </el-form-item>
+            <el-form-item label="部门人数">
+              <span  class="g6">{{depInfo.count ? depInfo.count:'暂无人员'}}</span>
+            </el-form-item>
+            <el-form-item label="录入时间">
+              <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+            </el-form-item>
+            <el-form-item style="border:none">
+              <el-button type="primary" v-show="firstflg" @click="updateInfo">{{infoupdate?'修改':'保存'}}</el-button>
+              <el-button v-show="firstflg" @click="updateDtpsate">修改部门状态</el-button>
+              <el-button v-show="!infoupdate" @click="resetForm">取消</el-button>
+            </el-form-item>
+          </el-form>
+          <el-form v-else label-position="left" label-width="80px" :model="depInfo" v-loading="fromloading"  class="w400 pl10 cusfom">
+            <el-form-item label="姓名">
+              <span class="g6">{{depInfo.name}}</span>
+            </el-form-item>
+            <el-form-item label="姓别">
+              <span class="g6">{{depInfo.sex ? '女':'男'}}</span>
+            </el-form-item>
+            <el-form-item label="民族">
+              <span class="g6">{{depInfo.nation}}</span>
+            </el-form-item>
+            <el-form-item label="手机号码">
+              <span class="g6">{{depInfo.mobile}}</span>
+            </el-form-item>
+            <el-form-item label="生日">
+              <span class="g6">{{depInfo.birthday | parseTime('{y}-{m}-{d}')}}</span>
+            </el-form-item>
+            <el-form-item label="部门">
+              <span class="g6">{{depInfo.dept_name ? depInfo.dept_name:'暂无部门'}}</span>
+            </el-form-item>
+            <el-form-item label="加入时间">
+              <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+            </el-form-item>
+          </el-form>
         </div>
       </el-col>
-      <el-col :span="16">
-        <div class="grid-content bg-purple-light"></div>
-      </el-col>
-    </el-row>
+    </div>
     <el-dialog title="添加部门"  :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="depmentinfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="80px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="上级部门">
@@ -39,13 +102,29 @@
 </template>
 
 <script>
-import { fetchDepartments, createDep, updateDep } from '@/api/department'
+import { fetchDepartments, createDep, fetchList, updateDep } from '@/api/department'
 import { treeUtil, deepClone } from '@/utils/index'
+import axios from 'axios'
+
 let id = 1000
 export default {
   data() {
     const validateUsername = (rule, value, callback) => {
       const arr = this.restaurants
+      if (!value) {
+        callback(new Error('请输入部门名称'))
+        return
+      }
+      arr.forEach(function(element) {
+        if (element.name === value) {
+          callback(new Error('部门名字已存在'))
+          return
+        }
+      }, this)
+      callback()
+    }
+    const validatedepname = (rule, value, callback) => {
+      const arr = this.depmenArr
       if (!value) {
         callback(new Error('请输入部门名称'))
         return
@@ -66,10 +145,29 @@ export default {
         info: '',
         infoLink: ''
       },
+      firstflg: false,
+      infoupdate: true,
+      infotype: true,
+      fromloading: false,
       restaurants: [],
+      depmenArr: [],
       infoRules: {
-        name: [{ required: true, message: '请输入部门名称', trigger: 'blur', validator: validateUsername }]
+        name: [{ required: true, trigger: 'blur', validator: validateUsername }]
       },
+      infodepRules: {
+        name: [{ required: true, trigger: 'blur', validator: validatedepname }]
+      },
+      depInfoclone: null,
+      depInfo: {
+        test: '',
+        parent: '',
+        name: '',
+        info: '',
+        infoLink: '',
+        create_time: '',
+        count: 0
+      },
+      message: '2131',
       depList: [],
       defaultProps: {
         children: 'children',
@@ -78,31 +176,194 @@ export default {
     }
   },
   methods: {
+    updateDtpsate() {
+      const data = {
+        _id: this.depInfo._id,
+        status: 1
+      }
+      const str = '是否解散当前部门？'
+      // if (this.depInfo.status) {
+      //   const str = '是否解散当前部门？'
+      // }
+      this.$confirm(str, '修改部门状态', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }).then(() => {
+        this.$message({
+          type: 'success',
+          message: '删除成功!'
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        })
+      })
+    },
+    depFilter(val) {
+      for (const key in this.restaurants) {
+        const obj = this.restaurants[key]
+        for (const j in obj) {
+          if (j === '_id') {
+            if (obj[j] === val) {
+              return obj['name']
+            }
+          }
+        }
+      }
+      return '无上级部门'
+    },
+    resetForm() { // 取消恢复修改前的数据
+      this.$refs.depUpateFrom.resetFields()
+      this.depInfo = deepClone(this.depInfoclone)
+      this.infoupdate = true
+    },
+    updateInfo() {
+      if (this.infoupdate) { // 保留修改前的数据
+        this.depInfoclone = deepClone(this.depInfo)
+        this.infoupdate = !this.infoupdate
+      } else {
+        this.$refs.depUpateFrom.validate(valid => {
+          if (valid) {
+            updateDep(this.depInfo).then(response => {
+              this.infoupdate = !this.infoupdate
+              this.loadDps()
+              this.$message({
+                message: '修改部门成功',
+                type: 'success',
+                duration: 4 * 1000
+              })
+            }).catch(() => {
+              this.$message({
+                message: '修改部门失败，请稍后再试',
+                type: 'error',
+                duration: 4 * 1000
+              })
+            })
+          } else {
+            console.log('error submit!!')
+            return false
+          }
+        })
+      }
+    },
     append(store, data) {
       store.append({ id: id++, label: 'testtest', children: [] }, data)
     },
     remove(store, data) {
       store.remove(data)
     },
+    toview(store, data) {
+      this.fromloading = true
+      this.firstflg = true
+      this.infoupdate = true
+      this.depInfo = {
+        test: '',
+        parent: '',
+        name: '',
+        info: '',
+        infoLink: '',
+        create_time: '',
+        count: 0
+      }
+      for (var key in data) {
+        if (key === 'label') {
+          this.depInfo['name'] = data[key]
+        } else if (key === 'id') {
+          this.depInfo['_id'] = data[key]
+        } else if (key === 'parentid') {
+          this.depInfo['parent'] = data[key] ? data[key] : ''
+        } else {
+          this.depInfo[key] = data[key]
+        }
+      }
+      const array = this.depInfo.children
+      this.depInfo.count = 0
+      array.forEach(function(element) {
+        if (element.cid) {
+          this.depInfo.count++
+        }
+      }, this)
+      if (this.depInfo.cid) {
+        this.infotype = false
+      } else {
+        if (this.$refs.depUpateFrom) {
+          this.$refs.depUpateFrom.resetFields()
+        }
+        this.infotype = true
+      }
+      this.depmenArr = deepClone(this.restaurants)
+      for (const i in this.depmenArr) { // 在修改上级部门的时候剔除自己
+        const obj = this.depmenArr[i]
+        if (obj['_id'] === this.depInfo['_id']) {
+          this.depmenArr.splice(i, 1)
+        }
+      }
+      console.log(this.depInfo)
+      setTimeout(() => {
+        this.fromloading = false
+      }, 400)
+    },
     renderContent(h, { node, data, store }) {
-      return (
+      if (data.cid) {
+        return (
         <span>
           <span>
+            <icon-svg class='g6 f14' icon-class='yonghuming' />
+            <span class='f12 maroon'>{node.label}</span>
+          </span>
+          <span style='float: right; margin-right: 20px'>
+            <el-button size='mini' on-click={ () => this.toview(store, data) }>查看</el-button>
+          </span>
+        </span>)
+      } else {
+        return (
+        <span>
+          <span class='g6'>
+            <icon-svg class='f14 mr5' icon-class='component' />
             <span>{node.label}</span>
           </span>
           <span style='float: right; margin-right: 20px'>
-            <el-button size='mini' on-click={ () => this.append(store, data) }>Append</el-button>
-            <el-button size='mini' on-click={ () => this.remove(store, data) }>Delete</el-button>
+            <el-button size='mini' on-click={ () => this.toview(store, data) }>查看</el-button>
           </span>
         </span>)
+      }
     },
     loadDps() { // 获取部门集合
-      fetchDepartments('').then(response => {
-        this.restaurants = response.info
+      axios.all([fetchDepartments(''), fetchList('')])
+      .then(axios.spread((acct, perms) => {
+        var data = perms.info
+        this.restaurants = acct.info
+        data.forEach(function(element) { // 将用户对象修改成带parent的对象以便和部门对象数组合并
+          for (const key in element) {
+            if (key === '_id') {
+              element.cid = element[key]
+              delete element[key]
+            }
+            if (key === 'department_id') {
+              element.parent = element[key]
+            }
+          }
+        }, this)
         const map = { name: 'label', _id: 'id' }
-        const list = deepClone(response.info)
+        const list = deepClone(acct.info)
+        list.forEach(function(element) { // 保留父元素id，以便查询信息时用到
+          for (const key in element) {
+            if (key === 'parent') {
+              element.parentid = element[key]
+            }
+          }
+        }, this)
+        list.push(...data)
         const tree1 = new treeUtil(list, '_id', 'parent', map)
         this.depList = tree1.toTree()
+      })).catch(() => {
+        this.$message({
+          message: '获取部门结构失败，请稍后再试',
+          type: 'error',
+          duration: 4 * 1000
+        })
       })
     },
     handleCreate() { // 创建部门
@@ -135,6 +396,42 @@ export default {
   }
 }
 </script>
-<style lang="css">
-
+<style lang="scss">
+  html,
+  body,
+  #app,
+  .main-container,
+  .app-container {
+    height: 100%;
+  }
+  .app-container{
+    overflow: hidden;
+  }
+  .app-main {
+    min-height: auto !important;
+    height: calc(100% - 50px);
+  }
+  .el-tree{
+    border-color: transparent;
+  }
+  .lr-ct{
+    position: relative;
+    min-height: 100%;
+    .left-side{
+      position: absolute;
+      top: 33px;
+      left: 0px;
+      width: 400px;
+      min-height:calc(100% - 33px);
+      border-right:1px solid #dbdbdb;
+    }
+    .rt-ct{
+      padding: 30px;
+      margin-left: 410px;
+      overflow: hidden;
+    }
+  }
+  .cusfom .el-form-item {
+    border-bottom: 1px solid #edf1f2;
+  }
 </style>
