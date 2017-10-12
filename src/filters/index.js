@@ -20,9 +20,9 @@ export function parseTime(time, cFormat) {
     return null
   }
 
-  if ((time + '').length === 10) {
-    time = +time * 1000
-  }
+  // if ((time + '').length === 10) {
+  //   time = +time * 1000
+  // }
 
   const format = cFormat || '{y}-{m}-{d} {h}:{i}:{s}'
   let date
