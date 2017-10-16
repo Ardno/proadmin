@@ -67,6 +67,7 @@ import { mapGetters } from 'vuex'
 import { updatePeInfo } from '@/api/department'
 import avatarm from '@/assets/login_images/avatar.png'
 import { validateMblNo, validateIdNum } from '@/utils/validate'
+
 export default {
   data() {
     const validateUserIdNum = (rule, value, callback) => {
