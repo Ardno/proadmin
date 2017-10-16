@@ -1,5 +1,11 @@
 import fetch from '@/utils/fetch'
 
+export function getAccess() { // 获取权限集合
+  return fetch({
+    url: 'people/access',
+    method: 'post'
+  })
+}
 export function loginByUsername(mobile, pwd) {
   const data = {
     mobile,

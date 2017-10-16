@@ -1,6 +1,5 @@
 import { loginByUsername, logout, getUserInfo, getQrcode } from '@/api/login'
 import { getToken, setToken, removeToken, setUserid } from '@/utils/auth'
-
 const user = {
   state: {
     user: '',
@@ -89,17 +88,12 @@ const user = {
           commit('SET_ROLES', role)
           commit('SET_NAME', data.name)
           commit('SET_AVATAR', data._id)
-          // commit('SET_ROLES', data.role)
-          // commit('SET_NAME', data.name)
-          // commit('SET_AVATAR', data.avatar)
-          // commit('SET_INTRODUCTION', data.introduction)
           resolve(response)
         }).catch(error => {
           reject(error)
         })
       })
     },
-
     // 第三方验证登录
     // LoginByThirdparty({ commit, state }, code) {
     //   return new Promise((resolve, reject) => {
