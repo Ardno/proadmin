@@ -2,7 +2,6 @@
   <div class="login-container">
     <el-form class="card-box login-form" autoComplete="on" :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left">
       <h3 class="title">崖州网格系统</h3>
-
       <el-form-item prop="username">
         <span class="svg-container svg-container_login">
           <icon-svg icon-class="user" />
@@ -220,7 +219,7 @@ $light_gray:#eee;
     right: 0;
     top: 0;
     bottom: 0;
-    background: url(../../assets/login_images/2zrdI1g.jpg) no-repeat 50%;
+    background: url(~assets/login_images/2zrdI1g.jpg) no-repeat 50%;
     background-size: cover;
     .login-box {
       position: absolute;
@@ -261,7 +260,7 @@ $light_gray:#eee;
           vertical-align: middle;
           height: 96px;
           width: 96px;
-          background: url(../../assets/login_images/5af37c4a880a95586cd41c5b251d5562@1x.png) no-repeat;
+          background: url(~assets/login_images/5af37c4a880a95586cd41c5b251d5562@1x.png) no-repeat;
           background-position: 0 -150px;
           -webkit-background-size: 487px 462px;
           background-size: 487px 462px;

@@ -84,6 +84,7 @@ const user = {
         getUserInfo(_id).then(response => {
           const data = response.info
           const role = ['admin'] // 暂时写死权限
+          data.birthday = data.birthday * 1000
           commit('SET_USEINFO', data)
           commit('SET_ROLES', role)
           commit('SET_NAME', data.name)

@@ -18,7 +18,7 @@
       </el-table-column>
       <el-table-column width="180px" align="center" label="加入时间">
         <template scope="scope">
-          <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+          <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" width="110px" label="姓名">
@@ -241,6 +241,7 @@ export default {
       this.$refs.infoForm.validate(valid => {
         if (valid) {
           this.$confirm('确认修改？').then(() => {
+            this.temp.birthday = Math.round(new Date(this.temp.birthday).getTime() / 1000)
             updatePeInfo(this.temp).then(response => {
               this.dialogFormVisible = false
               this.$message({
@@ -292,7 +293,7 @@ export default {
       })
     },
     formatDate(te) {
-      this.temp.birthday = new Date(te).getTime()
+      // this.temp.birthday = Math.round(new Date(te).getTime() / 1000)
     },
     getList() {
       this.listLoading = true
@@ -305,6 +306,9 @@ export default {
       }, this)
       fetchList(this.listQuery).then(response => {
         this.list = response.info
+        this.list.forEach(function(element) {
+          element.birthday = element.birthday * 1000
+        }, this)
         this.listLoading = false
       }).catch(() => {
         this.listLoading = false

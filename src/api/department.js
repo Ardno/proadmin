@@ -1,4 +1,11 @@
 import fetch from '@/utils/fetch'
+
+export function getAccess() { // 获取部门集合
+  return fetch({
+    url: 'people/access',
+    method: 'post'
+  })
+}
 export function fetchDepartments(query) { // 获取部门集合
   return fetch({
     url: 'department/list',

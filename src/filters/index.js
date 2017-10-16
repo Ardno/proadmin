@@ -15,14 +15,14 @@ export function timeAgo(time) {
   }
 }
 
-export function parseTime(time, cFormat) {
+export function parseTime(time, cFormat, flg) {
   if (arguments.length === 0) {
     return null
   }
 
-  // if ((time + '').length === 10) {
-  //   time = +time * 1000
-  // }
+  if (flg) {
+    time = time * 1000
+  }
 
   const format = cFormat || '{y}-{m}-{d} {h}:{i}:{s}'
   let date
