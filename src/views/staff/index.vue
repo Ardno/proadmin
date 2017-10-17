@@ -56,6 +56,11 @@
           <span>{{scope.row.dept_name}}</span>
         </template>
       </el-table-column>
+      <el-table-column align="center" label="职位">
+        <template scope="scope">
+          <span>{{scope.row.role_name}}</span>
+        </template>
+      </el-table-column>
       <el-table-column align="center" label="操作" width="190">
         <template scope="scope">
           <el-button size="small" type="success" @click="handleUpdateDa(scope.row)">修改
@@ -64,7 +69,14 @@
         </template>
       </el-table-column>
     </el-table>
-
+    <el-pagination class="mt20"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page.sync="currentPage1"
+      :page-size="100"
+      layout="total, prev, pager, next"
+      :total="1000">
+    </el-pagination>
     <el-dialog title="修改信息" @close="closeCall" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="temp" :rules="infoRules" ref="infoForm" label-position="left"  label-width="80px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="部门">
@@ -149,6 +161,7 @@ export default {
       },
       dialogFormVisible: false,
       list: null,
+      currentPage1: 5,
       temp: {
         _id: '',
         department_id: '',
@@ -187,6 +200,12 @@ export default {
     this.getList()
   },
   methods: {
+    handleSizeChange(val) {
+      console.log(`每页 ${val} 条`)
+    },
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`)
+    },
     querySearch(queryString, cb) {
       var restaurants = this.restaurants
       console.log(restaurants)

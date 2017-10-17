@@ -32,6 +32,13 @@
         <el-form-item label="职位名称" prop="name">
           <el-input v-model="duty.name"></el-input>
         </el-form-item>
+        <el-form-item label="职位级别" prop="level">
+          <el-select class="filter-item" v-model="duty.level" placeholder="请选择">
+            <el-option v-for="item in  levelArr" :key="item" :label="item" :value="item">
+            </el-option>
+          </el-select>
+          <span class="f12 g9">级别越高数字越大</span>
+        </el-form-item>
         <el-form-item label="平台权限">
           <el-checkbox-group v-model="duty.accessarr" @change="handleCheckedCitiesChange">
             <el-checkbox class="ml15" v-for="obj in accessArr" :label="obj.value+''" :key="obj.value">{{obj.name}}</el-checkbox>
@@ -54,6 +61,7 @@ export default {
   data() {
     return {
       accessArr: [],
+      levelArr: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       tableKey: 0,
       dialogFormVisible: false,
       dataAccess: null,
@@ -61,7 +69,8 @@ export default {
       duty: {
         name: '',
         accessarr: [],
-        access: ''
+        access: '',
+        level: ''
       },
       listLoading: false,
       infoRules: {
@@ -97,7 +106,8 @@ export default {
       this.duty = {
         name: '',
         accessarr: [],
-        access: ''
+        access: '',
+        level: ''
       }
     },
     handleUpdate(item) { // 修改职务
@@ -176,7 +186,6 @@ export default {
         const els = element
         for (const key in statusMap) {
           if (statusMap[key].value + '' === els) {
-            console.log(statusMap[key])
             arrb.push(statusMap[key].name)
           }
         }

@@ -50,7 +50,7 @@
             <template scope="scope">
               <el-button size="small" type="success" @click="handleUpdateDa(scope.row)">修改
               </el-button>
-              <el-button :plain="true" size="small" type="success" @click="handleSet(scope.row)">设为默认</el-button>
+              <span v-if="scope.row._id===1" class="f12 g9 ml15">默认规则</span>
             </template>
           </el-table-column>
         </el-table>

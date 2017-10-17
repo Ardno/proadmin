@@ -48,6 +48,7 @@
             </el-form-item>
             <el-form-item style="border:none">
               <el-button type="primary" v-show="firstflg" @click="updateInfo">{{infoupdate?'修改':'保存'}}</el-button>
+              <el-button v-show="firstflg && infoupdate" @click="updateKaoqing">设置考勤规则</el-button>
               <el-button v-show="firstflg && infoupdate" @click="updateDtpsate">修改部门状态</el-button>
               <el-button v-show="!infoupdate" @click="resetForm">取消</el-button>
             </el-form-item>
@@ -78,8 +79,8 @@
         </div>
       </el-col>
     </div>
-    <el-dialog title="添加部门"  :visible.sync="dialogFormVisible">
-      <el-form class="small-space" :model="depmentinfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="80px" style='width: 400px; margin-left:50px;'>
+    <el-dialog title="添加部门"  :visible.sync="dialogFormVisible" size="tiny">
+      <el-form class="small-space" :model="depmentinfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="80px" >
         <el-form-item label="上级部门">
           <el-select class="filter-item" v-model="depmentinfo.parent" placeholder="请选择">
             <el-option v-for="item in  restaurants" :key="item._id" :label="item.name" :value="item._id">
@@ -101,12 +102,23 @@
         <el-button type="primary" @click="handleCreate">确 定</el-button>
       </div>
     </el-dialog>
+    <el-dialog title="设置部门考勤规则"  :visible.sync="dialogFormVisiblec" size="tiny">
+      <el-select class="filter-item" v-model="dementrule.dance_config_id" placeholder="请选择">
+        <el-option v-for="item in  kaoqingArr" :key="item._id" :label="item.name" :value="item._id">
+        </el-option>
+      </el-select>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisiblec = false">取 消</el-button>
+        <el-button type="primary" @click="handleUpdateKaq">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { fetchDepartments, createDep, fetchList, updateDep } from '@/api/department'
 import { TreeUtil, deepClone } from '@/utils/index'
+import { getadcArr } from '@/api/schedule'
 import axios from 'axios'
 
 let id = 1000
@@ -142,12 +154,18 @@ export default {
     }
     return {
       dialogFormVisible: false,
+      dialogFormVisiblec: false,
       depmentinfo: {
         parent: '',
         name: '',
         info: '',
         infoLink: ''
       },
+      dementrule: {
+        _id: '',
+        dance_config_id: ''
+      },
+      kaoqingArr: [],
       firstflg: false,
       infoupdate: true,
       infotype: true,
@@ -178,8 +196,35 @@ export default {
     }
   },
   methods: {
+    getadcArray() { // 获取考勤规则集合
+      getadcArr().then(response => {
+        this.kaoqingArr = response.info
+      }).catch(() => {})
+    },
+    updateKaoqing() {
+      this.dementrule._id = this.depInfo._id
+      this.dementrule.dance_config_id = this.depInfo.dance_config_id
+      this.dialogFormVisiblec = true
+      console.log(this.dementrule)
+    },
+    handleUpdateKaq() {
+      updateDep(this.dementrule).then(response => {
+        this.dialogFormVisiblec = false
+        this.loadDps()
+        this.$message({
+          message: '修改成功',
+          type: 'success',
+          duration: 4 * 1000
+        })
+      }).catch(() => {
+        this.$message({
+          message: '修改失败，请稍后再试',
+          type: 'error',
+          duration: 4 * 1000
+        })
+      })
+    },
     updateDtpsate() {
-      debugger
       if (this.depInfo.children.length) { // 存在子元素不能解散
         this.$message({
           message: '该部门不是一个空部门，无法解散',
@@ -417,6 +462,7 @@ export default {
   },
   created() {
     this.loadDps()
+    this.getadcArray()
   }
 }
 </script>
