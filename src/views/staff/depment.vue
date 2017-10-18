@@ -70,7 +70,15 @@
               <span class="g6">{{depInfo.birthday | parseTime('{y}-{m}-{d}')}}</span>
             </el-form-item>
             <el-form-item label="部门">
-              <span class="g6">{{depInfo.dept_name ? depInfo.dept_name:'暂无部门'}}</span>
+              <span v-if="depInfodep.depFlg" class="g6">{{depInfo.dept_name ? depInfo.dept_name:'暂无部门'}}</span>
+              
+              <el-select v-else class="filter-item" v-model="depInfodep.department_id" placeholder="请选择" >
+                <el-option v-for="item in  depmenArr" :key="item._id" :label="item.name" :value="item._id">
+                </el-option>
+              </el-select>
+              <el-button v-show="!depInfodep.depFlg"  class="r ml10" type="text" @click="depInfodep.depFlg=true" >取消</el-button>
+              <el-button  class="r" type="text" @click="handleUpdatePeInfo" >{{depInfodep.depFlg ? '修改' : '保存'}}</el-button>
+              
             </el-form-item>
             <el-form-item label="加入时间">
               <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
@@ -116,7 +124,7 @@
 </template>
 
 <script>
-import { fetchDepartments, createDep, fetchList, updateDep } from '@/api/department'
+import { fetchDepartments, createDep, fetchList, updateDep, updatePeInfo } from '@/api/department'
 import { TreeUtil, deepClone } from '@/utils/index'
 import { getadcArr } from '@/api/schedule'
 import axios from 'axios'
@@ -188,6 +196,11 @@ export default {
         create_time: '',
         count: 0
       },
+      depInfodep: {
+        depFlg: true,
+        _id: '',
+        department_id: ''
+      },
       depList: [],
       defaultProps: {
         children: 'children',
@@ -196,6 +209,35 @@ export default {
     }
   },
   methods: {
+    handleUpdatePeInfo() { // 修改人员部门
+      if (this.depInfodep.depFlg) {
+        this.depInfodep._id = this.depInfo.cid
+        this.depInfodep.department_id = this.depInfo.department_id
+        this.depInfodep.depFlg = false
+        return
+      }
+      this.$confirm('确定要移动当前人员到该部门？', '修改部门', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }).then(() => {
+        updatePeInfo(this.depInfodep).then(response => {
+          this.loadDps()
+          this.depInfodep.depFlg = true
+          this.$message({
+            message: '修改成功',
+            type: 'success',
+            duration: 4 * 1000
+          })
+        }).catch(() => {
+          this.$message({
+            message: '修改失败，请稍后再试',
+            type: 'error',
+            duration: 4 * 1000
+          })
+        })
+      })
+    },
     getadcArray() { // 获取考勤规则集合
       getadcArr().then(response => {
         this.kaoqingArr = response.info
@@ -319,6 +361,7 @@ export default {
       this.fromloading = true
       this.firstflg = true
       this.infoupdate = true
+      this.depInfodep.depFlg = true
       this.depInfo = {
         test: '',
         parent: '',
