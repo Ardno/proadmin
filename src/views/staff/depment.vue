@@ -130,8 +130,8 @@
 </template>
 
 <script>
-import { fetchDepartments, createDep, fetchList, updateDep, updatePeInfo } from '@/api/department'
-import { TreeUtil, deepClone } from '@/utils/index'
+import { fetchDepartments, createDep, fetchList, updateDep, updatePeInfo, fetchRoles } from '@/api/department'
+import { TreeUtil, deepClone, sortBy, cleanArray } from '@/utils/index'
 import { getadcArr } from '@/api/schedule'
 import axios from 'axios'
 
@@ -461,6 +461,7 @@ export default {
           }, this)
           const map = { name: 'label', _id: 'id' }
           const list = deepClone(acct.info)
+          console.log(list)
           list.forEach(function(element) { // 保留父元素id，以便查询信息时用到
             for (const key in element) {
               if (key === 'parent') {
@@ -484,17 +485,37 @@ export default {
         <span>
           <span>
             <span >{node.label}</span>
-            <span class='f12 maroon ml10'>(技术经理)</span>
+            <span class='f12 maroon ml10'>({data.role_name})</span>
           </span>
         </span>)
     },
     getDepPepArr(id) {
-      fetchList({ department_id: id }).then(response => {
-        console.log(response.info)
-        this.depPepoleList = this.depList
-      }).catch(() => {
-        console.log('根据部门id获取人员失败~')
-      })
+      axios.all([fetchRoles(''), fetchList({ department_id: id })])
+      .then(axios.spread((acct, perms) => {
+        var data = perms.info
+        acct.info.forEach(function(element) { // 赋值职位级别到对象
+          data.forEach(function(els) {
+            if (element['_id'] === els['roleid']) {
+              els['level'] = element['level']
+            }
+          }, this)
+        }, this)
+        data.sort(sortBy('level'))
+        const datacopy = deepClone(data)
+        for (let a = 0; a < datacopy.length; a++) {
+          datacopy[a]['parent'] = 0
+          for (let b = 0; b < data.length; b++) {
+            if (datacopy[a]['level'] < data[b]['level']) {
+              datacopy[a]['parent'] = data[b]['level']
+              console.log(datacopy[a]['parent'])
+              break
+            }
+          }
+        }
+        const map = { name: 'label', level: 'id' }
+        var tree1 = new TreeUtil(datacopy, 'level', 'parent', map)
+        this.depPepoleList = tree1.toTree()
+      }))
       this.dialogFormVisibled = true
     },
     handleCreate() { // 创建部门
