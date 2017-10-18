@@ -14,17 +14,17 @@
         </div>
       </div>
       <el-col class="rt-ct">
-        <div class="grid-content bg-purple-light" >
+        <div class="grid-content bg-purple-light">
           <h4 v-show="infotype" class="n g3 pt10 pb10">单位或机构信息</h4>
           <h4 v-show="!infotype" class="n g3 pt10 pb10">单位人员信息 </h4>
-          <el-form v-if="infotype" :key="'1'" label-position="top" label-width="80px" :rules="infodepRules"  ref="depUpateFrom" :model="depInfo" v-loading="fromloading"  class="w400 pl10 cusfom">
-            <el-form-item  label="部门名称" prop="name">
+          <el-form v-if="infotype" :key="'1'" label-position="top" label-width="80px" :rules="infodepRules" ref="depUpateFrom" :model="depInfo" v-loading="fromloading" class="w400 pl10 cusfom">
+            <el-form-item label="部门名称" prop="name">
               <span v-if="infoupdate" class="g6">{{depInfo.name}}</span>
-              <el-input  v-else v-model="depInfo.name"></el-input>
+              <el-input v-else v-model="depInfo.name"></el-input>
             </el-form-item>
             <el-form-item label="上级部门">
               <span v-if="infoupdate" class="g6">{{depFilter(depInfo.parent)}}</span>
-              <el-select v-else class="filter-item" v-model="depInfo.parent" placeholder="请选择" >
+              <el-select v-else class="filter-item" v-model="depInfo.parent" placeholder="请选择">
                 <el-option v-for="item in  depmenArr" :key="item._id" :label="item.name" :value="item._id">
                 </el-option>
               </el-select>
@@ -38,10 +38,12 @@
               <el-input v-else v-model="depInfo.infoLink"></el-input>
             </el-form-item>
             <el-form-item label="部门人数">
-              <span  class="g6">{{depInfo.count ? depInfo.count:'暂无人员'}}</span>
+              <span class="g6">{{depInfo.count ? depInfo.count:'暂无人员'}}</span>
+              <el-button v-show="firstflg && infoupdate && depInfo.count" class="r" type="text" @click="getDepPepArr(depInfo._id)">查看人员结构</el-button>
             </el-form-item>
             <el-form-item label="部门状态">
-              <span  class="g6">{{depInfo.status ? '解散':'正常'}}</span>
+              <span class="g6">{{depInfo.status ? '解散':'正常'}}</span>
+              <el-button v-show="firstflg && infoupdate" class="r" type="text" @click="updateDtpsate">{{depInfo.status ? '恢复':'解散'}}</el-button>
             </el-form-item>
             <el-form-item label="录入时间">
               <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
@@ -49,11 +51,10 @@
             <el-form-item style="border:none">
               <el-button type="primary" v-show="firstflg" @click="updateInfo">{{infoupdate?'修改':'保存'}}</el-button>
               <el-button v-show="firstflg && infoupdate" @click="updateKaoqing">设置考勤规则</el-button>
-              <el-button v-show="firstflg && infoupdate" @click="updateDtpsate">修改部门状态</el-button>
               <el-button v-show="!infoupdate" @click="resetForm">取消</el-button>
             </el-form-item>
           </el-form>
-          <el-form v-else label-position="left" label-width="80px" :model="depInfo" v-loading="fromloading"  class="w400 pl10 cusfom">
+          <el-form v-else label-position="left" label-width="80px" :model="depInfo" v-loading="fromloading" class="w400 pl10 cusfom">
             <el-form-item label="姓名">
               <span class="g6">{{depInfo.name}}</span>
             </el-form-item>
@@ -71,14 +72,12 @@
             </el-form-item>
             <el-form-item label="部门">
               <span v-if="depInfodep.depFlg" class="g6">{{depInfo.dept_name ? depInfo.dept_name:'暂无部门'}}</span>
-              
-              <el-select v-else class="filter-item" v-model="depInfodep.department_id" placeholder="请选择" >
+              <el-select v-else class="filter-item" v-model="depInfodep.department_id" placeholder="请选择">
                 <el-option v-for="item in  depmenArr" :key="item._id" :label="item.name" :value="item._id">
                 </el-option>
               </el-select>
-              <el-button v-show="!depInfodep.depFlg"  class="r ml10" type="text" @click="depInfodep.depFlg=true" >取消</el-button>
-              <el-button  class="r" type="text" @click="handleUpdatePeInfo" >{{depInfodep.depFlg ? '修改' : '保存'}}</el-button>
-              
+              <el-button v-show="!depInfodep.depFlg" class="r ml10" type="text" @click="depInfodep.depFlg=true">取消</el-button>
+              <el-button class="r" type="text" @click="handleUpdatePeInfo">{{depInfodep.depFlg ? '修改' : '保存'}}</el-button>
             </el-form-item>
             <el-form-item label="加入时间">
               <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
@@ -87,8 +86,8 @@
         </div>
       </el-col>
     </div>
-    <el-dialog title="添加部门"  :visible.sync="dialogFormVisible" size="tiny">
-      <el-form class="small-space" :model="depmentinfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="80px" >
+    <el-dialog title="添加部门" :visible.sync="dialogFormVisible" size="tiny">
+      <el-form class="small-space" :model="depmentinfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="80px">
         <el-form-item label="上级部门">
           <el-select class="filter-item" v-model="depmentinfo.parent" placeholder="请选择">
             <el-option v-for="item in  restaurants" :key="item._id" :label="item.name" :value="item._id">
@@ -110,7 +109,7 @@
         <el-button type="primary" @click="handleCreate">确 定</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="设置部门考勤规则"  :visible.sync="dialogFormVisiblec" size="tiny">
+    <el-dialog title="设置部门考勤规则" :visible.sync="dialogFormVisiblec" size="tiny">
       <el-select class="filter-item" v-model="dementrule.dance_config_id" placeholder="请选择">
         <el-option v-for="item in  kaoqingArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
@@ -118,6 +117,13 @@
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisiblec = false">取 消</el-button>
         <el-button type="primary" @click="handleUpdateKaq">确 定</el-button>
+      </div>
+    </el-dialog>
+    <el-dialog title="查看部门人员结构" :visible.sync="dialogFormVisibled" size="tiny">
+      <el-tree :data="depPepoleList" :props="defaultProps" node-key="id" accordion :render-content="renderContentP">
+      </el-tree>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="dialogFormVisibled = false">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -129,7 +135,6 @@ import { TreeUtil, deepClone } from '@/utils/index'
 import { getadcArr } from '@/api/schedule'
 import axios from 'axios'
 
-let id = 1000
 export default {
   data() {
     const validateUsername = (rule, value, callback) => {
@@ -163,6 +168,7 @@ export default {
     return {
       dialogFormVisible: false,
       dialogFormVisiblec: false,
+      dialogFormVisibled: false,
       depmentinfo: {
         parent: '',
         name: '',
@@ -202,6 +208,7 @@ export default {
         department_id: ''
       },
       depList: [],
+      depPepoleList: [],
       defaultProps: {
         children: 'children',
         label: 'label'
@@ -241,7 +248,7 @@ export default {
     getadcArray() { // 获取考勤规则集合
       getadcArr().then(response => {
         this.kaoqingArr = response.info
-      }).catch(() => {})
+      }).catch(() => { })
     },
     updateKaoqing() {
       this.dementrule._id = this.depInfo._id
@@ -351,12 +358,6 @@ export default {
         })
       }
     },
-    append(store, data) {
-      store.append({ id: id++, label: 'testtest', children: [] }, data)
-    },
-    remove(store, data) {
-      store.remove(data)
-    },
     toview(store, data) {
       this.fromloading = true
       this.firstflg = true
@@ -412,71 +413,89 @@ export default {
     renderContent(h, { node, data, store }) {
       if (data.cid) {
         return (
-        <span>
           <span>
-            <icon-svg class='g6 f14' icon-class='yonghuming' />
-            <span class='f12 maroon'>{node.label}</span>
-          </span>
-          <span style='float: right; margin-right: 20px'>
-            <el-button size='mini' on-click={ () => this.toview(store, data) }>查看</el-button>
-          </span>
-        </span>)
+            <span>
+              <icon-svg class='g6 f14' icon-class='yonghuming' />
+              <span class='f12 maroon'>{node.label}</span>
+            </span>
+            <span style='float: right; margin-right: 20px'>
+              <el-button size='mini' on-click={() => this.toview(store, data)}>查看</el-button>
+            </span>
+          </span>)
       } else {
         let cls = 'g6'
         if (data.status) {
           cls = 'g9'
         }
         return (
-        <span>
-          <span class={cls}>
-            <span>{node.label}</span>
-          </span>
-          <span style='float: right; margin-right: 20px'>
-            <el-button size='mini' on-click={ () => this.toview(store, data) }>查看</el-button>
-          </span>
-        </span>)
+          <span>
+            <span class={cls}>
+              <span>{node.label}</span>
+            </span>
+            <span style='float: right; margin-right: 20px'>
+              <el-button size='mini' on-click={() => this.toview(store, data)}>查看</el-button>
+            </span>
+          </span>)
       }
     },
     loadDps() { // 获取部门集合
       axios.all([fetchDepartments(''), fetchList('')])
-      .then(axios.spread((acct, perms) => {
-        var data = perms.info
-        this.restaurants = []
-        acct.info.forEach(function(element) {
-          if (!element.status) {
-            this.restaurants.push(element)
-          }
-        }, this)
-        data.forEach(function(element) { // 将用户对象修改成带parent的对象以便和部门对象数组合并
-          for (const key in element) {
-            if (key === '_id') {
-              element.cid = element[key]
-              delete element[key]
+        .then(axios.spread((acct, perms) => {
+          var data = perms.info
+          this.restaurants = []
+          acct.info.forEach(function(element) {
+            if (!element.status) {
+              this.restaurants.push(element)
             }
-            if (key === 'department_id') {
-              element.parent = element[key]
+          }, this)
+          data.forEach(function(element) { // 将用户对象修改成带parent的对象以便和部门对象数组合并
+            for (const key in element) {
+              if (key === '_id') {
+                element.cid = element[key]
+                delete element[key]
+              }
+              if (key === 'department_id') {
+                element.parent = element[key]
+              }
             }
-          }
-        }, this)
-        const map = { name: 'label', _id: 'id' }
-        const list = deepClone(acct.info)
-        list.forEach(function(element) { // 保留父元素id，以便查询信息时用到
-          for (const key in element) {
-            if (key === 'parent') {
-              element.parentid = element[key]
+          }, this)
+          const map = { name: 'label', _id: 'id' }
+          const list = deepClone(acct.info)
+          list.forEach(function(element) { // 保留父元素id，以便查询信息时用到
+            for (const key in element) {
+              if (key === 'parent') {
+                element.parentid = element[key]
+              }
             }
-          }
-        }, this)
-        list.push(...data)
-        const tree1 = new TreeUtil(list, '_id', 'parent', map)
-        this.depList = tree1.toTree()
-      })).catch(() => {
-        this.$message({
-          message: '获取部门结构失败，请稍后再试',
-          type: 'error',
-          duration: 4 * 1000
+          }, this)
+          list.push(...data)
+          const tree1 = new TreeUtil(list, '_id', 'parent', map)
+          this.depList = tree1.toTree()
+        })).catch(() => {
+          this.$message({
+            message: '获取部门结构失败，请稍后再试',
+            type: 'error',
+            duration: 4 * 1000
+          })
         })
+    },
+    renderContentP(h, { node, data, store }) {
+      return (
+        <span>
+          <span>
+            <span >{node.label}</span>
+            <span class='f12 maroon ml10'>(技术经理)</span>
+          </span>
+        </span>)
+    },
+    getDepPepArr(id) {
+      fetchList({ department_id: id }).then(response => {
+        console.log(response.info)
+        this.depPepoleList = this.depList
+      }).catch(() => {
+        console.log('根据部门id获取人员失败~')
       })
+      this.dialogFormVisibled = true
     },
     handleCreate() { // 创建部门
       this.$refs.infoForm.validate(valid => {
@@ -510,41 +529,46 @@ export default {
 }
 </script>
 <style lang="scss">
-  html,
-  body,
-  #app,
-  .main-container,
-  .app-container {
-    height: 100%;
+html,
+body,
+#app,
+.main-container,
+.app-container {
+  height: 100%;
+}
+
+.app-container {
+  overflow: hidden;
+}
+
+.app-main {
+  min-height: auto !important;
+  height: calc(100% - 50px);
+}
+
+.el-tree {
+  border-color: transparent;
+}
+
+.lr-ct {
+  position: relative;
+  min-height: 100%;
+  .left-side {
+    position: absolute;
+    top: 35px;
+    left: 0px;
+    width: 400px;
+    min-height: calc(100% - 33px);
+    border-right: 1px solid #dbdbdb;
   }
-  .app-container{
+  .rt-ct {
+    padding: 30px;
+    margin-left: 410px;
     overflow: hidden;
   }
-  .app-main {
-    min-height: auto !important;
-    height: calc(100% - 50px);
-  }
-  .el-tree{
-    border-color: transparent;
-  }
-  .lr-ct{
-    position: relative;
-    min-height: 100%;
-    .left-side{
-      position: absolute;
-      top: 35px;
-      left: 0px;
-      width: 400px;
-      min-height:calc(100% - 33px);
-      border-right:1px solid #dbdbdb;
-    }
-    .rt-ct{
-      padding: 30px;
-      margin-left: 410px;
-      overflow: hidden;
-    }
-  }
-  .cusfom .el-form-item {
-    border-bottom: 1px solid #edf1f2;
-  }
+}
+
+.cusfom .el-form-item {
+  border-bottom: 1px solid #edf1f2;
+}
 </style>
