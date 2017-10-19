@@ -82,7 +82,11 @@ const user = {
       return new Promise((resolve, reject) => {
         getUserInfo(_id).then(response => {
           const data = response.info
-          const role = ['admin'] // 暂时写死权限
+          const rolesstr = data.role.access
+          const role = rolesstr.split(',')
+          if (role.indexOf('0') >= 0) {
+            role[0] = 'admin'
+          }
           data.birthday = data.birthday * 1000
           commit('SET_USEINFO', data)
           commit('SET_ROLES', role)

@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie'
-
+import store from '../store'
 const TokenKey = 'Admin-Token'
 
 export function getToken() {
@@ -20,4 +20,14 @@ export function setUserid(id) {
 export function removeToken() {
   Cookies.remove('Userid')
   return Cookies.remove(TokenKey)
+}
+
+export function isAccess(what) {
+  const roles = store.getters.roles
+  console.log('查询', roles)
+  if (roles.indexOf('admin') >= 0 || roles.indexOf(what) >= 0) {
+    return true
+  } else {
+    return false
+  }
 }

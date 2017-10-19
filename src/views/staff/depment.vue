@@ -5,7 +5,7 @@
         <span class="mr10 ">
           单位部门结构
         </span>
-        <el-button type="primary" size="mini" @click="dialogFormVisible = true">添加部门</el-button>
+        <el-button type="primary" v-if="isAccess('21')" size="mini" @click="dialogFormVisible = true">添加部门</el-button>
       </div>
       <div class="left-side">
         <div class="grid-content bg-purple">
@@ -43,12 +43,12 @@
             </el-form-item>
             <el-form-item label="部门状态">
               <span class="g6">{{depInfo.status ? '解散':'正常'}}</span>
-              <el-button v-show="firstflg && infoupdate" class="r" type="text" @click="updateDtpsate">{{depInfo.status ? '恢复':'解散'}}</el-button>
+              <el-button  v-show="firstflg && infoupdate&&isAccess('22')" class="r" type="text" @click="updateDtpsate">{{depInfo.status ? '恢复':'解散'}}</el-button>
             </el-form-item>
             <el-form-item label="录入时间">
               <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
             </el-form-item>
-            <el-form-item style="border:none">
+            <el-form-item style="border:none" v-if="isAccess('22')">
               <el-button type="primary" v-show="firstflg" @click="updateInfo">{{infoupdate?'修改':'保存'}}</el-button>
               <el-button v-show="firstflg && infoupdate" @click="updateKaoqing">设置考勤规则</el-button>
               <el-button v-show="!infoupdate" @click="resetForm">取消</el-button>
@@ -77,7 +77,7 @@
                 </el-option>
               </el-select>
               <el-button v-show="!depInfodep.depFlg" class="r ml10" type="text" @click="depInfodep.depFlg=true">取消</el-button>
-              <el-button class="r" type="text" @click="handleUpdatePeInfo">{{depInfodep.depFlg ? '修改' : '保存'}}</el-button>
+              <el-button v-show="isAccess('12')" class="r" type="text" @click="handleUpdatePeInfo">{{depInfodep.depFlg ? '修改' : '保存'}}</el-button>
             </el-form-item>
             <el-form-item label="加入时间">
               <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
@@ -131,8 +131,10 @@
 
 <script>
 import { fetchDepartments, createDep, fetchList, updateDep, updatePeInfo, fetchRoles } from '@/api/department'
-import { TreeUtil, deepClone, sortBy, cleanArray } from '@/utils/index'
+import { TreeUtil, deepClone, sortBy } from '@/utils/index'
+import { isAccess } from '@/utils/auth'
 import { getadcArr } from '@/api/schedule'
+
 import axios from 'axios'
 
 export default {
@@ -216,6 +218,7 @@ export default {
     }
   },
   methods: {
+    isAccess: isAccess,
     handleUpdatePeInfo() { // 修改人员部门
       if (this.depInfodep.depFlg) {
         this.depInfodep._id = this.depInfo.cid

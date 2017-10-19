@@ -98,7 +98,7 @@ export const asyncRouterMap = [
     name: '工作日程',
     icon: 'chart',
     children: [
-      { path: 'index', component: _import('schedule/index'), name: '考勤配置' }
+      { path: 'index', component: _import('schedule/index'), name: '考勤配置', meta: { role: ['40'] }}
     ]
   },
   {
@@ -108,9 +108,9 @@ export const asyncRouterMap = [
     name: '部门管理',
     icon: 'example',
     children: [
-      { path: 'index', component: _import('staff/index'), name: '人员信息' },
-      { path: 'depment', component: _import('staff/depment'), name: '部门信息' },
-      { path: 'duty', component: _import('staff/duty'), name: '职位信息' },
+      { path: 'index', component: _import('staff/index'), name: '人员信息', meta: { role: ['10'] }},
+      { path: 'depment', component: _import('staff/depment'), name: '部门信息', meta: { role: ['20'] }},
+      { path: 'duty', component: _import('staff/duty'), name: '职位信息', meta: { role: ['120'] }},
       { path: 'form/edit', icon: 'form', component: _import('staff/form'), name: '编辑Form', meta: { isEdit: true }},
       { path: 'form/create', icon: 'form', component: _import('staff/form'), name: '创建Form' },
       { path: 'tab/index', icon: 'tab', component: _import('staff/tab/index'), name: 'Tab' }

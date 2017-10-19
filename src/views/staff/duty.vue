@@ -70,7 +70,7 @@ export default {
         name: '',
         accessarr: [],
         access: '',
-        level: ''
+        level: '1'
       },
       listLoading: false,
       infoRules: {
@@ -107,7 +107,7 @@ export default {
         name: '',
         accessarr: [],
         access: '',
-        level: ''
+        level: '1'
       }
     },
     handleUpdate(item) { // 修改职务
@@ -133,7 +133,9 @@ export default {
           if (this.titlea === '添加职务') {
             console.log(this.duty)
             this.$confirm('确认创建当前职务？').then(() => {
-              console.log(this.duty)
+              if (!this.duty.access) {
+                this.duty.access = '0'
+              }
               createRoles(this.duty).then(response => {
                 this.dialogFormVisible = false
                 this.getaccArray()

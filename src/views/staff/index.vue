@@ -61,7 +61,7 @@
           <span>{{scope.row.role_name}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="190">
+      <el-table-column align="center" label="操作" width="190" v-if="isAccess('12')">
         <template scope="scope">
           <el-button size="small" type="success" @click="handleUpdateDa(scope.row)">修改
           </el-button>
@@ -130,6 +130,7 @@
 <script>
 import { fetchList, fetchDepartments, fetchRoles, updatePeInfo } from '@/api/department'
 import { validateMblNo, validateIdNum } from '@/utils/validate'
+import { isAccess } from '@/utils/auth'
 export default {
   data() {
     const validateUserIdNum = (rule, value, callback) => {
@@ -200,6 +201,7 @@ export default {
     this.getList()
   },
   methods: {
+    isAccess: isAccess,
     handleSizeChange(val) {
       console.log(`每页 ${val} 条`)
     },
