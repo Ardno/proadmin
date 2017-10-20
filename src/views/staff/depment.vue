@@ -300,6 +300,11 @@ export default {
       }).then(() => {
         updateDep(data).then(response => {
           this.loadDps()
+          if (this.depInfo.status) {
+            this.depInfo.status = 0
+          } else {
+            this.depInfo.status = 1
+          }
           this.$message({
             message: '修改成功',
             type: 'success',
@@ -582,8 +587,9 @@ body,
     top: 35px;
     left: 0px;
     width: 400px;
-    min-height: calc(100% - 33px);
+    height: calc(100% - 33px);
     border-right: 1px solid #dbdbdb;
+    overflow: auto;
   }
   .rt-ct {
     padding: 30px;
