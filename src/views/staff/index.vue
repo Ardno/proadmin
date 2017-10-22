@@ -1,6 +1,6 @@
 <template>
   <div class="app-container calendar-list-container">
-    <div class="filter-container">
+    <div class="layui-elem-quote">
       <el-autocomplete class="inline-input vt" v-model="listQuery.department" :fetch-suggestions="querySearch" placeholder="请输入部门" :trigger-on-focus="false" @select="handleSelect"></el-autocomplete>
       <el-select clearable class="filter-item" style="width: 130px" v-model="listQuery.roleid" placeholder="职位">
         <el-option v-for="item in  solerr" :key="item._id" :label="item.name" :value="item._id">

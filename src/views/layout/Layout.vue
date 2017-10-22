@@ -5,18 +5,20 @@
 			<navbar></navbar>
 			<app-main></app-main>
 		</div>
+		<chat></chat>
 	</div>
 </template>
 
 <script>
-import { Navbar, Sidebar, AppMain } from 'views/layout'
+import { Navbar, Sidebar, AppMain, chat } from 'views/layout'
 
 export default {
   name: 'layout',
   components: {
     Navbar,
     Sidebar,
-    AppMain
+    AppMain,
+    chat
   },
   computed: {
     sidebar() {

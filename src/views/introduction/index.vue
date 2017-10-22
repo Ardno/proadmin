@@ -136,7 +136,7 @@ export default {
   }
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
   html,body,#app,.main-container,.app-container{
     height: 100%;
   }

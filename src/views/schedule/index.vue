@@ -2,7 +2,7 @@
   <div class="app-container">
     <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
       <el-tab-pane label="考勤规则" name="first">
-        <div class="filter-container">
+        <div class="layui-elem-quote">
           <span class="f16">考勤规则记录表</span>
           <el-button class="filter-item" type="primary" icon="plus" @click="addruleadc" v-if="isAccess('41')">添加</el-button>
         </div>

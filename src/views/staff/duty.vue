@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
+    <div class="layui-elem-quote">
       <span class="f16">所有职务</span>
       <el-button class="filter-item" type="primary" icon="plus" @click="addAccess"> 添加</el-button>
     </div>

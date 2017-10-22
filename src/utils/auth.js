@@ -24,7 +24,6 @@ export function removeToken() {
 
 export function isAccess(what) {
   const roles = store.getters.roles
-  console.log('查询', roles)
   if (roles.indexOf('admin') >= 0 || roles.indexOf(what) >= 0) {
     return true
   } else {

@@ -1,90 +1,98 @@
 <template>
   <div class="app-container">
     <div class="lr-ct">
-      <div class="bbd pt5 pb5">
+      <div class="layui-elem-quote">
         <span class="mr10 ">
           单位部门结构
         </span>
-        <el-button type="primary" v-if="isAccess('21')" size="mini" @click="dialogFormVisible = true">添加部门</el-button>
+        <el-button type="primary" v-if="isAccess('21')" size="mini"  @click="dialogFormVisible = true">添加部门</el-button>
       </div>
       <div class="left-side">
         <div class="grid-content bg-purple">
-          <el-tree :data="depList" :props="defaultProps" node-key="id" default-expand-all :expand-on-click-node="false" :render-content="renderContent">
+          <el-tree :data="depList" :props="defaultProps" node-key="id" :expand-on-click-node="false"  :render-content="renderContent">
           </el-tree>
         </div>
       </div>
-      <el-col class="rt-ct">
+      <div class="rt-ct">
         <div class="grid-content bg-purple-light">
-          <h4 v-show="infotype" class="n g3 pt10 pb10">单位或机构信息</h4>
-          <h4 v-show="!infotype" class="n g3 pt10 pb10">单位人员信息 </h4>
-          <el-form v-if="infotype" :key="'1'" label-position="top" label-width="80px" :rules="infodepRules" ref="depUpateFrom" :model="depInfo" v-loading="fromloading" class="w400 pl10 cusfom">
-            <el-form-item label="部门名称" prop="name">
-              <span v-if="infoupdate" class="g6">{{depInfo.name}}</span>
-              <el-input v-else v-model="depInfo.name"></el-input>
-            </el-form-item>
-            <el-form-item label="上级部门">
-              <span v-if="infoupdate" class="g6">{{depFilter(depInfo.parent)}}</span>
-              <el-select v-else class="filter-item" v-model="depInfo.parent" placeholder="请选择">
-                <el-option v-for="item in  depmenArr" :key="item._id" :label="item.name" :value="item._id">
-                </el-option>
-              </el-select>
-            </el-form-item>
-            <el-form-item label="描述信息">
-              <span v-if="infoupdate" class="g6">{{depInfo.info ? depInfo.info:'暂无描述信息'}}</span>
-              <el-input v-else v-model="depInfo.info"></el-input>
-            </el-form-item>
-            <el-form-item label="部门链接">
-              <span v-if="infoupdate" class="g6">{{depInfo.infoLink ? depInfo.infoLink:'暂无链接'}}</span>
-              <el-input v-else v-model="depInfo.infoLink"></el-input>
-            </el-form-item>
-            <el-form-item label="部门人数">
-              <span class="g6">{{depInfo.count ? depInfo.count:'暂无人员'}}</span>
-              <el-button v-show="firstflg && infoupdate && depInfo.count" class="r" type="text" @click="getDepPepArr(depInfo._id)">查看人员结构</el-button>
-            </el-form-item>
-            <el-form-item label="部门状态">
-              <span class="g6">{{depInfo.status ? '解散':'正常'}}</span>
-              <el-button  v-show="firstflg && infoupdate&&isAccess('22')" class="r" type="text" @click="updateDtpsate">{{depInfo.status ? '恢复':'解散'}}</el-button>
-            </el-form-item>
-            <el-form-item label="录入时间">
-              <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
-            </el-form-item>
-            <el-form-item style="border:none" v-if="isAccess('22')">
-              <el-button type="primary" v-show="firstflg" @click="updateInfo">{{infoupdate?'修改':'保存'}}</el-button>
-              <el-button v-show="firstflg && infoupdate" @click="updateKaoqing">设置考勤规则</el-button>
-              <el-button v-show="!infoupdate" @click="resetForm">取消</el-button>
-            </el-form-item>
-          </el-form>
-          <el-form v-else label-position="left" label-width="80px" :model="depInfo" v-loading="fromloading" class="w400 pl10 cusfom">
-            <el-form-item label="姓名">
-              <span class="g6">{{depInfo.name}}</span>
-            </el-form-item>
-            <el-form-item label="姓别">
-              <span class="g6">{{depInfo.sex ? '女':'男'}}</span>
-            </el-form-item>
-            <el-form-item label="民族">
-              <span class="g6">{{depInfo.nation}}</span>
-            </el-form-item>
-            <el-form-item label="手机号码">
-              <span class="g6">{{depInfo.mobile}}</span>
-            </el-form-item>
-            <el-form-item label="生日">
-              <span class="g6">{{depInfo.birthday | parseTime('{y}-{m}-{d}')}}</span>
-            </el-form-item>
-            <el-form-item label="部门">
-              <span v-if="depInfodep.depFlg" class="g6">{{depInfo.dept_name ? depInfo.dept_name:'暂无部门'}}</span>
-              <el-select v-else class="filter-item" v-model="depInfodep.department_id" placeholder="请选择">
-                <el-option v-for="item in  depmenArr" :key="item._id" :label="item.name" :value="item._id">
-                </el-option>
-              </el-select>
-              <el-button v-show="!depInfodep.depFlg" class="r ml10" type="text" @click="depInfodep.depFlg=true">取消</el-button>
-              <el-button v-show="isAccess('12')" class="r" type="text" @click="handleUpdatePeInfo">{{depInfodep.depFlg ? '修改' : '保存'}}</el-button>
-            </el-form-item>
-            <el-form-item label="加入时间">
-              <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
-            </el-form-item>
-          </el-form>
+          <el-card class="box-card auto">
+            <div slot="header" class="clearfix">
+              <h4 v-show="infotype" class="n g3 pt10 pb10">单位或机构信息</h4>
+              <h4 v-show="!infotype" class="n g3 pt10 pb10">单位人员信息 </h4>
+            </div>
+            <el-form v-if="infotype" :key="'1'" label-position="top" label-width="80px" :rules="infodepRules" ref="depUpateFrom" :model="depInfo" v-loading="fromloading" class=" pl10 cusfom">
+              <el-form-item label="部门名称" prop="name">
+                <span v-if="infoupdate" class="g6">{{depInfo.name}}</span>
+                <el-input v-else v-model="depInfo.name"></el-input>
+              </el-form-item>
+              <el-form-item label="上级部门">
+                <span v-if="infoupdate" class="g6">{{depFilter(depInfo.parent)}}</span>
+                <el-select v-else class="filter-item" v-model="depInfo.parent" placeholder="请选择">
+                  <el-option v-for="item in  depmenArr" :key="item._id" :label="item.name" :value="item._id">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="描述信息">
+                <span v-if="infoupdate" class="g6">{{depInfo.info ? depInfo.info:'暂无描述信息'}}</span>
+                <el-input v-else v-model="depInfo.info"></el-input>
+              </el-form-item>
+              <el-form-item label="部门链接">
+                <span v-if="infoupdate" class="g6">{{depInfo.infoLink ? depInfo.infoLink:'暂无链接'}}</span>
+                <el-input v-else v-model="depInfo.infoLink"></el-input>
+              </el-form-item>
+              <el-form-item label="部门人数">
+                <span class="g6">{{depInfo.count ? depInfo.count:'暂无人员'}}</span>
+                <el-button v-show="firstflg && infoupdate && depInfo.count" class="r" type="text" @click="getDepPepArr(depInfo._id)">查看人员结构</el-button>
+              </el-form-item>
+              <el-form-item label="部门状态">
+                <span class="g6">{{depInfo.status ? '解散':'正常'}}</span>
+                <el-tooltip class="item" effect="dark" content="修改部门的状态" placement="right">
+                  <el-button  v-show="firstflg && infoupdate&&isAccess('22')" class="r" type="text" @click="updateDtpsate">{{depInfo.status ? '恢复':'解散'}}</el-button>
+                </el-tooltip>
+              </el-form-item>
+              <el-form-item label="录入时间">
+                <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+              </el-form-item>
+              <el-form-item style="border:none" v-if="isAccess('22')">
+                <el-button type="primary" v-show="firstflg" @click="updateInfo">{{infoupdate?'修改':'保存'}}</el-button>
+                <el-button v-show="firstflg && infoupdate" @click="updateKaoqing">设置考勤规则</el-button>
+                <el-button v-show="!infoupdate" @click="resetForm">取消</el-button>
+              </el-form-item>
+            </el-form>
+            <el-form v-else label-position="left" label-width="80px" :model="depInfo" v-loading="fromloading" class=" pl10 cusfom">
+              <el-form-item label="姓名">
+                <span class="g6">{{depInfo.name}}</span>
+              </el-form-item>
+              <el-form-item label="姓别">
+                <span class="g6">{{depInfo.sex ? '女':'男'}}</span>
+              </el-form-item>
+              <el-form-item label="民族">
+                <span class="g6">{{depInfo.nation}}</span>
+              </el-form-item>
+              <el-form-item label="手机号码">
+                <span class="g6">{{depInfo.mobile}}</span>
+              </el-form-item>
+              <el-form-item label="生日">
+                <span class="g6">{{depInfo.birthday | parseTime('{y}-{m}-{d}')}}</span>
+              </el-form-item>
+              <el-form-item label="部门">
+                <span v-if="depInfodep.depFlg" class="g6">{{depInfo.dept_name ? depInfo.dept_name:'暂无部门'}}</span>
+                <el-select v-else class="filter-item" v-model="depInfodep.department_id" placeholder="请选择">
+                  <el-option v-for="item in  depmenArr" :key="item._id" :label="item.name" :value="item._id">
+                  </el-option>
+                </el-select>
+                <el-button v-show="!depInfodep.depFlg" class="r ml10" type="text" @click="depInfodep.depFlg=true">取消</el-button>
+                <el-tooltip class="item" effect="dark" content="修改用户所在的部门" placement="right">
+                  <el-button v-show="isAccess('12')" class="r" type="text" @click="handleUpdatePeInfo">{{depInfodep.depFlg ? '修改' : '保存'}}</el-button>
+                </el-tooltip>
+              </el-form-item>
+              <el-form-item label="加入时间">
+                <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+              </el-form-item>
+            </el-form>
+          </el-card>
         </div>
-      </el-col>
+      </div>
     </div>
     <el-dialog title="添加部门" :visible.sync="dialogFormVisible" size="tiny">
       <el-form class="small-space" :model="depmentinfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="80px">
@@ -417,6 +425,7 @@ export default {
       setTimeout(() => {
         this.fromloading = false
       }, 400)
+      return false
     },
     renderContent(h, { node, data, store }) {
       if (data.cid) {
@@ -557,7 +566,7 @@ export default {
   }
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
 html,
 body,
 #app,
@@ -584,7 +593,7 @@ body,
   min-height: 100%;
   .left-side {
     position: absolute;
-    top: 35px;
+    top: 62px;
     left: 0px;
     width: 400px;
     height: calc(100% - 33px);
@@ -601,4 +610,7 @@ body,
 .cusfom .el-form-item {
   border-bottom: 1px solid #edf1f2;
 }
+.box-card {
+    width: 600px;
+  }
 </style>
