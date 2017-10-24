@@ -3,6 +3,7 @@
     <textarea class='tinymce-textarea' :id="tinymceId"></textarea>
     <div class="editor-custom-btn-container">
      <editorImage  color="#20a0ff" class="editor-upload-btn" @successCBK="imageSuccessCBK"></editorImage>
+     <el-button class="filter-item" @click="insertContent('{{name}}')" type="primary" icon="plus">设置</el-button>
       </div>
   </div>
 </template>
@@ -25,7 +26,7 @@ export default {
       type: Array,
       required: false,
       default() {
-        return ['removeformat undo redo |  bullist numlist | outdent indent | forecolor | fullscreen code', 'bold italic blockquote | h2 p  media link | alignleft aligncenter alignright']
+        return ['table removeformat undo redo |  bullist numlist | outdent indent | forecolor | fullscreen code', 'bold italic blockquote | h2 p  media link | alignleft aligncenter alignright']
       }
     },
     menubar: {
@@ -57,10 +58,20 @@ export default {
       selector: `#${this.tinymceId}`,
       height: this.height,
       body_class: 'panel-body ',
+      language: 'zh_CN',
       object_resizing: false,
-      toolbar: this.toolbar,
+      // toolbar: this.toolbar,
       menubar: this.menubar,
-      plugins: 'advlist,autolink,code,paste,textcolor, colorpicker,fullscreen,link,lists,media,wordcount, imagetools',
+      plugins: [
+        'advlist autolink autosave link image lists charmap print preview hr anchor pagebreak',
+        'searchreplace wordcount visualblocks visualchars code fullscreen insertdatetime media nonbreaking',
+        'table contextmenu directionality emoticons template textcolor paste fullpage textcolor colorpicker textpattern'
+      ],
+
+      toolbar1: 'newdocument fullpage | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | styleselect formatselect fontselect fontsizeselect',
+      toolbar2: 'cut copy paste | searchreplace | bullist numlist | outdent indent blockquote | undo redo | link unlink anchor image media code | insertdatetime preview | forecolor backcolor',
+      toolbar3: 'table | hr removeformat | subscript superscript | charmap emoticons | print fullscreen | ltr rtl | visualchars visualblocks nonbreaking template pagebreak restoredraft',
+      // plugins: 'advlist,table,autolink,code,paste,textcolor, colorpicker,fullscreen,link,lists,media,wordcount, imagetools',
       end_container_on_empty_block: true,
       powerpaste_word_import: 'clean',
       code_dialog_height: 450,
@@ -153,8 +164,13 @@ export default {
     imageSuccessCBK(arr) {
       const _this = this
       arr.forEach(v => {
-        window.tinymce.get(_this.tinymceId).insertContent(`<img class="wscnph" src="${v.url}" >`)
+        window.tinymce.get(_this.tinymceId).insertContent(`<img class='wscnph' src='${v.url}' >`)
       })
+    },
+    insertContent(str) {
+      const _this = this
+      console.log()
+      window.tinymce.get(_this.tinymceId).insertContent(str)
     }
   },
   destroyed() {
@@ -165,7 +181,7 @@ export default {
 
 <style scoped>
 .tinymce-container {
-  position: relative
+  position: relative;
 }
 .tinymce-textarea {
   visibility: hidden;

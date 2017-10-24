@@ -8,7 +8,7 @@
             <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
-          <el-button class="filter-item" @click="dialogFormVisible=true;this.titles='添加事件类型'" type="primary" icon="plus">添加类型</el-button>
+          <el-button class="filter-item" @click="dialogFormVisible=true;titles='添加事件类型'" type="primary" icon="plus">添加类型</el-button>
         </div>
         <!-- table -->
         <el-table :key='tableKey' :data="eventArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
@@ -52,7 +52,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="事件类型名称" prop="name">
-          <el-input v-model="eventInfo.name" maxlength="30"></el-input>
+          <el-input v-model="eventInfo.name" :maxlength="30"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">

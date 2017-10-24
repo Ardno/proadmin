@@ -82,11 +82,12 @@ const user = {
       return new Promise((resolve, reject) => {
         getUserInfo(_id).then(response => {
           const data = response.info
-          const rolesstr = data.role.access
-          const role = rolesstr.split(',')
-          if (role.indexOf('0') >= 0) {
-            role[0] = 'admin'
-          }
+          // const rolesstr = data.role_id
+          // const role = rolesstr.split(',')
+          // if (role.indexOf('1') >= 0) {
+          //   role[0] = 'admin'
+          // }
+          const role = ['admin']
           data.birthday = data.birthday * 1000
           commit('SET_USEINFO', data)
           commit('SET_ROLES', role)
