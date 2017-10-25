@@ -1,20 +1,29 @@
 /**
  * Created by jiachenpan on 16/11/18.
  */
-export function parseTime(time, cFormat) {
-  console(time)
+export function parseTime(time, cFormat, flg) {
   if (arguments.length === 0) {
     return null
+  }
+  if (flg) {
+    time = time * 1000
   }
   const format = cFormat || '{y}-{m}-{d} {h}:{i}:{s}'
   let date
   if (typeof time === 'object') {
     date = time
   } else {
-    console(time)
-    if (('' + time).length === 10) time = parseInt(time) * 1000
-    date = new Date(time)
+    date = new Date(parseInt(time))
   }
+  // const format = cFormat || '{y}-{m}-{d} {h}:{i}:{s}'
+  // let date
+  // if (typeof time === 'object') {
+  //   date = time
+  // } else {
+  //   console(time)
+  //   if (('' + time).length === 10) time = parseInt(time) * 1000
+  //   date = new Date(time)
+  // }
   const formatObj = {
     y: date.getFullYear(),
     m: date.getMonth() + 1,

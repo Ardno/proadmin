@@ -576,7 +576,7 @@ body,
 }
 
 .app-container {
-  overflow: hidden;
+  overflow: auto;
 }
 
 .app-main {
@@ -603,7 +603,7 @@ body,
   .rt-ct {
     padding: 30px;
     margin-left: 410px;
-    overflow: hidden;
+    overflow: auto;
   }
 }
 

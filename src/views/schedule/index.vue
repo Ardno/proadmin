@@ -12,39 +12,30 @@
               <span>{{scope.row._id}}</span>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="考勤规则名称">
-            <template scope="scope">
-              <span>{{scope.row.name}}</span>
-            </template>
-          </el-table-column>
           <el-table-column width="180px" align="center" label="创建时间">
             <template scope="scope">
               <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
             </template>
           </el-table-column>
-          <el-table-column label="上午">
-            <el-table-column align="center" label="上班时间">
-              <template scope="scope">
-                <span>{{scope.row.work_morning}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column align="center" label="下班时间">
-              <template scope="scope">
-                <span>{{scope.row.offwork_morning}}</span>
-              </template>
-            </el-table-column>
+          <el-table-column align="center" label="考勤规则名称">
+            <template scope="scope">
+              <span>{{scope.row.name}}</span>
+            </template>
           </el-table-column>
-          <el-table-column label="下午">
-            <el-table-column align="center" label="上班时间">
-              <template scope="scope">
-                <span>{{scope.row.work_afternoon}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column align="center" label="下班时间">
-              <template scope="scope">
-                <span>{{scope.row.ofwork_afternoon}}</span>
-              </template>
-            </el-table-column>
+          <el-table-column align="center" label="执行日期">
+            <template scope="scope">
+              <span>{{scope.row.atte_type | statusFilter(scope.row.day_time)}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" label="上班时间">
+            <template scope="scope">
+              <span>{{scope.row.start_time}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" label="下班时间">
+            <template scope="scope">
+              <span>{{scope.row.end_time}}</span>
+            </template>
           </el-table-column>
           <el-table-column align="center" label="操作" width="190">
             <template scope="scope">
@@ -56,23 +47,15 @@
         </el-table>
         <el-dialog :title="titlea" @close="closeCalla" :visible.sync="dialogFormVisiblea">
           <el-form class="small-space" :model="dataa" :rules="infoRulesa" ref="infoForma" label-position="left" label-width="120px" style='width: 400px; margin-left:50px;'>
-            <el-form-item label="姓名" prop="name">
+            <el-form-item label="规则名称" prop="name">
               <el-input v-model="dataa.name"></el-input>
             </el-form-item>
-            <el-form-item label="上午上班时间" prop="work_morning">
-              <el-time-select placeholder="开始时间" :editable="false" :clearable="false" v-model="dataa.work_morning" :picker-options="{start: '06:00',step: '00:15',end: '18:00'}">
+            <el-form-item label="上班时间" prop="work_morning">
+              <el-time-select placeholder="开始时间" :editable="false" :clearable="false" v-model="dataa.start_time" >
               </el-time-select>
             </el-form-item>
-            <el-form-item label="上午下班时间" prop="offwork_morning">
-              <el-time-select placeholder="结束时间" :editable="false" :clearable="false" v-model="dataa.offwork_morning" :picker-options="{start: dataa.work_morning,step: '00:15',end: '18:00',minTime: dataa.work_morning}">
-              </el-time-select>
-            </el-form-item>
-            <el-form-item label="下午上班时间" prop="work_afternoon">
-              <el-time-select placeholder="开始时间" :editable="false" :clearable="false" v-model="dataa.work_afternoon" :picker-options="{start: dataa.offwork_morning,step: '00:15',end: '23:00',minTime: dataa.offwork_morning}">
-              </el-time-select>
-            </el-form-item>
-            <el-form-item label="下午下班时间" prop="ofwork_afternoon">
-              <el-time-select placeholder="结束时间" :editable="false" :clearable="false" v-model="dataa.ofwork_afternoon" :picker-options="{start: dataa.work_afternoon,step: '00:15',end: '24:00',minTime: dataa.work_afternoon}">
+            <el-form-item label="下班时间" prop="offwork_morning">
+              <el-time-select placeholder="结束时间" :editable="false" :clearable="false" v-model="dataa.end_time" >
               </el-time-select>
             </el-form-item>
           </el-form>
@@ -92,6 +75,8 @@
 import { getadcArr, addAdc, updateAdc } from '@/api/schedule'
 import { deepClone } from '@/utils/index'
 import { isAccess } from '@/utils/auth'
+import { parseTime } from '@/utils/index'
+
 export default {
   data() {
     return {
@@ -104,26 +89,30 @@ export default {
       dialogFormVisiblea: false,
       infoRulesa: {
         name: [{ required: true, message: '请输入规则名', trigger: 'blur' }],
-        work_morning: [{ required: true, message: '请选择上午上班时间', trigger: 'blur' }],
-        offwork_morning: [{ required: true, message: '请选择上午下班时间', trigger: 'blur' }],
-        work_afternoon: [{ required: true, message: '请选择下午上班时间', trigger: 'blur' }],
-        ofwork_afternoon: [{ required: true, message: '请选择下午下班时间', trigger: 'blur' }]
+        start_time: [{ required: true, message: '请选择上班时间', trigger: 'blur' }],
+        end_time: [{ required: true, message: '请选择下班时间', trigger: 'blur' }]
       },
       dataa: {
         name: '',
-        work_morning: '',
-        offwork_morning: '',
-        work_afternoon: '',
-        ofwork_afternoon: ''
+        start_time: '',
+        end_time: '',
+        region_id: null,
+        atte_type: 1,
+        day_time: ''
       }
     }
   },
   filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'gray',
-        deleted: 'danger'
+    statusFilter(status, time) {
+      const statusMap = ['', '每天', '工作日', '指定日期']
+      if (status === 3) {
+        const timearr = time.split(',')
+        const arr = []
+        timearr.forEach(function(element) {
+          element = parseTime(Number(element), '{y}-{m}-{d}', true)
+          arr.push(element)
+        }, this)
+        return arr.join(',')
       }
       return statusMap[status]
     }
@@ -138,10 +127,11 @@ export default {
       this.titlea = '添加规则'
       this.dataa = {
         name: '',
-        work_morning: '',
-        offwork_morning: '',
-        work_afternoon: '',
-        ofwork_afternoon: ''
+        start_time: '',
+        end_time: '',
+        region_id: null,
+        atte_type: 1,
+        day_time: ''
       }
     },
     handleClick(tab, event) { // tab切换
@@ -204,8 +194,9 @@ export default {
     }, //
     getadcArray() { // 获取考勤规则集合
       this.listLoading = true
-      getadcArr().then(response => {
-        this.adclist = response.info
+      getadcArr({ start_index: 0, end_index: 1000 }).then(response => {
+        this.adclist = response.info.list
+        this.adclist.reverse()
         this.listLoading = false
       }).catch(() => { this.listLoading = false })
     }

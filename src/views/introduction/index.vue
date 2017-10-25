@@ -13,7 +13,11 @@
             <ul>
              <li>
                <h3>部门 </h3>
-               <p>{{temp.department.name}}</p>
+               <p> 
+                 <span v-for=" (item,index) in temp.department_roles" :key="item._id">
+                 <span v-if="index>0">,</span>{{item.deptname}} 
+                 </span> 
+                </p>
              </li>
              <li>
                <h3>姓名</h3>
