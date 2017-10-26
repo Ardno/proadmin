@@ -46,17 +46,33 @@
           </el-table-column>
         </el-table>
         <el-dialog :title="titlea" @close="closeCalla" :visible.sync="dialogFormVisiblea">
-          <el-form class="small-space" :model="dataa" :rules="infoRulesa" ref="infoForma" label-position="left" label-width="120px" style='width: 400px; margin-left:50px;'>
+          <el-form class="small-space" :model="dataa" :rules="infoRulesa" ref="infoForma" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
             <el-form-item label="规则名称" prop="name">
               <el-input v-model="dataa.name"></el-input>
             </el-form-item>
-            <el-form-item label="上班时间" prop="work_morning">
-              <el-time-select placeholder="开始时间" :editable="false" :clearable="false" v-model="dataa.start_time" >
+            <el-form-item label="上班时间" prop="start_time">
+              <el-time-select v-model="dataa.start_time" :picker-options="{start: '00:00',step: '00:15',end: '23:45'}" placeholder="开始时间">
               </el-time-select>
             </el-form-item>
-            <el-form-item label="下班时间" prop="offwork_morning">
-              <el-time-select placeholder="结束时间" :editable="false" :clearable="false" v-model="dataa.end_time" >
+            <el-form-item label="下班时间" prop="end_time">
+              <el-time-select v-model="dataa.end_time" :picker-options="{start: '00:00',step: '00:15',end: '23:45'}" placeholder="结束时间">
               </el-time-select>
+            </el-form-item>
+            <!-- <el-form-item label="所在区域" >
+              <el-select  v-model="dataa.region_id" placeholder="请选择">
+                <el-option>
+                </el-option>
+              </el-select>
+            </el-form-item> -->
+            <el-form-item label="执行类型" >
+              <el-select  v-model="dataa.atte_type" placeholder="请选择">
+                <el-option v-for="item in statusArr" :key="item.id" :label="item.text" :value="item.id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item label="执行日期" v-if="dataa.atte_type === 3">
+              <el-date-picker v-model="dataa.day_time" type="date" :editable="false" :clearable="false" placeholder="请选择">
+              </el-date-picker>
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
@@ -85,19 +101,19 @@ export default {
       listLoading: false,
       tableKey: 0,
       titlea: '',
-      value2: new Date(2016, 9, 10, 18, 40),
       dialogFormVisiblea: false,
       infoRulesa: {
         name: [{ required: true, message: '请输入规则名', trigger: 'blur' }],
         start_time: [{ required: true, message: '请选择上班时间', trigger: 'blur' }],
         end_time: [{ required: true, message: '请选择下班时间', trigger: 'blur' }]
       },
+      statusArr: [{ id: 1, text: '每天' }, { id: 2, text: '工作日' }, { id: 3, text: '指定日期' }],
       dataa: {
         name: '',
         start_time: '',
         end_time: '',
-        region_id: null,
-        atte_type: 1,
+        region_id: 1,
+        atte_type: 2,
         day_time: ''
       }
     }
@@ -129,8 +145,8 @@ export default {
         name: '',
         start_time: '',
         end_time: '',
-        region_id: null,
-        atte_type: 1,
+        region_id: 1,
+        atte_type: 2,
         day_time: ''
       }
     },
@@ -140,11 +156,15 @@ export default {
     handleUpdateDa(item) { // 修改考勤规则
       this.titlea = '修改考勤规则'
       this.dataa = deepClone(item)
+      this.dataa.day_time = Number(this.dataa.day_time) * 1000
       this.dialogFormVisiblea = true
     },
     handleAddUpdate() { // 添加修改考勤规则
       this.$refs.infoForma.validate(valid => {
         if (valid) {
+          if (this.dataa.day_time) {
+            this.dataa.day_time = Math.round(new Date(this.dataa.day_time).getTime() / 1000)
+          }
           if (this.titlea === '添加规则') {
             addAdc(this.dataa).then(response => {
               this.dialogFormVisiblea = false

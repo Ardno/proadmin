@@ -20,7 +20,7 @@
               <h4 v-show="infotype" class="n g3 pt10 pb10">单位或机构信息</h4>
               <h4 v-show="!infotype" class="n g3 pt10 pb10">单位人员信息 </h4>
             </div>
-            <el-form v-if="infotype" :key="'1'" label-position="top" label-width="80px" :rules="infodepRules" ref="depUpateFrom" :model="depInfo" v-loading="fromloading" class=" pl10 cusfom">
+            <el-form v-if="infotype" :key="'1'" label-position="left" label-width="80px" :rules="infodepRules" ref="depUpateFrom" :model="depInfo" v-loading="fromloading" class=" pl10 cusfom">
               <el-form-item label="部门名称" prop="name">
                 <span v-if="infoupdate" class="g6">{{depInfo.name}}</span>
                 <el-input v-else v-model="depInfo.name"></el-input>
@@ -49,6 +49,9 @@
                 <el-tooltip class="item" effect="dark" content="修改部门的状态" placement="right">
                   <el-button  v-show="firstflg && infoupdate&&isAccess('22')" class="r" type="text" @click="updateDtpsate">{{depInfo.status ? '恢复':'解散'}}</el-button>
                 </el-tooltip>
+              </el-form-item>
+              <el-form-item label="考勤规则">
+                <span class="g6">{{ kaoqFiler(depInfo.dance_config_id)}}</span>
               </el-form-item>
               <el-form-item label="录入时间">
                 <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
@@ -99,6 +102,12 @@
         <el-form-item label="上级部门">
           <el-select class="filter-item" v-model="depmentinfo.parent" placeholder="请选择">
             <el-option v-for="item in  restaurants" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="考勤规则">
+          <el-select class="filter-item" v-model="depmentinfo.dance_config_id" placeholder="请选择">
+            <el-option v-for="item in  kaoqingArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -183,7 +192,8 @@ export default {
         parent: '',
         name: '',
         info: '',
-        infoLink: ''
+        infoLink: '',
+        dance_config_id: ''
       },
       dementrule: {
         _id: '',
@@ -209,6 +219,7 @@ export default {
         name: '',
         info: '',
         infoLink: '',
+        dance_config_id: '',
         create_time: '',
         count: 0
       },
@@ -257,8 +268,8 @@ export default {
       })
     },
     getadcArray() { // 获取考勤规则集合
-      getadcArr().then(response => {
-        this.kaoqingArr = response.info
+      getadcArr({ start_index: 0, end_index: 1000 }).then(response => {
+        this.kaoqingArr = response.info.list
       }).catch(() => { })
     },
     updateKaoqing() {
@@ -270,6 +281,7 @@ export default {
     handleUpdateKaq() {
       updateDep(this.dementrule).then(response => {
         this.dialogFormVisiblec = false
+        this.depInfo.dance_config_id = this.dementrule.dance_config_id
         this.loadDps()
         this.$message({
           message: '修改成功',
@@ -326,6 +338,18 @@ export default {
           })
         })
       })
+    },
+    kaoqFiler(val) {
+      for (const key in this.kaoqingArr) {
+        const obj = this.kaoqingArr[key]
+        for (const j in obj) {
+          if (j === '_id') {
+            if (obj[j] === val) {
+              return obj['name']
+            }
+          }
+        }
+      }
     },
     depFilter(val) {
       for (const key in this.restaurants) {
@@ -385,6 +409,7 @@ export default {
         name: '',
         info: '',
         infoLink: '',
+        dance_config_id: '',
         create_time: '',
         count: 0
       }
@@ -421,7 +446,6 @@ export default {
           this.depmenArr.splice(i, 1)
         }
       }
-      console.log(this.depInfo)
       setTimeout(() => {
         this.fromloading = false
       }, 400)
@@ -573,6 +597,7 @@ body,
 .main-container,
 .app-container {
   height: 100%;
+  overflow: hidden;
 }
 
 .app-container {
@@ -580,8 +605,8 @@ body,
 }
 
 .app-main {
-  min-height: auto !important;
-  height: calc(100% - 50px);
+  // min-height: auto !important;
+  // height: calc(100% - 50px);
 }
 
 .el-tree {
@@ -596,7 +621,6 @@ body,
     top: 62px;
     left: 0px;
     width: 400px;
-    height: calc(100% - 33px);
     border-right: 1px solid #dbdbdb;
     overflow: auto;
   }

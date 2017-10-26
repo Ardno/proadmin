@@ -2,7 +2,7 @@
   <div class="app-container calendar-list-container">
     <div class="layui-elem-quote">
       <el-autocomplete class="inline-input vt" v-model="listQuery.department" :fetch-suggestions="querySearch" placeholder="请输入部门" :trigger-on-focus="false" @select="handleSelect"></el-autocomplete>
-      <el-select clearable class="filter-item" style="width: 130px" v-model="listQuery.roleid" placeholder="职位">
+      <el-select clearable class="filter-item" style="width: 130px" v-model="listQuery.role_id" placeholder="职位">
         <el-option v-for="item in  solerr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
@@ -106,7 +106,7 @@
           <el-input v-model="temp.mobile"></el-input>
         </el-form-item>
         <el-form-item label="当前职位">
-          <el-select class="filter-item" v-model="temp.roleid" placeholder="职位">
+          <el-select class="filter-item" v-model="temp.role_id" placeholder="职位">
             <el-option v-for="item in  solerr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
@@ -158,7 +158,7 @@ export default {
       listQuery: {
         department: '',
         department_id: '',
-        roleid: ''
+        role_id: ''
       },
       dialogFormVisible: false,
       list: null,
@@ -172,7 +172,7 @@ export default {
         birthday: '',
         idNum: '',
         mobile: '',
-        roleid: '',
+        role_id: '',
         status: ''
       },
       infoRules: {
