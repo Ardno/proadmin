@@ -63,3 +63,32 @@ export function updatePeInfo(data) { // 修改个人信息
   })
 }
 
+export function queryDepRoles(data) { // 查询人员部门集合
+  return fetch({
+    url: 'department_roles/list',
+    method: 'post',
+    data: data
+  })
+}
+export function updateDepRoles(data) { // 修改人员部门集合
+  return fetch({
+    url: 'department_roles/update',
+    method: 'post',
+    data: data
+  })
+}
+export function deleteDepRoles(data) { // 删除人员部门集合
+  return fetch({
+    url: 'department_roles/delete',
+    method: 'post',
+    data: data
+  })
+}
+export function addDepRoles(data) { // 添加人员部门集合
+  return fetch({
+    url: 'department_roles/add',
+    method: 'post',
+    data: data
+  })
+}
+

@@ -9,9 +9,8 @@
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
     </div>
 
-    <el-table :key='tableKey' :data="list" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
-
-      <el-table-column align="center" label="序号" width="65">
+    <el-table :key='tableKey' :data="list" :default-sort = "{prop: '_id', order: 'ascending'}" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
+      <el-table-column  prop="_id" align="center" label="序号" sortable width="100px">
         <template scope="scope">
           <span>{{scope.row._id}}</span>
         </template>
@@ -79,12 +78,12 @@
     </el-pagination>
     <el-dialog title="修改信息" @close="closeCall" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="temp" :rules="infoRules" ref="infoForm" label-position="left"  label-width="80px" style='width: 400px; margin-left:50px;'>
-        <el-form-item label="部门">
+        <!-- <el-form-item label="部门">
           <el-select class="filter-item" v-model="temp.department_id" placeholder="请选择">
             <el-option v-for="item in  restaurants" :key="item._id" :label="item.value" :value="item._id">
             </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="姓名" prop="name">
           <el-input v-model="temp.name"></el-input>
         </el-form-item>
@@ -105,12 +104,12 @@
         <el-form-item label="手机号码" prop="mobile">
           <el-input v-model="temp.mobile"></el-input>
         </el-form-item>
-        <el-form-item label="当前职位">
+        <!-- <el-form-item label="当前职位">
           <el-select class="filter-item" v-model="temp.role_id" placeholder="职位">
             <el-option v-for="item in  solerr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="当前状态">
           <el-select class="filter-item" v-model="temp.status" placeholder="状态">
             <el-option v-for="item in  statusArr" :key="item.id" :label="item.text" :value="item.id">

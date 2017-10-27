@@ -78,16 +78,12 @@
               <el-form-item label="生日">
                 <span class="g6">{{depInfo.birthday | parseTime('{y}-{m}-{d}')}}</span>
               </el-form-item>
-              <el-form-item label="部门">
-                <span v-if="depInfodep.depFlg" class="g6">{{depInfo.dept_name ? depInfo.dept_name:'暂无部门'}}</span>
-                <el-select v-else class="filter-item" v-model="depInfodep.department_id" placeholder="请选择">
-                  <el-option v-for="item in  depmenArr" :key="item._id" :label="item.name" :value="item._id">
-                  </el-option>
-                </el-select>
-                <el-button v-show="!depInfodep.depFlg" class="r ml10" type="text" @click="depInfodep.depFlg=true">取消</el-button>
-                <el-tooltip class="item" effect="dark" content="修改用户所在的部门" placement="right">
-                  <el-button v-show="isAccess('12')" class="r" type="text" @click="handleUpdatePeInfo">{{depInfodep.depFlg ? '修改' : '保存'}}</el-button>
-                </el-tooltip>
+              <el-form-item  v-for="(pitem,index) in depInfodep.depArr" :label="'部门'+(index+1)" :key="pitem._id">
+                <span class="g6">{{pitem.deptname}}</span>
+                <span class="g6 ml30">（<span class="b">职务：</span>{{pitem.rolename}}）</span>
+                <el-button v-show="isAccess('12') && depInfodep.depArr.length > 1" class="r ml10" type="text" @click="handleUpdatePeInfo('2', pitem)"> 删除</el-button>
+                <el-button v-show="isAccess('12')" class="r ml10" type="text" @click="handleUpdatePeInfo('1',pitem)"> 修改</el-button>
+                <el-button v-show="isAccess('12') && index===0" class="r ml10" type="text" @click="handleUpdatePeInfo('0')"> 添加</el-button>
               </el-form-item>
               <el-form-item label="加入时间">
                 <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
@@ -143,11 +139,39 @@
         <el-button type="primary" @click="dialogFormVisibled = false">确 定</el-button>
       </div>
     </el-dialog>
+    <el-dialog title="用户部门" :visible.sync="dialogFormVisiblee" size="tiny">
+      <el-form class="small-space" :model="depInfodep.department" :rules="infoRulese" ref="infoForme" label-position="right" label-width="100px">
+        <el-form-item label="部门" prop="dep">
+          <el-select v-if="depInfodep.department.department_id" class="filter-item" v-model="depInfodep.department.department_id" placeholder="请选择">
+            <el-option v-for="item in  restaurants" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+          <el-select v-else class="filter-item" v-model="depInfodep.department.department_id" placeholder="请选择">
+            <el-option v-for="item in  depInfodep.restaurants" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="职务" prop="role">
+          <el-select class="filter-item" v-model="depInfodep.department.role_id" placeholder="请选择">
+            <el-option v-for="item in  fetchArr" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="设为主部门" >
+          <el-radio class="radio" v-model="depInfodep.department.is_enable"  :label="1">是</el-radio>
+          <el-radio class="radio" v-model="depInfodep.department.is_enable" :label="0">否</el-radio>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisiblee = false">取 消</el-button>
+        <el-button type="primary" @click="handleUpdatePeInfo('3')">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { fetchDepartments, createDep, fetchList, updateDep, updatePeInfo, fetchRoles } from '@/api/department'
+import { fetchDepartments, createDep, fetchList, updateDep, addDepRoles, fetchRoles, queryDepRoles, updateDepRoles, deleteDepRoles } from '@/api/department'
 import { TreeUtil, deepClone, sortBy } from '@/utils/index'
 import { isAccess } from '@/utils/auth'
 import { getadcArr } from '@/api/schedule'
@@ -188,6 +212,8 @@ export default {
       dialogFormVisible: false,
       dialogFormVisiblec: false,
       dialogFormVisibled: false,
+      dialogFormVisiblee: false,
+      fetchArr: [],
       depmentinfo: {
         parent: '',
         name: '',
@@ -212,6 +238,10 @@ export default {
       infodepRules: {
         name: [{ required: true, trigger: 'blur', validator: validatedepname }]
       },
+      infoRulese: {
+        dep: [{ required: true, trigger: 'blur', message: '请选择部门' }],
+        role: [{ required: true, trigger: 'blur', message: '请选择职务' }]
+      },
       depInfoclone: null,
       depInfo: {
         test: '',
@@ -224,9 +254,14 @@ export default {
         count: 0
       },
       depInfodep: {
-        depFlg: true,
-        _id: '',
-        department_id: ''
+        department: {
+          user_id: '',
+          department_id: '',
+          role_id: '',
+          is_enable: 0
+        },
+        depArr: [],
+        restaurants: []
       },
       depList: [],
       depPepoleList: [],
@@ -238,34 +273,72 @@ export default {
   },
   methods: {
     isAccess: isAccess,
-    handleUpdatePeInfo() { // 修改人员部门
-      if (this.depInfodep.depFlg) {
-        this.depInfodep._id = this.depInfo.cid
-        this.depInfodep.department_id = this.depInfo.department_id
-        this.depInfodep.depFlg = false
-        return
-      }
-      this.$confirm('确定要移动当前人员到该部门？', '修改部门', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'info'
-      }).then(() => {
-        updatePeInfo(this.depInfodep).then(response => {
-          this.loadDps()
-          this.depInfodep.depFlg = true
-          this.$message({
-            message: '修改成功',
-            type: 'success',
-            duration: 4 * 1000
-          })
-        }).catch(() => {
-          this.$message({
-            message: '修改失败，请稍后再试',
-            type: 'error',
-            duration: 4 * 1000
+    handleUpdatePeInfo(type, item) { // 修改人员部门
+      if (type === '2') { // 删除
+        this.$confirm('确定要删除当前部门？', '用户部门', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'info'
+        }).then(() => {
+          deleteDepRoles(this.depInfodep.department).then(response => {
+            this.loadDps()
+            this.$message({
+              message: '删除成功',
+              type: 'success',
+              duration: 4 * 1000
+            })
+          }).catch(() => {
+            this.$message({
+              message: '删除失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
           })
         })
-      })
+      } else if (type === '1') { // 修改
+        this.dialogFormVisiblee = true
+        this.depInfodep.department = item
+      } else if (type === '0') { // 新增
+        this.dialogFormVisiblee = true
+        this.depInfodep.department = {
+          user_id: '',
+          department_id: '',
+          role_id: '',
+          is_enable: 0
+        }
+      } else if (type === '3') {
+        if (this.depInfodep.department.user_id) {
+          updateDepRoles(this.depInfodep.department).then(response => {
+            this.loadDps()
+            this.$message({
+              message: '修改成功',
+              type: 'success',
+              duration: 4 * 1000
+            })
+          }).catch(() => {
+            this.$message({
+              message: '修改失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
+          })
+        } else {
+          addDepRoles(this.depInfodep.department).then(response => {
+            this.loadDps()
+            this.$message({
+              message: '添加成功',
+              type: 'success',
+              duration: 4 * 1000
+            })
+          }).catch(() => {
+            this.$message({
+              message: '添加失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
+          })
+        }
+      }
     },
     getadcArray() { // 获取考勤规则集合
       getadcArr({ start_index: 0, end_index: 1000 }).then(response => {
@@ -398,6 +471,19 @@ export default {
         })
       }
     },
+    queryDepRoles() { // 获取用户的部门集合
+      queryDepRoles({ 'user_id': this.depInfo.cid }).then(response => {
+        this.depInfodep.depArr = response.info
+        this.depInfodep.restaurants = []
+        this.restaurants.forEach(function(element1) {
+          this.depInfodep.depArr.forEach(function(element2) {
+            if (element1['_id'] !== element2['department_id']) {
+              this.depInfodep.restaurants.push(element1)
+            }
+          }, this)
+        }, this)
+      })
+    },
     toview(store, data) {
       this.fromloading = true
       this.firstflg = true
@@ -433,6 +519,7 @@ export default {
       }, this)
       if (this.depInfo.cid) {
         this.infotype = false
+        this.queryDepRoles()
       } else {
         if (this.$refs.depUpateFrom) {
           this.$refs.depUpateFrom.resetFields()
@@ -585,6 +672,9 @@ export default {
     }
   },
   created() {
+    fetchRoles('').then(response => {
+      this.fetchArr = response.info
+    })
     this.loadDps()
     this.getadcArray()
   }
