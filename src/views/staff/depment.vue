@@ -81,9 +81,9 @@
               <el-form-item  v-for="(pitem,index) in depInfodep.depArr" :label="'部门'+(index+1)" :key="pitem._id">
                 <span class="g6">{{pitem.deptname}}</span>
                 <span class="g6 ml30">（<span class="b">职务：</span>{{pitem.rolename}}）</span>
-                <el-button v-show="isAccess('12') && depInfodep.depArr.length > 1" class="r ml10" type="text" @click="handleUpdatePeInfo('2', pitem)"> 删除</el-button>
-                <el-button v-show="isAccess('12')" class="r ml10" type="text" @click="handleUpdatePeInfo('1',pitem)"> 修改</el-button>
-                <el-button v-show="isAccess('12') && index===0" class="r ml10" type="text" @click="handleUpdatePeInfo('0')"> 添加</el-button>
+                <el-button v-show="isAccess('12') && depInfodep.depArr.length > 1" class="r ml10" type="text" @click="handleUpdatePeInfo('2', pitem, index)"> 删除</el-button>
+                <el-button v-show="isAccess('12')" class="r ml10" type="text" @click="handleUpdatePeInfo('1',pitem ,index)"> 修改</el-button>
+                <el-button v-show="isAccess('12') && index===0" class="r ml10" type="text" @click="handleUpdatePeInfo('0',pitem,index)"> 添加</el-button>
               </el-form-item>
               <el-form-item label="加入时间">
                 <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
@@ -142,12 +142,8 @@
     <el-dialog title="用户部门" :visible.sync="dialogFormVisiblee" size="tiny">
       <el-form class="small-space" :model="depInfodep.department" :rules="infoRulese" ref="infoForme" label-position="right" label-width="100px">
         <el-form-item label="部门" prop="dep">
-          <el-select v-if="depInfodep.department.department_id" class="filter-item" v-model="depInfodep.department.department_id" placeholder="请选择">
+          <el-select class="filter-item" v-model="depInfodep.department.department_id" placeholder="请选择">
             <el-option v-for="item in  restaurants" :key="item._id" :label="item.name" :value="item._id">
-            </el-option>
-          </el-select>
-          <el-select v-else class="filter-item" v-model="depInfodep.department.department_id" placeholder="请选择">
-            <el-option v-for="item in  depInfodep.restaurants" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -261,7 +257,7 @@ export default {
           is_enable: 0
         },
         depArr: [],
-        restaurants: []
+        index: 0
       },
       depList: [],
       depPepoleList: [],
@@ -273,15 +269,16 @@ export default {
   },
   methods: {
     isAccess: isAccess,
-    handleUpdatePeInfo(type, item) { // 修改人员部门
+    handleUpdatePeInfo(type, item, index) { // 修改人员部门
       if (type === '2') { // 删除
         this.$confirm('确定要删除当前部门？', '用户部门', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'info'
         }).then(() => {
-          deleteDepRoles(this.depInfodep.department).then(response => {
+          deleteDepRoles(item).then(response => {
             this.loadDps()
+            this.$delete(this.depInfodep.depArr, index)
             this.$message({
               message: '删除成功',
               type: 'success',
@@ -298,26 +295,31 @@ export default {
       } else if (type === '1') { // 修改
         this.dialogFormVisiblee = true
         this.depInfodep.department = item
+        this.depInfodep.index = index
       } else if (type === '0') { // 新增
         this.dialogFormVisiblee = true
+        this.depInfodep.index = index
         this.depInfodep.department = {
-          user_id: '',
+          user_id: item.user_id,
           department_id: '',
           role_id: '',
           is_enable: 0
         }
       } else if (type === '3') {
-        if (this.depInfodep.department.user_id) {
+        if (this.depInfodep.department._id) {
           updateDepRoles(this.depInfodep.department).then(response => {
             this.loadDps()
+            this.dialogFormVisiblee = false
+            this.depInfodep.department = response.info
+            this.$set(this.depInfodep.depArr, this.depInfodep.index, this.depInfodep.department)
             this.$message({
               message: '修改成功',
               type: 'success',
               duration: 4 * 1000
             })
-          }).catch(() => {
+          }).catch(err => {
             this.$message({
-              message: '修改失败，请稍后再试',
+              message: err,
               type: 'error',
               duration: 4 * 1000
             })
@@ -325,6 +327,9 @@ export default {
         } else {
           addDepRoles(this.depInfodep.department).then(response => {
             this.loadDps()
+            this.depInfodep.department = response.info
+            this.depInfodep.depArr.push(this.depInfodep.department)
+            this.dialogFormVisiblee = false
             this.$message({
               message: '添加成功',
               type: 'success',
@@ -349,7 +354,6 @@ export default {
       this.dementrule._id = this.depInfo._id
       this.dementrule.dance_config_id = this.depInfo.dance_config_id
       this.dialogFormVisiblec = true
-      console.log(this.dementrule)
     },
     handleUpdateKaq() {
       updateDep(this.dementrule).then(response => {
@@ -475,13 +479,13 @@ export default {
       queryDepRoles({ 'user_id': this.depInfo.cid }).then(response => {
         this.depInfodep.depArr = response.info
         this.depInfodep.restaurants = []
-        this.restaurants.forEach(function(element1) {
-          this.depInfodep.depArr.forEach(function(element2) {
-            if (element1['_id'] !== element2['department_id']) {
-              this.depInfodep.restaurants.push(element1)
-            }
-          }, this)
-        }, this)
+        // this.restaurants.forEach(function(element1) {
+        //   this.depInfodep.depArr.forEach(function(element2) {
+        //     if (element1['_id'] !== element2['department_id']) {
+        //       this.depInfodep.restaurants.push(element1)
+        //     }
+        //   }, this)
+        // }, this)
       })
     },
     toview(store, data) {
@@ -589,7 +593,6 @@ export default {
           }, this)
           const map = { name: 'label', _id: 'id' }
           const list = deepClone(acct.info)
-          console.log(list)
           list.forEach(function(element) { // 保留父元素id，以便查询信息时用到
             for (const key in element) {
               if (key === 'parent') {
@@ -598,8 +601,12 @@ export default {
             }
           }, this)
           list.push(...data)
-          const tree1 = new TreeUtil(list, '_id', 'parent', map)
-          this.depList = tree1.toTree()
+          try {
+            const tree1 = new TreeUtil(list, '_id', 'parent', map)
+            this.depList = tree1.toTree()
+          } catch (error) {
+            console.log(error)
+          }
         })).catch(() => {
           this.$message({
             message: '获取部门结构失败，请稍后再试',
@@ -635,7 +642,6 @@ export default {
           for (let b = 0; b < data.length; b++) {
             if (datacopy[a]['level'] < data[b]['level']) {
               datacopy[a]['parent'] = data[b]['level']
-              console.log(datacopy[a]['parent'])
               break
             }
           }
@@ -681,18 +687,16 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-html,
-body,
-#app,
-.main-container,
-.app-container {
-  height: 100%;
-  overflow: hidden;
-}
+// #app,
+// .main-container,
+// .app-container {
+//   height: 100%;
+//   overflow: hidden;
+// }
 
-.app-container {
-  overflow: auto;
-}
+// .app-container {
+//   overflow: auto;
+// }
 
 .app-main {
   // min-height: auto !important;
