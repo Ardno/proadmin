@@ -82,7 +82,9 @@ export const asyncRouterMap = [
     name: '工作日程',
     icon: 'chart',
     children: [
-      { path: 'index', component: _import('schedule/index'), name: '考勤配置', meta: { role: ['40'] }}
+      { path: 'index', component: _import('schedule/index'), name: '考勤配置', meta: { role: ['40'] }},
+      { path: 'leave', component: _import('schedule/leave'), name: '请假', meta: { role: ['70'] }},
+      { path: 'shift', component: _import('schedule/shift'), name: '换班', meta: { role: ['60'] }}
     ]
   },
   {

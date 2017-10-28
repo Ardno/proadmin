@@ -4,6 +4,9 @@ module.exports = {
     parserOptions: {
         sourceType: 'module'
     },
+    globals:{
+        AMap:'AMap'
+    },
     env: {
         browser: true,
         node: true,

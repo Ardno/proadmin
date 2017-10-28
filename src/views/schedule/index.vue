@@ -3,7 +3,7 @@
     <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
       <el-tab-pane label="考勤规则" name="first">
         <div class="layui-elem-quote">
-          <span class="f16">考勤规则记录表</span>
+          <span class="f16">考勤规则记录</span>
           <el-button class="filter-item" type="primary" icon="plus" @click="addruleadc" v-if="isAccess('41')">添加</el-button>
         </div>
         <el-table :key='tableKey' :data="adclist" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
@@ -45,6 +45,19 @@
             </template>
           </el-table-column>
         </el-table>
+        <!-- 分页 -->
+        <div class="block pt20 pb20">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page.sync="currentPage"
+            :page-size="pageobj.pagesize"
+            :page-sizes="[1, 2, 3, 4]"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="totalPages">
+          </el-pagination>
+        </div>
+        <!-- 分页 -->
         <el-dialog :title="titlea" @close="closeCalla" :visible.sync="dialogFormVisiblea">
           <el-form class="small-space" :model="dataa" :rules="infoRulesa" ref="infoForma" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
             <el-form-item label="规则名称" prop="name">
@@ -96,6 +109,13 @@ import { parseTime } from '@/utils/index'
 export default {
   data() {
     return {
+      totalPages: 0,
+      currentPage: 1,
+      pageobj: {
+        start_index: 0,
+        length: 2,
+        pagesize: 2
+      },
       activeName: 'first',
       adclist: null,
       listLoading: false,
@@ -214,11 +234,27 @@ export default {
     }, //
     getadcArray() { // 获取考勤规则集合
       this.listLoading = true
-      getadcArr({ start_index: 0, end_index: 1000 }).then(response => {
+      getadcArr(this.pageobj).then(response => {
         this.adclist = response.info.list
-        this.adclist.reverse()
+        this.totalPages = response.info.count
+        // this.adclist.reverse()
         this.listLoading = false
       }).catch(() => { this.listLoading = false })
+    },
+    handleSizeChange(val) {
+      console.log(`每页 ${val} 条`)
+      this.pageobj.pagesize = val
+      this.currentPage = 1
+      this.pageobj.start_index = (this.currentPage - 1) * val
+      this.pageobj.length = val
+      this.getadcArray()
+    },
+    handleCurrentChange(val) {
+      console.log(`当前页: ${val}`)
+      this.currentPage = val
+      this.pageobj.start_index = (this.currentPage - 1) * this.pageobj.pagesize
+      this.pageobj.length = this.pageobj.pagesize
+      this.getadcArray()
     }
   }
 }

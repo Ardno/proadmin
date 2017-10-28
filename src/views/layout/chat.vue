@@ -239,7 +239,7 @@ export default {
   },
   data() {
     return {
-      colseIm: false,
+      colseIm: true,
       searchflg: false,
       closechatck: true,
       activeName: 'first',
