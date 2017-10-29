@@ -22,6 +22,7 @@
 <script>
 import VueAMap from 'vue-amap'
 import SideBar from './sidebar'
+import { getRegionArr } from '@/api/grid'
 const amapManager = new VueAMap.AMapManager()
 export default {
   components: {
@@ -74,18 +75,7 @@ export default {
           }
         }
       }],
-      polygons: [
-        {
-          path: [[121.5273285, 31.21515044], [121.5293285, 31.21515044], [121.5293285, 31.21915044], [121.5273285, 31.21515044]],
-          events: {
-            click: () => {
-              console.log(amapManager)
-              console.log(this.$refs.map.$$getCenter())
-              console.log(this.$refs.polygon_0[0].$$getPath())
-            }
-          }
-        }
-      ],
+      polygons: [],
       markers: [
         {
           position: [121.5273285, 31.21515044],
@@ -126,6 +116,7 @@ export default {
     }
   },
   created() {
+    // 获取当前中心坐标位置并设置图标
     this.geocoder = new AMap.Geocoder({
       radius: 1000,
       extensions: 'all'
@@ -154,6 +145,7 @@ export default {
       }
     }
     loadAMapUI()
+    this.loadInit()
   },
   mounted() {
     this.$nextTick(function() {
@@ -161,6 +153,24 @@ export default {
     })
   },
   methods: {
+    loadInit() { // 初始化加载
+      getRegionArr({ start_index: 0, length: 10000 }).then(response => {
+        const polygons = response.info.list
+        console.log(polygons)
+        // {
+        //   path: [[121.5273285, 31.21515044], [121.5293285, 31.21515044], [121.5293285, 31.21915044], [121.5273285, 31.21515044]],
+        //   editable: false,
+        //     extData:null,
+        //   events: {
+        //     click: () => {
+        //       console.log(amapManager)
+        //       console.log(this.$refs.map.$$getCenter())$$getExtData()
+        //       console.log(this.$refs.polygon_0[0].$$getPath())
+        //     }
+        //   }
+        // }
+      })
+    }
   }
 }
 </script>

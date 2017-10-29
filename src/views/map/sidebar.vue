@@ -1,4 +1,5 @@
 <template>
+  <div>
     <ul class="rightbar">
       <li>
         <el-tooltip class="item" effect="dark" content="刷新地图" placement="left">
@@ -26,10 +27,31 @@
         </el-tooltip>
       </li>
     </ul>
+        <!-- 新增区域 -->
+    <el-dialog :title="regionobj.title" @close="closeCall" :visible.sync="regionobj.dialogFormVisible">
+      <el-form class="small-space" :model="requestAdd" :rules="regionobj.infoRules" ref="infoForm" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
+        <el-form-item label="区域负责人" prop="user_id">
+          <el-select v-model="requestAdd.user_id" filterable placeholder="请选择">
+            <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="区域名称" prop="name">
+          <el-input type="text" v-model="requestAdd.name"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="regionobj.dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="handleAdd">确 定</el-button>
+      </div>
+    </el-dialog>
+  </div>
 </template>
 
 
 <script>
+import { addRegion } from '@/api/grid'
+import { fetchList } from '@/api/department'
 export default {
   name: 'SideBar',
   props: {
@@ -40,10 +62,52 @@ export default {
   data() {
     return {
       _polygonEditor: null,
-      _polygon: null
+      _polygon: null,
+      requestAdd: {
+        user_id: '',
+        name: '',
+        list: []
+      },
+      userArr: [],
+      regionobj: {
+        title: '添加网格区域',
+        dialogFormVisible: false,
+        infoRules: {
+          user_id: [{ type: 'number', required: true, message: '请区域负责人', trigger: 'blur' }],
+          name: [{ required: true, message: '请输入区域名称', trigger: 'blur' }]
+        }
+      }
     }
   },
   methods: {
+    closeCall() {
+      this.$refs.infoForm.resetFields()
+    },
+    handleAdd() {
+      this.$refs.infoForm.validate(valid => {
+        if (valid) {
+          addRegion(this.requestAdd).then(response => {
+            this.regionobj.dialogFormVisible = false
+            this._polygon = null
+            this.$message({
+              message: '添加成功！',
+              type: 'success',
+              duration: 4 * 1000
+            })
+            this.loadshiftsArr()
+          }).catch(() => {
+            this.$message({
+              message: '添加失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
+          })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
+      })
+    },
     addPolygon() {
       const o = this.mapobj.$$getInstance()
       const center = o.getCenter()
@@ -82,9 +146,21 @@ export default {
       if (this._polygonEditor) {
         // const o = this.mapobj.$$getInstance()
         this._polygonEditor.close()
+        this.regionobj.dialogFormVisible = true
+        this.requestAdd.list = this._polygon.getPath()
         console.log(this._polygon.getPath())
       }
+    },
+    loadUser() { // 获取用户集合
+      fetchList().then(response => {
+        if (response.info.length) {
+          this.userArr = response.info
+        }
+      })
     }
+  },
+  created() {
+    this.loadUser()
   }
 }
 </script>
