@@ -5,7 +5,8 @@ module.exports = {
         sourceType: 'module'
     },
     globals:{
-        AMap:'AMap'
+        AMap:'AMap',
+        AMapUI:'AMapUI'
     },
     env: {
         browser: true,
