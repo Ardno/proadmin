@@ -54,14 +54,14 @@ export default new Router({
 
 export const asyncRouterMap = [
   {
-    path: '/permission',
+    path: '/operationlog',
     component: Layout,
-    redirect: '/permission/index',
-    name: '权限测试',
+    redirect: '/operationlog/index',
+    name: '操作日志',
     icon: 'lock',
     meta: { role: ['admin'] },
     noDropdown: true,
-    children: [{ path: 'index', component: _import('permission/index'), name: '权限测试页', meta: { role: ['admin'] }}]
+    children: [{ path: 'index', component: _import('operationlog/index'), name: '操作记录', meta: { role: ['admin'] }}]
   },
   {
     path: '/gridbusiness',

@@ -9,43 +9,43 @@
         <el-button class="filter-item" @click="addShij" type="primary" icon="plus">添加类型</el-button>
     </div>
     <el-table :key='tableKey' :data="eventArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
-        <el-table-column align="center" label="序号" width="65">
-        <template scope="scope">
-            <span>{{scope.row._id}}</span>
-        </template>
-        </el-table-column>
-        <el-table-column align="center" width="180px" label="类型名称">
-        <template scope="scope">
-            <span>{{scope.row.name}}</span>
-        </template>
-        </el-table-column>
-        <el-table-column width="180px" align="center" label="创建时间">
-        <template scope="scope">
-            <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
-        </template>
-        </el-table-column>
-        <el-table-column width="80" label="状态">
-        <template scope="scope">
-            <el-tag v-if="scope.row.status == '0'" type="success">正常</el-tag>
-            <el-tag v-if="scope.row.status == '1'" type="warning">隐藏</el-tag>
-        </template>
-        </el-table-column>
-        <el-table-column align="center" label="部门">
-        <template scope="scope">
-            <span>{{scope.row.deptname}}</span>
-        </template>
-        </el-table-column>
-        <el-table-column align="center" label="步骤">
-        <template scope="scope">
-            <span>{{conversionSteps(scope.row.step_ids)}}</span>
-        </template>
-        </el-table-column>
-        <el-table-column align="center" label="操作" width="190">
-        <template scope="scope">
-            <el-button size="small" type="success" @click="updateshow(scope.row)">修改
-            </el-button>
-        </template>
-        </el-table-column>
+      <el-table-column align="center" label="序号" width="65">
+      <template scope="scope">
+          <span>{{scope.row._id}}</span>
+      </template>
+      </el-table-column>
+      <el-table-column align="center" width="180px" label="类型名称">
+      <template scope="scope">
+          <span>{{scope.row.name}}</span>
+      </template>
+      </el-table-column>
+      <el-table-column width="180px" align="center" label="创建时间">
+      <template scope="scope">
+          <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
+      </template>
+      </el-table-column>
+      <el-table-column width="80" label="状态">
+      <template scope="scope">
+          <el-tag v-if="scope.row.status == '0'" type="success">正常</el-tag>
+          <el-tag v-if="scope.row.status == '1'" type="warning">隐藏</el-tag>
+      </template>
+      </el-table-column>
+      <el-table-column align="center" label="部门">
+      <template scope="scope">
+          <span>{{scope.row.deptname}}</span>
+      </template>
+      </el-table-column>
+      <el-table-column align="center" label="步骤">
+      <template scope="scope">
+          <span>{{conversionSteps(scope.row.step_ids)}}</span>
+      </template>
+      </el-table-column>
+      <el-table-column align="center" label="操作" width="190">
+      <template scope="scope">
+          <el-button size="small" type="success" @click="updateshow(scope.row)">修改
+          </el-button>
+      </template>
+      </el-table-column>
     </el-table>
     <el-dialog :title="titles" :visible.sync="dialogFormVisible" size="tiny">
       <el-form class="small-space" :model="eventInfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="120px">
