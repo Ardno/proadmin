@@ -4,12 +4,21 @@
       <span class="f16">换班记录</span>
       <el-button class="filter-item" type="primary"  @click="addShift" >换班</el-button>
     </div>
-    <!-- <el-autocomplete class="inline-input vt" v-model="listQuery.username" :fetch-suggestions="querySearch" placeholder="请输入用户名" :trigger-on-focus="false"></el-autocomplete>
-    <el-select clearable class="filter-item" style="width: 130px" v-model="listQuery.department_id" placeholder="部门">
-      <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
-      </el-option>
-    </el-select>
-    <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button> -->
+    <div class="mb10">
+      <el-select clearable  v-model="pageobj.user_id" filterable placeholder="请选择用户">
+        <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
+        </el-option>
+      </el-select>
+      <el-select class="filter-item" clearable   v-model="pageobj.change_state" placeholder="状态">
+        <el-option v-for="item in  stateArr" :key="item.id" :label="item.name" :value="item.id">
+        </el-option>
+      </el-select>
+      <el-select class="filter-item" clearable  filterable v-model="pageobj.to_user_id" placeholder="换班人">
+        <el-option v-for="item in  userArr" :key="item._id" :label="item.name" :value="item._id">
+        </el-option>
+      </el-select>
+      <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
+    </div>
     <el-table :key='tableKey' :data="shiftArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="申请时间">
         <template scope="scope">
@@ -45,7 +54,7 @@
           <span>{{scope.row.regionname }}</span>
         </template>
       </el-table-column>
-      <el-table-column  label="申请理由">
+      <el-table-column  min-width="180" label="申请理由">
         <template scope="scope">
           <span>{{scope.row.change_content}}</span>
         </template>
@@ -105,26 +114,38 @@
 
 <script>
 import { fetchList, fetchDepartments } from '@/api/department'
+import { getEventArr } from '@/api/depevent'
 import { getShiftsArr, updateShifts, addShifts } from '@/api/levelshift'
+import { getRegionArr } from '@/api/grid'
 import { isAccess } from '@/utils/auth'
+import store from '@/store'
 export default {
   data() {
     return {
       totalPages: 0,
       currentPage: 1,
       pageobj: {
+        user_id: '',
+        to_user_id: '',
+        change_state: '',
         start_index: 0,
         length: 9,
         pagesize: 10
       },
       listLoading: false,
       tableKey: 0,
-      listQuery: {
-        username: '',
-        department_id: '',
-        start_index: 0,
-        length: 10
-      },
+      stateArr: [
+        {
+          id: 0,
+          name: '待确认'
+        }, {
+          id: 1,
+          name: '同意'
+        }, {
+          id: 2,
+          name: '拒绝'
+        }
+      ],
       requset: {
         work_id: '',
         region_id: '',
@@ -145,6 +166,11 @@ export default {
         disabledDate(time) {
           return time.getTime() < Date.now() - 8.64e7
         }
+      },
+      requesetUser: {
+        start_index: 0,
+        length: 10000,
+        user_id: store.getters.useinfo._id
       },
       shiftArr: [],
       depArr: [],
@@ -175,30 +201,26 @@ export default {
       }
     },
     handleQuery() { // 查询换班集合
-
+      this.pageobj.start_index = 0
+      this.pageobj.length = 9
+      this.loadshiftsArr()
     },
     closeCall() {
       this.$refs.infoForm.resetFields()
     },
-    loadDep() { // 获取用户部门和用户
+    loadDep() { // 获取用户部门和用户 区域
       fetchDepartments().then(response => {
         this.depArr = response.info
       })
       fetchList().then(response => {
-        if (response.info.length) {
-          this.userArr = response.info
-        }
+        this.userArr = response.info
       })
-      // fetchList().then(response => {
-      //   if (response.info.length) {
-      //     this.workArr = response.info
-      //   }
-      // })
-      // fetchList().then(response => {
-      //   if (response.info.length) {
-      //     this.regionArr = response.info
-      //   }
-      // })
+      getRegionArr(this.requesetUser).then(response => {
+        this.regionArr = response.info.list
+      })
+      getEventArr(this.requesetUser).then(response => {
+        this.workArr = response.info.list
+      })
     },
     loadshiftsArr() { // 获取换班列表
       getShiftsArr(this.pageobj).then(response => {

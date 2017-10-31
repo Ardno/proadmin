@@ -4,12 +4,13 @@
       <span class="f16">请假记录</span>
       <el-button class="filter-item" type="primary"  @click="addLeave" >请假</el-button>
     </div>
-    <!-- <el-autocomplete class="inline-input vt" v-model="listQuery.username" :fetch-suggestions="querySearch" placeholder="请输入用户名" :trigger-on-focus="false"></el-autocomplete>
-    <el-select clearable class="filter-item" style="width: 130px" v-model="listQuery.department_id" placeholder="部门">
-      <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
-      </el-option>
-    </el-select>
-    <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button> -->
+    <div class="mb10">
+      <el-select clearable class="filter-item" filterable style="width: 130px" v-model="pageobj.user_id" placeholder="申请用户">
+        <el-option v-for="item in  userArr" :key="item._id" :label="item.name" :value="item._id">
+        </el-option>
+      </el-select>
+      <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
+    </div>
     <el-table :key='tableKey' :data="leaveArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="申请时间">
         <template scope="scope">
@@ -98,16 +99,11 @@ export default {
       pageobj: {
         start_index: 0,
         length: 9,
-        pagesize: 10
+        pagesize: 10,
+        user_id: ''
       },
       listLoading: false,
       tableKey: 0,
-      listQuery: {
-        username: '',
-        department_id: '',
-        start_index: 0,
-        length: 10
-      },
       leaveobj: {
         title: '申请请假',
         dialogFormVisible: false,
@@ -158,22 +154,8 @@ export default {
         }
       })
     },
-    handleQuery() { // 查询请假集合
-
-    },
     closeCall() {
       this.$refs.infoForm.resetFields()
-    },
-    querySearch(queryString, cb) {
-      const userArr = this.userArr
-      const results = queryString ? userArr.filter(this.createFilter(queryString)) : userArr
-      // 调用 callback 返回建议列表的数据
-      cb(results)
-    },
-    createFilter(queryString) {
-      return (restaurant) => {
-        return (restaurant.value.indexOf(queryString.toLowerCase()) === 0)
-      }
     },
     loadDep() { // 获取用户部门和用户
       fetchDepartments().then(response => {
@@ -185,16 +167,17 @@ export default {
           const arrs = []
           array.forEach(function(element) {
             if (!element.status) {
-              const obj = {
-                value: element.name,
-                _id: element._id
-              }
-              arrs.push(obj)
+              arrs.push(element)
             }
           }, this)
           this.userArr = arrs
         }
       })
+    },
+    handleQuery() {
+      this.pageobj.start_index = 0
+      this.pageobj.length = 9
+      this.loadLeavesArr()
     },
     loadLeavesArr() { // 获取请假列表
       getLeavesArr(this.pageobj).then(response => {

@@ -141,13 +141,13 @@
     </el-dialog>
     <el-dialog title="用户部门" :visible.sync="dialogFormVisiblee" size="tiny">
       <el-form class="small-space" :model="depInfodep.department" :rules="infoRulese" ref="infoForme" label-position="right" label-width="100px">
-        <el-form-item label="部门" prop="dep">
-          <el-select class="filter-item" v-model="depInfodep.department.department_id" placeholder="请选择">
+        <el-form-item label="部门" prop="department_id">
+          <el-select class="filter-item" v-model="depInfodep.department.department_id" placeholder="请选择" @visible-change="changeDepRule">
             <el-option v-for="item in  restaurants" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="职务" prop="role">
+        <el-form-item label="职务" prop="role_id">
           <el-select class="filter-item" v-model="depInfodep.department.role_id" placeholder="请选择">
             <el-option v-for="item in  fetchArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
@@ -235,8 +235,8 @@ export default {
         name: [{ required: true, trigger: 'blur', validator: validatedepname }]
       },
       infoRulese: {
-        dep: [{ required: true, trigger: 'blur', message: '请选择部门' }],
-        role: [{ required: true, trigger: 'blur', message: '请选择职务' }]
+        department_id: [{ type: 'number', required: true, trigger: 'blur', message: '请选择部门' }],
+        role_id: [{ type: 'number', required: true, trigger: 'blur', message: '请选择职务' }]
       },
       depInfoclone: null,
       depInfo: {
@@ -294,8 +294,9 @@ export default {
         })
       } else if (type === '1') { // 修改
         this.dialogFormVisiblee = true
-        this.depInfodep.department = item
+        this.depInfodep.department = deepClone(item)
         this.depInfodep.index = index
+        this.changeDepRule('', true)
       } else if (type === '0') { // 新增
         this.dialogFormVisiblee = true
         this.depInfodep.index = index
@@ -306,47 +307,51 @@ export default {
           is_enable: 0
         }
       } else if (type === '3') {
-        if (this.depInfodep.department._id) {
-          updateDepRoles(this.depInfodep.department).then(response => {
-            this.loadDps()
-            this.dialogFormVisiblee = false
-            this.depInfodep.department = response.info
-            this.$set(this.depInfodep.depArr, this.depInfodep.index, this.depInfodep.department)
-            this.$message({
-              message: '修改成功',
-              type: 'success',
-              duration: 4 * 1000
-            })
-          }).catch(err => {
-            this.$message({
-              message: err,
-              type: 'error',
-              duration: 4 * 1000
-            })
-          })
-        } else {
-          addDepRoles(this.depInfodep.department).then(response => {
-            this.loadDps()
-            this.depInfodep.department = response.info
-            this.depInfodep.depArr.push(this.depInfodep.department)
-            this.dialogFormVisiblee = false
-            this.$message({
-              message: '添加成功',
-              type: 'success',
-              duration: 4 * 1000
-            })
-          }).catch(() => {
-            this.$message({
-              message: '添加失败，请稍后再试',
-              type: 'error',
-              duration: 4 * 1000
-            })
-          })
-        }
+        this.$refs.infoForme.validate(valid => {
+          if (valid) {
+            if (this.depInfodep.department._id) {
+              updateDepRoles(this.depInfodep.department).then(response => {
+                this.loadDps()
+                this.dialogFormVisiblee = false
+                this.depInfodep.department = response.info
+                this.$set(this.depInfodep.depArr, this.depInfodep.index, this.depInfodep.department)
+                this.$message({
+                  message: '修改成功',
+                  type: 'success',
+                  duration: 4 * 1000
+                })
+              }).catch(err => {
+                this.$message({
+                  message: err,
+                  type: 'error',
+                  duration: 4 * 1000
+                })
+              })
+            } else {
+              addDepRoles(this.depInfodep.department).then(response => {
+                this.loadDps()
+                this.depInfodep.department = response.info
+                this.depInfodep.depArr.push(this.depInfodep.department)
+                this.dialogFormVisiblee = false
+                this.$message({
+                  message: '添加成功',
+                  type: 'success',
+                  duration: 4 * 1000
+                })
+              }).catch(() => {
+                this.$message({
+                  message: '添加失败，请稍后再试',
+                  type: 'error',
+                  duration: 4 * 1000
+                })
+              })
+            }
+          }
+        })
       }
     },
     getadcArray() { // 获取考勤规则集合
-      getadcArr({ start_index: 0, end_index: 1000 }).then(response => {
+      getadcArr({ start_index: 0, length: 1000 }).then(response => {
         this.kaoqingArr = response.info.list
       }).catch(() => { })
     },
@@ -675,12 +680,23 @@ export default {
           return false
         }
       })
+    },
+    changeDepRule(id, flg) {
+      const request = {
+        start_index: 0,
+        length: 10000,
+        department_id: id || this.depInfodep.department.department_id
+      }
+      fetchRoles(request).then(response => {
+        this.fetchArr = response.info
+        if (id === false && !flg) {
+          this.depInfodep.department.role_id = ''
+        }
+      })
     }
   },
   created() {
-    fetchRoles('').then(response => {
-      this.fetchArr = response.info
-    })
+    this.changeDepRule()
     this.loadDps()
     this.getadcArray()
   }
