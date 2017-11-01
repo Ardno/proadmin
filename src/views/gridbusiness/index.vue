@@ -15,9 +15,9 @@
 </template>
 
 <script>
-import eventType from './eventtype'
-import eventStep from './eventstep'
-import event from './event'
+import eventType from './event/eventtype'
+import eventStep from './event/eventstep'
+import event from './event/event'
 export default {
   components: {
     eventType,

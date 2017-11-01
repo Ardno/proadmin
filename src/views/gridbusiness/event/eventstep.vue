@@ -2,10 +2,11 @@
   <div class="app-container">
     <div class="layui-elem-quote">
         <el-select clearable class="filter-item" style="width: 130px" filterable v-model="pageobj.department_id" placeholder="请选择部门">
-        <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
-        </el-option>
+          <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
+          </el-option>
         </el-select>
         <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
+        <el-button class="filter-item" type="primary" icon="plus">新建</el-button>
     </div>
     <el-table :key='tableKey' :data="eventStepArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="创建时间">
@@ -13,18 +14,18 @@
           <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="deptname" label="所属部门" >
+      <el-table-column prop="deptname" width="180" label="所属部门" >
       </el-table-column>
       <el-table-column prop="name" label="步骤名称" >
       </el-table-column>
-      <el-table-column prop="name" label="审核人" >
+      <el-table-column prop="name" width="180" label="审核人" >
         <template scope="scope">
             <span>{{filetUser(scope.row.role_id_access)}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="190">
         <template scope="scope">
-            <el-button size="small" type="success" @click="updateshow(scope.row)">修改
+            <el-button size="small" type="success" icon="edit" @click="updateshow(scope.row)">编辑
             </el-button>
         </template>
       </el-table-column>
@@ -42,6 +43,9 @@
       </el-pagination>
     </div>
     <!-- 分页 -->
+    <router-link to="editeventstep/123">  
+        显示  
+    </router-link>  
   </div>
 </template>
 

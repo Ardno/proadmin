@@ -68,14 +68,14 @@
         </template>
       </el-table-column>
     </el-table>
-    <el-pagination class="mt20"
+    <!-- <el-pagination class="mt20"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
       :current-page.sync="currentPage1"
       :page-size="100"
       layout="total, prev, pager, next"
       :total="1000">
-    </el-pagination>
+    </el-pagination> -->
     <el-dialog title="修改信息" @close="closeCall" :visible.sync="dialogFormVisible" class="customxing">
       <el-form class="small-space" :model="temp" :rules="infoRules" ref="infoForm" label-position="left"  label-width="80px" style='width: 400px; margin-left:50px;'>
         <!-- <el-form-item label="部门">
