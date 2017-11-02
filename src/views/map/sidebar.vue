@@ -81,7 +81,7 @@ export default {
   },
   methods: {
     reloadMap() {
-      this.$router.go(0)
+      this.$emit('reloadMap', true)
     },
     closeCall() {
       const o = this.mapobj.$$getInstance()
@@ -94,14 +94,13 @@ export default {
         if (valid) {
           addRegion(this.requestAdd).then(response => {
             this.regionobj.dialogFormVisible = false
-            this._polygon = null
+            this.$emit('addRegion', true)
             this.$message({
               message: '添加成功！',
               type: 'success',
               duration: 4 * 1000
             })
-            this.loadshiftsArr()
-          }).catch(() => {
+          }).catch((e) => {
             this.$message({
               message: '添加失败，请稍后再试',
               type: 'error',
@@ -150,17 +149,14 @@ export default {
     },
     completePolygon() {
       if (this._polygonEditor) {
-        // const o = this.mapobj.$$getInstance()
         this._polygonEditor.close()
         this.regionobj.dialogFormVisible = true
         const path = this._polygon.getPath()
         const arr = []
         path.forEach(function(element) {
-          // arr.push({ lat: element.lat, lon: element.lng })
           arr.push([element.lng, element.lat])
         }, this)
-        this.requestAdd.list = arr
-        console.log(arr)
+        this.requestAdd.list = JSON.stringify(arr)
       }
     },
     loadUser() { // 获取用户集合

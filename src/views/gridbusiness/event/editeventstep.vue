@@ -49,15 +49,15 @@
           <el-input style="width: 130px" v-model="para.para_name"></el-input>
           <el-button v-if="index === 0" @click="addPare">新增</el-button>
           <el-button v-show="index !== 0" @click.prevent="removePare(para)">删除</el-button>
-          <el-button @click.prevent="removePare(para)">插入</el-button>
+          <el-button @click.prevent="insertContent('para')">插入</el-button>
         </el-form-item>
         <div>
-          <tinymce :height='500' v-model="content"></tinymce>
+          <tinymce id="tinymce" :height='500' v-model="content"></tinymce>
         </div>
         <div class='editor-content' v-html='content'></div>
+        {{reversedMessage}}
       </div>
     </el-form>
-    {{ this.$route.query.id }}
   </div>
 </template>
 
@@ -96,15 +96,23 @@ export default {
       fetchArr: []
     }
   },
+  computed: {
+    // 计算属性的 getter
+    reversedMessage() {
+      // `this` 指向 vm 实例
+      const str = 'para'
+      const reg = new RegExp('<span style="color: red;" data-mce-style="color: red;">{{' + str + '}}</span>', 'g')
+      return this.content.replace(reg, 'jb51.net')
+    }
+  },
   created() {
     console.log(this.$route.params.id)
     this.init()
   },
   methods: {
     insertContent(str) {
-      const _this = this
-      console.log()
-      window.tinymce.get(_this.tinymceId).insertContent(str)
+      const strHtml = `<span style="color:red;">{{${str}}}</span>`
+      window.tinymce.get('tinymce').insertContent(strHtml)
     },
     removePare(item) { // 移除参数
       var index = this.postForm.para.indexOf(item)

@@ -3,8 +3,7 @@
     <textarea class='tinymce-textarea' :id="tinymceId"></textarea>
     <div class="editor-custom-btn-container">
      <editorImage  color="#20a0ff" class="editor-upload-btn" @successCBK="imageSuccessCBK"></editorImage>
-     <el-button class="filter-item" @click="insertContent('{{name}}')" type="primary" icon="plus">设置</el-button>
-      </div>
+    </div>
   </div>
 </template>
 

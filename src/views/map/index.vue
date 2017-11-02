@@ -15,27 +15,27 @@
         <!-- 经纬度: [{{ lng }}, {{ lat }}]  -->
         地址: {{ address }}
     </div>
-    <side-bar :mapobj='mapobj'></side-bar>
+    <side-bar :mapobj="mapobj" @reloadMap="loadInit" @addRegion="getRegion"></side-bar>
     <!-- 区域信息 -->
-    <el-dialog :title="regionobj.title" size="large" :visible.sync="regionobj.dialogFormVisible"  >
-      <div>
-        当前区域人员
-      </div>
-      <!-- <el-form class="small-space" :model="requestAdd" :rules="regionobj.infoRules" ref="infoForm" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
-        <el-form-item label="区域负责人" prop="user_id">
-          <el-select v-model="requestAdd.user_id" filterable placeholder="请选择">
+    <el-dialog title="区域信息" size="tiny" :visible.sync="regionobj.dialogFormVisible"  >
+      <el-form class="small-space"  label-position="top">
+        <el-form-item label="区域名称" >
+          <span class="ml20">{{regionobj.name}}</span>
+        </el-form-item>
+        <el-form-item label="区域人员">
+          <span v-if="!regionobj.update" class="ml20">{{regionobj.username}}</span>
+          <el-select v-else v-model="regionobj.user_id" filterable placeholder="请选择">
             <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
+          <el-button v-show="!regionobj.update" class="ml20" @click="regionobj.update=true" type="text">更换</el-button>
+          <el-button v-show="regionobj.update" class="ml20" @click="updateRegion" type="text">保存</el-button>
+          <el-button v-show="regionobj.update" class="ml20" @click="regionobj.update=false" type="text">取消</el-button>
         </el-form-item>
-        <el-form-item label="区域名称" prop="name">
-          <el-input type="text" v-model="requestAdd.name"></el-input>
-        </el-form-item>
-      </el-form> -->
-      <!-- <div slot="footer" class="dialog-footer">
-        <el-button @click="regionobj.dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary">确 定</el-button>
-      </div> -->
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="text" @click="deteleRegion">删除当前区域</el-button>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -43,7 +43,9 @@
 <script>
 import VueAMap from 'vue-amap'
 import SideBar from './sidebar'
-import { getRegionArr } from '@/api/grid'
+import { getRegionArr, updateRegion } from '@/api/grid'
+import { fetchList } from '@/api/department'
+
 const amapManager = new VueAMap.AMapManager()
 export default {
   components: {
@@ -134,13 +136,15 @@ export default {
           }
         }
       ],
+      userArr: [],
       regionobj: {
-        title: '测试区域1',
-        dialogFormVisible: false,
-        infoRules: {
-          user_id: [{ type: 'number', required: true, message: '请区域负责人', trigger: 'blur' }],
-          name: [{ required: true, message: '请输入区域名称', trigger: 'blur' }]
-        }
+        name: '',
+        username: '',
+        status: '',
+        _id: '',
+        user_id: '',
+        update: false,
+        dialogFormVisible: false
       }
     }
   },
@@ -183,30 +187,78 @@ export default {
   },
   methods: {
     loadInit() { // 初始化加载
+      this.getRegion()
+      this.getUserArr()
+    },
+    getUserArr() {
+      fetchList({ start_index: 0, length: 10000 }).then(response => {
+        this.userArr = response.info
+      })
+    },
+    getRegion() { // 获取区域
       getRegionArr({ start_index: 0, length: 10000 }).then(response => {
         const polygons = response.info.list
+        this.polygons = []
         polygons.forEach(function(element) {
-          const obj = {
-            path: element.latlon_list,
-            editable: false,
-            extData: element,
-            events: {
-              click: () => {
+          if (!element.status) {
+            const obj = {
+              path: element.latlon_list,
+              editable: false,
+              extData: element,
+              events: {
+                click: () => {
+                  const obj = element
+                  this.regionobj.dialogFormVisible = true
+                  this.regionobj.name = obj.name
+                  this.regionobj.username = obj.username
+                  this.regionobj.status = obj.status
+                  this.regionobj._id = obj._id
+                  this.regionobj.user_id = obj.user_id
+                }
               }
             }
+            this.polygons.push(obj)
           }
-          this.polygons.push(obj)
         }, this)
-        // {
-        //   path: [[121.5273285, 31.21515044], [121.5293285, 31.21515044], [121.5293285, 31.21915044], [121.5273285, 31.21515044]],
-        //   editable: false,
-        //     extData:null,
-        //   events: {
-        //     click: () => {
-        //     }
-        //   }
-        // }
       })
+    },
+    updateRegion() { // 修改区域用户
+      updateRegion(this.regionobj).then(response => {
+        this.regionobj.update = false
+        this.regionobj.dialogFormVisible = false
+        this.$message({
+          message: '修改成功！',
+          type: 'success',
+          duration: 4 * 1000
+        })
+        this.getRegion()
+      }).catch(() => {
+        this.$message({
+          message: '修改失败，请稍后再试',
+          type: 'error',
+          duration: 4 * 1000
+        })
+      })
+    },
+    deteleRegion() { // 删除区域
+      this.$confirm('确认删除当前区域？').then(() => {
+        this.regionobj.status = 1
+        updateRegion(this.regionobj).then(response => {
+          this.regionobj.dialogFormVisible = false
+          this.$message({
+            message: '删除成功！',
+            type: 'success',
+            duration: 4 * 1000
+          })
+          this.getRegion()
+        }).catch(() => {
+          this.$message({
+            message: '删除失败，请稍后再试',
+            type: 'error',
+            duration: 4 * 1000
+          })
+        })
+      }).catch(() => { console.log('取消修改') })
     }
   }
 }
