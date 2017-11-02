@@ -16,6 +16,27 @@
         地址: {{ address }}
     </div>
     <side-bar :mapobj='mapobj'></side-bar>
+    <!-- 区域信息 -->
+    <el-dialog :title="regionobj.title" size="large" :visible.sync="regionobj.dialogFormVisible"  >
+      <div>
+        当前区域人员
+      </div>
+      <!-- <el-form class="small-space" :model="requestAdd" :rules="regionobj.infoRules" ref="infoForm" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
+        <el-form-item label="区域负责人" prop="user_id">
+          <el-select v-model="requestAdd.user_id" filterable placeholder="请选择">
+            <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="区域名称" prop="name">
+          <el-input type="text" v-model="requestAdd.name"></el-input>
+        </el-form-item>
+      </el-form> -->
+      <!-- <div slot="footer" class="dialog-footer">
+        <el-button @click="regionobj.dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary">确 定</el-button>
+      </div> -->
+    </el-dialog>
   </div>
 </template>
 
@@ -112,7 +133,15 @@ export default {
             }
           }
         }
-      ]
+      ],
+      regionobj: {
+        title: '测试区域1',
+        dialogFormVisible: false,
+        infoRules: {
+          user_id: [{ type: 'number', required: true, message: '请区域负责人', trigger: 'blur' }],
+          name: [{ required: true, message: '请输入区域名称', trigger: 'blur' }]
+        }
+      }
     }
   },
   created() {
@@ -156,16 +185,24 @@ export default {
     loadInit() { // 初始化加载
       getRegionArr({ start_index: 0, length: 10000 }).then(response => {
         const polygons = response.info.list
-        console.log(polygons)
+        polygons.forEach(function(element) {
+          const obj = {
+            path: element.latlon_list,
+            editable: false,
+            extData: element,
+            events: {
+              click: () => {
+              }
+            }
+          }
+          this.polygons.push(obj)
+        }, this)
         // {
         //   path: [[121.5273285, 31.21515044], [121.5293285, 31.21515044], [121.5293285, 31.21915044], [121.5273285, 31.21515044]],
         //   editable: false,
         //     extData:null,
         //   events: {
         //     click: () => {
-        //       console.log(amapManager)
-        //       console.log(this.$refs.map.$$getCenter())$$getExtData()
-        //       console.log(this.$refs.polygon_0[0].$$getPath())
         //     }
         //   }
         // }

@@ -1,7 +1,7 @@
 <template>
   <div>
     <ul class="rightbar">
-      <li>
+      <li @click="reloadMap">
         <el-tooltip class="item" effect="dark" content="刷新地图" placement="left">
           <span class="oico"><icon-svg icon-class="refresh" /></span>
         </el-tooltip>
@@ -28,7 +28,7 @@
       </li>
     </ul>
         <!-- 新增区域 -->
-    <el-dialog :title="regionobj.title" @close="closeCall" :visible.sync="regionobj.dialogFormVisible">
+    <el-dialog :title="regionobj.title" @close="closeCall" :visible.sync="regionobj.dialogFormVisible" :close-on-click-modal="false" >
       <el-form class="small-space" :model="requestAdd" :rules="regionobj.infoRules" ref="infoForm" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="区域负责人" prop="user_id">
           <el-select v-model="requestAdd.user_id" filterable placeholder="请选择">
@@ -80,7 +80,13 @@ export default {
     }
   },
   methods: {
+    reloadMap() {
+      this.$router.go(0)
+    },
     closeCall() {
+      const o = this.mapobj.$$getInstance()
+      o.remove(this._polygon)
+      this._polygon = null
       this.$refs.infoForm.resetFields()
     },
     handleAdd() {
@@ -147,8 +153,14 @@ export default {
         // const o = this.mapobj.$$getInstance()
         this._polygonEditor.close()
         this.regionobj.dialogFormVisible = true
-        this.requestAdd.list = this._polygon.getPath()
-        console.log(this._polygon.getPath())
+        const path = this._polygon.getPath()
+        const arr = []
+        path.forEach(function(element) {
+          // arr.push({ lat: element.lat, lon: element.lng })
+          arr.push([element.lng, element.lat])
+        }, this)
+        this.requestAdd.list = arr
+        console.log(arr)
       }
     },
     loadUser() { // 获取用户集合
