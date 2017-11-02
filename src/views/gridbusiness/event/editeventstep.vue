@@ -32,7 +32,7 @@
                   <el-tooltip class="item" effect="dark" content="部门审核人" placement="top">
                     <el-form-item label-width="80px" label="审核人:" prop="role_id_access" class="postInfo-container-item">
                       <el-select  v-model="postForm.role_id_access"  multiple placeholder="请选择">
-                        <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
+                        <el-option v-for="item in  fetchArr" :key="item._id" :label="item.name" :value="item._id">
                         </el-option>
                       </el-select>
                     </el-form-item>
@@ -47,9 +47,9 @@
       required: true, message: '参数不能为空', trigger: 'blur'
     }">
           <el-input style="width: 130px" v-model="para.para_name"></el-input>
-          <el-button v-if="index === 0" @click="addDomain">新增</el-button>
-          <el-button v-show="index !== 0" @click.prevent="removeDomain(para)">删除</el-button>
-          <el-button @click.prevent="removeDomain(para)">插入</el-button>
+          <el-button v-if="index === 0" @click="addPare">新增</el-button>
+          <el-button v-show="index !== 0" @click.prevent="removePare(para)">删除</el-button>
+          <el-button @click.prevent="removePare(para)">插入</el-button>
         </el-form-item>
         <div>
           <tinymce :height='500' v-model="content"></tinymce>
@@ -65,6 +65,7 @@
 import Tinymce from '@/components/Tinymce'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import MDinput from '@/components/MDinput'
+import { fetchDepartments, fetchRoles } from '@/api/department'
 
 export default {
   components: { Tinymce, Sticky, MDinput },
@@ -83,7 +84,7 @@ export default {
             para_type: 1
           }
         ],
-        role_id_access: ''
+        role_id_access: []
       },
       rules: {
         department_id: [{ required: true, trigger: 'blur', message: '请选择部门' }],
@@ -91,11 +92,13 @@ export default {
         content: [{ required: true, trigger: 'blur', message: '请填写内容' }],
         role_id_access: [{ required: true, trigger: 'blur', message: '请选择审核人' }]
       },
-      depArr: []
+      depArr: [],
+      fetchArr: []
     }
   },
   created() {
     console.log(this.$route.params.id)
+    this.init()
   },
   methods: {
     insertContent(str) {
@@ -103,20 +106,39 @@ export default {
       console.log()
       window.tinymce.get(_this.tinymceId).insertContent(str)
     },
-    removeDomain(item) {
+    removePare(item) { // 移除参数
       var index = this.postForm.para.indexOf(item)
       if (index !== -1) {
         this.postForm.para.splice(index, 1)
       }
     },
-    addDomain() {
+    addPare() { // 添加参数
       this.postForm.para.push({
         para_name: '',
         para_type: this.postForm.para.length + 1
       })
     },
+    changeDepRule(id, flg) { // 根据部门查询职务
+      const request = {
+        start_index: 0,
+        length: 10000,
+        department_id: id || this.postForm.department_id
+      }
+      fetchRoles(request).then(response => {
+        this.fetchArr = response.info
+        if (id === false && !flg) {
+          this.postForm.role_id_access = []
+        }
+      })
+    },
     submitForm() {
 
+    },
+    init() { // 初始化
+      fetchDepartments('').then(response => {
+        this.depArr = response.info
+      })
+      this.changeDepRule()
     }
   }
 }
