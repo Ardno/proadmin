@@ -3,7 +3,7 @@
     <el-form class="form-container" :model="postForm" :rules="rules" ref="postForm">
       <sticky :className="'sub-navbar '">
           <div style="display:inline-block">
-              <router-link style="margin-right:15px;" v-show='isEdit' :to="{ path:'editeventstep'}">
+              <router-link style="margin-right:15px;" v-show='isEdit' :to="{ path:'/event/editeventstep/:id'}">
                 <el-button type="info">创建form</el-button>
               </router-link>
           </div>
@@ -18,54 +18,57 @@
                 步骤名称
               </MDinput>
             </el-form-item>
-            <div class="postInfo-container">
-              <el-row>
-                <el-col :span="8">
-                  <el-form-item label-width="65px" label="部门:" prop="department_id" class="postInfo-container-item">
-                    <el-select clearable class="filter-item" style="width: 130px" filterable v-model="postForm.department_id" placeholder="请选择">
-                      <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                </el-col>
-                <el-col :span="8">
-                  <el-tooltip class="item" effect="dark" content="部门审核人" placement="top">
-                    <el-form-item label-width="80px" label="审核人:" prop="role_id_access" class="postInfo-container-item">
-                      <el-select  v-model="postForm.role_id_access"  multiple placeholder="请选择">
-                        <el-option v-for="item in  fetchArr" :key="item._id" :label="item.name" :value="item._id">
-                        </el-option>
-                      </el-select>
-                    </el-form-item>
-                  </el-tooltip>
-                </el-col>
-              </el-row>
-            </div>
           </el-col>
         </el-row>
-        <el-form-item label-width="65px" v-for="(para, index) in postForm.para" :label="'参数' + (index)" :key="para.para_type"  :prop="'para.' + index + '.para_name'"
-    :rules="{
-      required: true, message: '参数不能为空', trigger: 'blur'
-    }">
-          <el-input style="width: 130px" v-model="para.para_name"></el-input>
-          <el-button v-if="index === 0" @click="addPare">新增</el-button>
-          <el-button v-show="index !== 0" @click.prevent="removePare(para)">删除</el-button>
-          <el-button @click.prevent="insertContent('para')">插入</el-button>
+        <el-form-item label-width="65px" label="部门:" prop="department_id" class="postInfo-container-item">
+          <el-select clearable class="filter-item" style="width: 130px" filterable v-model="postForm.department_id" placeholder="请选择">
+            <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
         </el-form-item>
+        <div class="postInfo-container">
+          <el-row>
+            <el-col :span="11">
+              <el-form-item label-width="65px" v-for="(para, index) in postForm.para" :label="'参数' + (index)" :key="para.para_type"  :prop="'para.' + index + '.para_name'" :rules="{required: true, message: '参数不能为空', trigger: 'blur'}">
+                <el-select style="width: 120px"  v-model="para.para_type"  placeholder="请选择">
+                  <el-option v-for="item in  fetchArr" :key="item._id" :label="item.name" :value="item._id">
+                  </el-option>
+                </el-select>
+                <el-input style="width: 130px" v-model="para.para_name"></el-input>
+                <el-button v-if="index === 0" @click="addPare">新增</el-button>
+                <el-button v-show="index !== 0" @click.prevent="removePare(para)">删除</el-button>
+                <el-button @click.prevent="insertContent('para')">插入</el-button>
+              </el-form-item>
+            </el-col>
+            <el-col :span="11">
+              <el-form-item label-width="80px" v-for="(role, index) in postForm.roleArr" :label="'审核'+ (index)" :key="role._id">
+                <el-select  v-model="role._id"  placeholder="请选择">
+                  <el-option v-for="item in  fetchArr" :key="item._id" :label="item.name" :value="item._id">
+                  </el-option>
+                </el-select>
+                <el-button v-if="index === 0" @click="addRole">新增</el-button>
+                <el-button v-show="index !== 0" @click.prevent="removeRole(role)">删除</el-button>
+                <el-button @click.prevent="insertContent('Role')">插入</el-button>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </div>
         <div>
           <tinymce id="tinymce" :height='500' v-model="content"></tinymce>
         </div>
         <div class='editor-content' v-html='content'></div>
-        {{reversedMessage}}
       </div>
     </el-form>
   </div>
 </template>
+
 
 <script>
 import Tinymce from '@/components/Tinymce'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import MDinput from '@/components/MDinput'
 import { fetchDepartments, fetchRoles } from '@/api/department'
+
 
 export default {
   components: { Tinymce, Sticky, MDinput },
@@ -84,13 +87,17 @@ export default {
             para_type: 1
           }
         ],
-        role_id_access: []
+        roleArr: [
+          {
+            _id: ''
+          }
+        ],
+        role_id_access: ''
       },
       rules: {
-        department_id: [{ required: true, trigger: 'blur', message: '请选择部门' }],
+        department_id: [{ type: 'number', required: true, trigger: 'change', message: '请选择部门' }],
         name: [{ required: true, trigger: 'blur', message: '请输入名称' }],
-        content: [{ required: true, trigger: 'blur', message: '请填写内容' }],
-        role_id_access: [{ required: true, trigger: 'blur', message: '请选择审核人' }]
+        content: [{ required: true, trigger: 'blur', message: '请填写内容' }]
       },
       depArr: [],
       fetchArr: []
@@ -124,6 +131,17 @@ export default {
       this.postForm.para.push({
         para_name: '',
         para_type: this.postForm.para.length + 1
+      })
+    },
+    removeRole(item) { // 移除审核人
+      var index = this.postForm.roleArr.indexOf(item)
+      if (index !== -1) {
+        this.postForm.roleArr.splice(index, 1)
+      }
+    },
+    addRole() { // 添加审核人
+      this.postForm.roleArr.push({
+        _id: ''
       })
     },
     changeDepRule(id, flg) { // 根据部门查询职务

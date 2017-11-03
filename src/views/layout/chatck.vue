@@ -393,6 +393,8 @@ export default {
       height: 38px;
       line-height: 38px;
       font-size: 0;
+      background-color: rgba(245, 245, 245, 0.7);
+      border-bottom: 1px solid #eee;
       span {
         position: relative;
         margin: 0 10px;

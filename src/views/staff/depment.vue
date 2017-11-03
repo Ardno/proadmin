@@ -235,8 +235,8 @@ export default {
         name: [{ required: true, trigger: 'blur', validator: validatedepname }]
       },
       infoRulese: {
-        department_id: [{ type: 'number', required: true, trigger: 'blur', message: '请选择部门' }],
-        role_id: [{ type: 'number', required: true, trigger: 'blur', message: '请选择职务' }]
+        department_id: [{ type: 'number', required: true, trigger: 'change', message: '请选择部门' }],
+        role_id: [{ type: 'number', required: true, trigger: 'change', message: '请选择职务' }]
       },
       depInfoclone: null,
       depInfo: {
