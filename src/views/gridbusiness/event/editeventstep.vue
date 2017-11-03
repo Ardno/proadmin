@@ -21,7 +21,7 @@
           </el-col>
         </el-row>
         <el-form-item label-width="65px" label="部门:" prop="department_id" class="postInfo-container-item">
-          <el-select clearable class="filter-item" style="width: 130px" filterable v-model="postForm.department_id" placeholder="请选择">
+          <el-select clearable class="filter-item" style="width: 130px" filterable @change="changeDepRule" v-model="postForm.department_id" placeholder="请选择">
             <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
@@ -29,7 +29,7 @@
         <div class="postInfo-container">
           <el-row>
             <el-col :span="11">
-              <el-form-item label-width="65px" v-for="(para, index) in postForm.para" :label="'参数' + (index)" :key="para.para_type"  :prop="'para.' + index + '.para_name'" :rules="{required: true, message: '参数不能为空', trigger: 'blur'}">
+              <el-form-item label-width="65px" v-for="(para, index) in postForm.para_list" :label="'参数' + (index)" :key="para.para_type"  >
                 <el-select style="width: 120px"  v-model="para.para_type"  placeholder="请选择">
                   <el-option v-for="item in  fetchArr" :key="item._id" :label="item.name" :value="item._id">
                   </el-option>
@@ -68,25 +68,25 @@ import Tinymce from '@/components/Tinymce'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import MDinput from '@/components/MDinput'
 import { fetchDepartments, fetchRoles } from '@/api/department'
-
-
+import { getSteps } from '@/api/depevent'
 export default {
   components: { Tinymce, Sticky, MDinput },
   data() {
     return {
       loading: false,
-      isEdit: true,
+      isEdit: false,
       content: '请输入内容~',
       postForm: {
         department_id: '',
         name: '',
         content: '',
-        para: [
+        para_list: [
           {
-            para_name: '摊主姓名',
+            para_name: '',
             para_type: 1
           }
         ],
+        para: '',
         roleArr: [
           {
             _id: ''
@@ -114,6 +114,9 @@ export default {
   },
   created() {
     console.log(this.$route.params.id)
+    if (this.$route.params.id !== ':id') {
+      this.getSteps(this.$route.params.id)
+    }
     this.init()
   },
   methods: {
@@ -121,16 +124,22 @@ export default {
       const strHtml = `<span style="color:red;">{{${str}}}</span>`
       window.tinymce.get('tinymce').insertContent(strHtml)
     },
+    getSteps(id) {
+      getSteps({ _id: id }).then(response => {
+        this.isEdit = true
+        this.postForm = Object.assign(this.postForm, response.info)
+      })
+    },
     removePare(item) { // 移除参数
-      var index = this.postForm.para.indexOf(item)
+      var index = this.postForm.para_list.indexOf(item)
       if (index !== -1) {
-        this.postForm.para.splice(index, 1)
+        this.postForm.para_list.splice(index, 1)
       }
     },
     addPare() { // 添加参数
-      this.postForm.para.push({
+      this.postForm.para_list.push({
         para_name: '',
-        para_type: this.postForm.para.length + 1
+        para_type: this.postForm.para_list.length + 1
       })
     },
     removeRole(item) { // 移除审核人
@@ -152,9 +161,9 @@ export default {
       }
       fetchRoles(request).then(response => {
         this.fetchArr = response.info
-        if (id === false && !flg) {
-          this.postForm.role_id_access = []
-        }
+        // if (id === false && !flg) {
+        //   this.postForm.role_id_access = ''
+        // }
       })
     },
     submitForm() {

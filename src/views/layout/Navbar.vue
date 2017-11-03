@@ -4,6 +4,9 @@
 		<levelbar></levelbar>
 		<tabs-view></tabs-view>
 		<error-log v-if="log.length>0" class="errLog-container" :logsList="log"></error-log>
+		<el-badge :value="count" class="rsms">
+			<icon-svg class="" icon-class="remind" />
+		</el-badge>
 		<screenfull class='screenfull'></screenfull>
 		<el-dropdown class="avatar-container" trigger="click">
 			<div class="avatar-wrapper">
@@ -31,6 +34,8 @@ import Screenfull from 'components/Screenfull'
 import ErrorLog from 'components/ErrLog'
 import errLogStore from 'store/errLog'
 import avatarm from '@/assets/login_images/avatar.png'
+import { getSmsList } from '@/api/message'
+
 export default {
   components: {
     Levelbar,
@@ -41,9 +46,13 @@ export default {
   },
   data() {
     return {
+      count: 0,
       log: errLogStore.state.errLog,
       avatarm
     }
+  },
+  created() {
+    this.getSmsList()
   },
   computed: {
     ...mapGetters([
@@ -53,6 +62,17 @@ export default {
     ])
   },
   methods: {
+    getSmsList() {
+      getSmsList({ start_index: 0, length: 10000 }).then((res) => {
+        const arr = []
+        res.info.list.forEach(function(element) {
+          if (!element.isread) {
+            arr.push(element)
+          }
+        }, this)
+        this.count = arr.length
+      })
+    },
     toggleSideBar() {
       this.$store.dispatch('ToggleSideBar')
     },
@@ -86,6 +106,15 @@ export default {
 					right: 90px;
 					top: 16px;
 					color: red;
+			}
+			.rsms{
+				position: absolute;
+				right: 140px;
+				top: 14px;
+				color: #666;
+				font-size: 28px;
+				line-height: 1;
+				cursor: pointer;
 			}
 			.avatar-container {
 					height: 50px;
