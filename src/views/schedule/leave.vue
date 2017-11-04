@@ -161,9 +161,9 @@ export default {
       fetchDepartments().then(response => {
         this.depArr = response.info
       })
-      fetchList().then(response => {
-        if (response.info.length) {
-          const array = response.info
+      fetchList({ start_index: 0, length: 10000 }).then(response => {
+        if (response.info.list.length) {
+          const array = response.info.list
           const arrs = []
           array.forEach(function(element) {
             if (!element.status) {

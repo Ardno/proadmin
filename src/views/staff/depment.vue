@@ -576,9 +576,9 @@ export default {
       }
     },
     loadDps() { // 获取部门集合
-      axios.all([fetchDepartments(''), fetchList('')])
+      axios.all([fetchDepartments(''), fetchList({ start_index: 0, length: 10000 })])
         .then(axios.spread((acct, perms) => {
-          var data = perms.info
+          var data = perms.info.list
           this.restaurants = []
           acct.info.forEach(function(element) {
             if (!element.status) {
@@ -630,7 +630,7 @@ export default {
         </span>)
     },
     getDepPepArr(id) {
-      axios.all([fetchRoles(''), fetchList({ department_id: id })])
+      axios.all([fetchRoles(''), fetchList({ start_index: 0, length: 10000, department_id: id })])
       .then(axios.spread((acct, perms) => {
         var data = perms.info
         acct.info.forEach(function(element) { // 赋值职位级别到对象

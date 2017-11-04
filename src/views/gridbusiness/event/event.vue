@@ -133,8 +133,8 @@ export default {
       })
     },
     loadArr() { // 获取用户集合和事件类型集合
-      fetchList('').then(res => {
-        this.userArr = res.info
+      fetchList({ start_index: 0, length: 10000 }).then(res => {
+        this.userArr = res.info.list
       })
       getEventTypeArr('').then(res => {
         this.typeArr = res.info

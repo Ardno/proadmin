@@ -61,7 +61,7 @@ export function getEventArr(data) { // 获取事件集合
 
 export function addSteps(data) { // 添加步骤
   return fetch({
-    url: 'event/update_step',
+    url: 'steps/add',
     method: 'post',
     data: data
   })

@@ -212,8 +212,8 @@ export default {
       fetchDepartments().then(response => {
         this.depArr = response.info
       })
-      fetchList().then(response => {
-        this.userArr = response.info
+      fetchList({ start_index: 0, length: 10000 }).then(response => {
+        this.userArr = response.info.list
       })
       getRegionArr(this.requesetUser).then(response => {
         this.regionArr = response.info.list

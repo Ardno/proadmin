@@ -192,7 +192,7 @@ export default {
     },
     getUserArr() {
       fetchList({ start_index: 0, length: 10000 }).then(response => {
-        this.userArr = response.info
+        this.userArr = response.info.list
       })
     },
     getRegion() { // 获取区域

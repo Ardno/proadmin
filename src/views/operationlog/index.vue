@@ -65,8 +65,8 @@ export default {
       this.getLogArr()
     },
     getuserArr() { // 获取部门集合
-      fetchList('').then(res => {
-        this.userArr = res.info
+      fetchList({ start_index: 0, length: 10000 }).then(res => {
+        this.userArr = res.info.list
       })
     },
     handleSizeChange(val) {

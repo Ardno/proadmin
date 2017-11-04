@@ -1,6 +1,6 @@
 <template>
   <div class="createPost-container">
-    <el-form class="form-container" :model="postForm" :rules="rules" ref="postForm">
+    <el-form class="form-container" :model="postForm" ref="postForm">
       <sticky :className="'sub-navbar '">
           <div style="display:inline-block">
               <router-link style="margin-right:15px;" v-show='isEdit' :to="{ path:'/event/editeventstep/:id'}">
@@ -13,7 +13,7 @@
       <div class="createPost-main-container">
         <el-row>
           <el-col :span="21">
-            <el-form-item style="margin-bottom: 40px;" prop="name">
+            <el-form-item style="margin-bottom: 40px;">
               <MDinput name="name" v-model="postForm.name" required :maxlength="100">
                 步骤名称
               </MDinput>
@@ -29,16 +29,17 @@
         <div class="postInfo-container">
           <el-row>
             <el-col :span="11">
-              <el-form-item label-width="65px" v-for="(para, index) in postForm.para_list" :label="'参数' + (index)" :key="para.para_type"  >
+              <el-form-item label-width="65px" v-for="(para, index) in postForm.para_list" :label="'参数' + (index)" :key="index"  >
                 <el-select style="width: 120px"  v-model="para.para_type"  placeholder="请选择">
-                  <el-option v-for="item in  fetchArr" :key="item._id" :label="item.name" :value="item._id">
+                  <el-option v-for="item in  paraTypeArr" :key="item._id" :label="item.name" :value="item._id">
                   </el-option>
                 </el-select>
-                <el-input style="width: 130px" v-model="para.para_name"></el-input>
+                <el-input style="width: 130px" placeholder="参数名" v-model="para.para_name"></el-input>
                 <el-button v-if="index === 0" @click="addPare">新增</el-button>
                 <el-button v-show="index !== 0" @click.prevent="removePare(para)">删除</el-button>
-                <el-button @click.prevent="insertContent('para')">插入</el-button>
+                <el-button @click.prevent="insertContent(para.para_name)">插入</el-button>
               </el-form-item>
+              <p class="f12 g9">提示：参数类型指的是用户以何种方式填写事件原由，插入参数后，不可直接在富文本框里面去参数进行修改。</p>
             </el-col>
             <el-col :span="11">
               <el-form-item label-width="80px" v-for="(role, index) in postForm.roleArr" :label="'审核'+ (index)" :key="role._id">
@@ -48,15 +49,15 @@
                 </el-select>
                 <el-button v-if="index === 0" @click="addRole">新增</el-button>
                 <el-button v-show="index !== 0" @click.prevent="removeRole(role)">删除</el-button>
-                <el-button @click.prevent="insertContent('Role')">插入</el-button>
+                <el-button @click.prevent="insertContent(role._id)">插入</el-button>
               </el-form-item>
             </el-col>
           </el-row>
         </div>
         <div>
-          <tinymce id="tinymce" :height='500' v-model="content"></tinymce>
+          <tinymce id="tinymce" :height='500' v-model="postForm.content"></tinymce>
         </div>
-        <div class='editor-content' v-html='content'></div>
+        <!-- <div class='editor-content' v-html='postForm.content'></div> -->
       </div>
     </el-form>
   </div>
@@ -68,7 +69,16 @@ import Tinymce from '@/components/Tinymce'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import MDinput from '@/components/MDinput'
 import { fetchDepartments, fetchRoles } from '@/api/department'
-import { getSteps } from '@/api/depevent'
+import { getSteps, addSteps, updateSteps } from '@/api/depevent'
+const paraTypeArr = [
+  { _id: 0, name: '文本控件' },
+  { _id: 1, name: '多行文本控件' },
+  { _id: 2, name: '时间控件' },
+  { _id: 3, name: '图片控件（多图上传）' },
+  { _id: 4, name: '文件控件（视频，语音均是文件，只做上传）' },
+  { _id: 5, name: '人员选择控件（当前人员所在部门下）' },
+  { _id: 6, name: '法律法规选择控件' }
+]
 export default {
   components: { Tinymce, Sticky, MDinput },
   data() {
@@ -76,14 +86,15 @@ export default {
       loading: false,
       isEdit: false,
       content: '请输入内容~',
+      paraTypeArr: paraTypeArr,
       postForm: {
         department_id: '',
         name: '',
-        content: '',
+        content: '请输入内容~',
         para_list: [
           {
             para_name: '',
-            para_type: 1
+            para_type: 0
           }
         ],
         para: '',
@@ -93,11 +104,6 @@ export default {
           }
         ],
         role_id_access: ''
-      },
-      rules: {
-        department_id: [{ type: 'number', required: true, trigger: 'change', message: '请选择部门' }],
-        name: [{ required: true, trigger: 'blur', message: '请输入名称' }],
-        content: [{ required: true, trigger: 'blur', message: '请填写内容' }]
       },
       depArr: [],
       fetchArr: []
@@ -121,7 +127,10 @@ export default {
   },
   methods: {
     insertContent(str) {
-      const strHtml = `<span style="color:red;">{{${str}}}</span>`
+      if (!str) {
+        return
+      }
+      const strHtml = `{{${str}}}`
       window.tinymce.get('tinymce').insertContent(strHtml)
     },
     getSteps(id) {
@@ -131,6 +140,11 @@ export default {
       })
     },
     removePare(item) { // 移除参数
+      if (item.para_name) {
+        const reg = new RegExp('{{' + item.para_name + '}}', 'g')
+        this.postForm.content = this.content.replace(reg, '')
+        window.tinymce.get('tinymce').setContent(this.content)
+      }
       var index = this.postForm.para_list.indexOf(item)
       if (index !== -1) {
         this.postForm.para_list.splice(index, 1)
@@ -139,7 +153,7 @@ export default {
     addPare() { // 添加参数
       this.postForm.para_list.push({
         para_name: '',
-        para_type: this.postForm.para_list.length + 1
+        para_type: 0
       })
     },
     removeRole(item) { // 移除审核人
@@ -167,7 +181,80 @@ export default {
       })
     },
     submitForm() {
-
+      const errAlet = (msg) => {
+        this.$message({
+          message: msg,
+          type: 'error',
+          duration: 4 * 1000
+        })
+      }
+      if (!this.postForm.name) {
+        errAlet('请填写步骤名称~')
+        return
+      }
+      if (!this.postForm.department_id) {
+        errAlet('请选择部门~')
+        return
+      }
+      if (!this.postForm.content) {
+        errAlet('请输入模板内容~')
+        return
+      }
+      var paraflg = true
+      this.postForm.para_list.forEach(function(element) {
+        if (!element.para_name) {
+          paraflg = false
+        }
+      }, this)
+      if (!paraflg) {
+        errAlet('请填写完参数名~')
+        return
+      }
+      this.postForm.para = JSON.stringify(this.postForm.para_list)
+      var roleflg = true
+      this.postForm.roleArr.forEach(function(element) {
+        if (!element._id) {
+          roleflg = false
+        }
+      }, this)
+      if (!roleflg) {
+        errAlet('请选择完审核人~')
+        return
+      }
+      this.postForm.role_id_access = this.postForm.roleArr.join(',')
+      this.$confirm('确认进行此操作？').then(() => {
+        if (this.isEdit) {
+          updateSteps(this.postForm).then(response => {
+            this.$message({
+              message: '修改成功',
+              type: 'success',
+              duration: 4 * 1000
+            })
+            this.$router.push({ path: '/event/eventstep' })
+          }).catch(() => {
+            this.$message({
+              message: '修改失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
+          })
+        } else {
+          addSteps(this.postForm).then(response => {
+            this.$message({
+              message: '添加成功',
+              type: 'success',
+              duration: 4 * 1000
+            })
+            this.$router.push({ path: '/event/eventstep' })
+          }).catch(() => {
+            this.$message({
+              message: '添加失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
+          })
+        }
+      }).catch(() => { console.log('取消修改') })
     },
     init() { // 初始化
       fetchDepartments('').then(response => {

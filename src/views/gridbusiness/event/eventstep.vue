@@ -43,9 +43,6 @@
       </el-pagination>
     </div>
     <!-- 分页 -->
-    <router-link to="editeventstep/123">  
-        显示  
-    </router-link>  
   </div>
 </template>
 
@@ -99,8 +96,8 @@ export default {
       fetchDepartments('').then(res => {
         this.depArr = res.info
       })
-      fetchList('').then(res => {
-        this.userArr = res.info
+      fetchList({ start_index: 0, length: 10000 }).then(res => {
+        this.userArr = res.info.list
       })
     },
     handleSizeChange(val) {

@@ -52,7 +52,7 @@
             @current-change="handleCurrentChange"
             :current-page.sync="currentPage"
             :page-size="pageobj.pagesize"
-            :page-sizes="[1, 2, 3, 4]"
+            :page-sizes="[10, 15, 20, 25]"
             layout="total, sizes, prev, pager, next, jumper"
             :total="totalPages">
           </el-pagination>
@@ -113,8 +113,8 @@ export default {
       currentPage: 1,
       pageobj: {
         start_index: 0,
-        length: 2,
-        pagesize: 2
+        length: 9,
+        pagesize: 10
       },
       activeName: 'first',
       adclist: null,
@@ -242,7 +242,6 @@ export default {
       }).catch(() => { this.listLoading = false })
     },
     handleSizeChange(val) {
-      console.log(`每页 ${val} 条`)
       this.pageobj.pagesize = val
       this.currentPage = 1
       this.pageobj.start_index = (this.currentPage - 1) * val
@@ -250,7 +249,6 @@ export default {
       this.getadcArray()
     },
     handleCurrentChange(val) {
-      console.log(`当前页: ${val}`)
       this.currentPage = val
       this.pageobj.start_index = (this.currentPage - 1) * this.pageobj.pagesize
       this.pageobj.length = this.pageobj.pagesize

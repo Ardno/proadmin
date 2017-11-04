@@ -68,14 +68,19 @@
         </template>
       </el-table-column>
     </el-table>
-    <!-- <el-pagination class="mt20"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
-      :current-page.sync="currentPage1"
-      :page-size="100"
-      layout="total, prev, pager, next"
-      :total="1000">
-    </el-pagination> -->
+    <!-- 分页 -->
+    <div class="block pt20 pb20">
+      <el-pagination
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :current-page.sync="listQuery.currentPage"
+        :page-size="listQuery.pagesize"
+        :page-sizes="[10, 20, 30, 40, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="listQuery.totalPages">
+      </el-pagination>
+    </div>
+    <!-- 分页 -->
     <el-dialog title="修改信息" @close="closeCall" :visible.sync="dialogFormVisible" class="customxing">
       <el-form class="small-space" :model="temp" :rules="infoRules" ref="infoForm" label-position="left"  label-width="80px" style='width: 400px; margin-left:50px;'>
         <!-- <el-form-item label="部门">
@@ -155,6 +160,11 @@ export default {
       ],
       solerr: [],
       listQuery: {
+        start_index: 0,
+        length: 9,
+        pagesize: 10,
+        totalPages: 0,
+        currentPage: 1,
         department: '',
         department_id: '',
         role_id: ''
@@ -201,12 +211,6 @@ export default {
   },
   methods: {
     isAccess: isAccess,
-    handleSizeChange(val) {
-      console.log(`每页 ${val} 条`)
-    },
-    handleCurrentChange(val) {
-      console.log(`当前页: ${val}`)
-    },
     querySearch(queryString, cb) {
       var restaurants = this.restaurants
       console.log(restaurants)
@@ -325,7 +329,7 @@ export default {
         }
       }, this)
       fetchList(this.listQuery).then(response => {
-        this.list = response.info
+        this.list = response.info.list
         this.list.forEach(function(element) {
           element.birthday = element.birthday * 1000
         }, this)
@@ -334,6 +338,19 @@ export default {
         this.listLoading = false
         this.list = []
       })
+    },
+    handleSizeChange(val) {
+      this.listQuery.pagesize = val
+      this.listQuery.currentPage = 1
+      this.listQuery.start_index = (this.listQuery.currentPage - 1) * val
+      this.listQuery.length = val
+      this.getList()
+    },
+    handleCurrentChange(val) {
+      this.listQuery.currentPage = val
+      this.listQuery.start_index = (this.listQuery.currentPage - 1) * this.listQuery.pagesize
+      this.listQuery.length = this.listQuery.pagesize
+      this.getList()
     }
   }
 }

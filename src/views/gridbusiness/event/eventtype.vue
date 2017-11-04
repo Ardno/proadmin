@@ -141,8 +141,8 @@ export default {
     updateshow(item) {
       this.titles = '修改事件类型'
       this.dialogFormVisible = true
-      this.eventInfo = Object.assign({}, item)
-      if (this.eventInfo.steparr) {
+      this.eventInfo = Object.assign({ steparr: [] }, item)
+      if (this.eventInfo.step_ids) {
         this.eventInfo.steparr = this.eventInfo.step_ids.split(',')
       } else {
         this.eventInfo.steparr = []

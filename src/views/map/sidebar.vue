@@ -160,9 +160,9 @@ export default {
       }
     },
     loadUser() { // 获取用户集合
-      fetchList().then(response => {
-        if (response.info.length) {
-          this.userArr = response.info
+      fetchList({ start_index: 0, length: 10000 }).then(response => {
+        if (response.info.list.length) {
+          this.userArr = response.info.list
         }
       })
     }
