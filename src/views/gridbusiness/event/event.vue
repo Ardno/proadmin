@@ -48,7 +48,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="100">
         <template scope="scope">
-          <el-button size="small" type="success" v-if="scope.row.status == '0'" >删除
+          <el-button size="small" type="success" v-if="scope.row.status == '0' && isAccess('92')" >删除
           </el-button>
         </template>
       </el-table-column>
@@ -72,6 +72,7 @@
 <script>
 import { fetchList } from '@/api/department'
 import { getEventArr, getEventTypeArr } from '@/api/depevent'
+import { isAccess } from '@/utils/auth'
 export default {
   data() {
     return {
@@ -100,6 +101,7 @@ export default {
     this.getEventsArr()
   },
   methods: {
+    isAccess: isAccess,
     handleQuery() {
       this.pageobj.start_index = 0
       this.pageobj.length = 9

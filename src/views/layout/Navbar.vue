@@ -3,7 +3,7 @@
 		<hamburger class="hamburger-container" :toggleClick="toggleSideBar" :isActive="sidebar.opened"></hamburger>
 		<levelbar></levelbar>
 		<tabs-view></tabs-view>
-		<error-log v-if="log.length>0" class="errLog-container" :logsList="log"></error-log>
+		<!-- <error-log v-if="log.length>0" class="errLog-container" :logsList="log"></error-log> -->
 		<el-badge :value="count" class="rsms">
 			<icon-svg class="" icon-class="remind" />
 		</el-badge>

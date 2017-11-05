@@ -52,6 +52,7 @@
 <script>
 import { addRegion } from '@/api/grid'
 import { fetchList } from '@/api/department'
+import { isAccess } from '@/utils/auth'
 export default {
   name: 'SideBar',
   props: {
@@ -80,6 +81,7 @@ export default {
     }
   },
   methods: {
+    isAccess: isAccess,
     reloadMap() {
       this.$emit('reloadMap', true)
     },

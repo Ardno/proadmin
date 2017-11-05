@@ -1,12 +1,15 @@
 import Cookies from 'js-cookie'
 import store from '../store'
-const TokenKey = 'Admin-Token'
+const TokenKey = 'access_token'
 
 export function getToken() {
+  console.log(Cookies.get(TokenKey))
   return Cookies.get(TokenKey)
 }
 
 export function setToken(token) {
+  console.log('设置', token)
+  console.log(Cookies.set(TokenKey, token))
   return Cookies.set(TokenKey, token)
 }
 

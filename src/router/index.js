@@ -61,7 +61,7 @@ export const asyncRouterMap = [
     icon: 'lock',
     meta: { role: ['admin'] },
     noDropdown: true,
-    children: [{ path: 'index', component: _import('operationlog/index'), name: '操作记录', meta: { role: ['admin'] }}]
+    children: [{ path: 'index', component: _import('operationlog/index'), name: '操作记录', meta: { role: ['110'] }}]
   },
   {
     path: '/gridbusiness',
@@ -70,7 +70,7 @@ export const asyncRouterMap = [
     name: '网格业务',
     icon: 'wanggeyuan',
     children: [
-      { path: 'event', component: _import('gridbusiness/event/event'), name: '事件列表' },
+      { path: 'event', component: _import('gridbusiness/event/event'), name: '事件列表', meta: { role: ['90'] }},
       { path: 'laws', component: _import('gridbusiness/laws'), name: '法律法规' },
       { path: 'treatment', component: _import('gridbusiness/treatment'), name: '业务处理' }
     ]
@@ -82,9 +82,9 @@ export const asyncRouterMap = [
     name: '事件管理',
     icon: 'createtask_fill',
     children: [
-      { path: 'eventtype', component: _import('gridbusiness/event/eventtype'), name: '事件类型' },
-      { path: 'eventstep', component: _import('gridbusiness/event/eventstep'), name: '事件步骤' },
-      { path: 'editeventstep/:id', component: _import('gridbusiness/event/editeventstep'), name: '编辑步骤' }
+      { path: 'eventtype', component: _import('gridbusiness/event/eventtype'), name: '事件类型', meta: { role: ['80'] }},
+      { path: 'eventstep', component: _import('gridbusiness/event/eventstep'), name: '事件步骤', meta: { role: ['90'] }},
+      { path: 'editeventstep/:id', component: _import('gridbusiness/event/editeventstep'), name: '编辑步骤', meta: { role: ['90'] }}
     ]
   },
   {
