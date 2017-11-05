@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import 'babel-polyfill'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-default/index.css'
 import App from './App'

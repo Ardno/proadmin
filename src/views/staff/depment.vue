@@ -9,7 +9,7 @@
       </div>
       <div class="left-side">
         <div class="grid-content bg-purple">
-          <el-tree :data="depList" :props="defaultProps" node-key="id" :expand-on-click-node="false"  :render-content="renderContent">
+          <el-tree :data="depList" :props="defaultProps" node-key="id" :node-click="nodeClick" :expand-on-click-node="true"  :render-content="renderContent">
           </el-tree>
         </div>
       </div>
@@ -171,7 +171,6 @@ import { fetchDepartments, createDep, fetchList, updateDep, addDepRoles, fetchRo
 import { TreeUtil, deepClone, sortBy } from '@/utils/index'
 import { isAccess } from '@/utils/auth'
 import { getadcArr } from '@/api/schedule'
-
 import axios from 'axios'
 
 export default {
@@ -620,6 +619,10 @@ export default {
           })
         })
     },
+    nodeClick(data, node, store) {
+      debugger
+      this.toview(store, data)
+    },
     renderContentP(h, { node, data, store }) {
       return (
         <span>
@@ -731,7 +734,8 @@ export default {
     top: 62px;
     left: 0px;
     width: 400px;
-    border-right: 1px solid #dbdbdb;
+    // border-right: 1px solid #dbdbdb;
+    max-height: 720px;
     overflow: auto;
   }
   .rt-ct {

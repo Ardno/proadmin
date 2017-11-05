@@ -3,7 +3,6 @@ import store from './store'
 import NProgress from 'nprogress' // Progress 进度条
 import 'nprogress/nprogress.css'// Progress 进度条样式
 import { getToken, getUserid } from '@/utils/auth' // 验权
-
 // permissiom judge
 function hasPermission(roles, permissionRoles) {
   if (roles.indexOf('admin') >= 0) return true // admin权限 直接通过

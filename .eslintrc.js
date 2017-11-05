@@ -6,7 +6,8 @@ module.exports = {
     },
     globals:{
         AMap:'AMap',
-        AMapUI:'AMapUI'
+        AMapUI:'AMapUI',
+        JMessage:'JMessage'
     },
     env: {
         browser: true,

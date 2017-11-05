@@ -22,7 +22,18 @@ html {
 *:after {
   box-sizing: inherit;
 }
+html,
+body,
+#app,
+.main-container,
+.app-container {
+  height: 100%;
+}
 
+.app-main {
+  min-height: auto !important;
+  height: calc(100% - 50px);
+}
 .no-padding {
   padding: 0px !important;
 }

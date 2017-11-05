@@ -46,12 +46,12 @@
           <span>{{scope.row.leavecontent}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="100">
+      <!-- <el-table-column align="center" label="操作" width="100">
         <template scope="scope">
           <el-button size="small" type="success" v-if="scope.row.approval_state == '0'"  @click="updateLeave(scope.row)">修改
           </el-button>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
     <!-- 分页 -->
     <div class="block pt20 pb20">

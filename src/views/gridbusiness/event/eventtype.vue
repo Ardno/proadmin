@@ -6,7 +6,7 @@
         </el-option>
         </el-select>
         <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
-        <el-button class="filter-item" @click="addShij" type="primary" icon="plus">添加类型</el-button>
+        <el-button class="filter-item" v-if="isAccess('81')" @click="addShij" type="primary" icon="plus">添加类型</el-button>
     </div>
     <el-table :key='tableKey' :data="eventArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column align="center" label="序号" width="65">
@@ -42,7 +42,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="190">
       <template scope="scope">
-          <el-button size="small" type="success" @click="updateshow(scope.row)">修改
+          <el-button size="small" type="success" v-if="isAccess('82')" @click="updateshow(scope.row)">修改
           </el-button>
       </template>
       </el-table-column>
@@ -82,7 +82,7 @@
 <script>
 import { fetchDepartments } from '@/api/department'
 import { getEventTypeArr, addEventType, updateEventType, getStepsArr } from '@/api/depevent'
-
+import { isAccess } from '@/utils/auth'
 export default {
   data() {
     return {
@@ -126,6 +126,7 @@ export default {
     this.getDepArr()
   },
   methods: {
+    isAccess: isAccess,
     addShij() {
       this.dialogFormVisible = true
       this.titles = '添加事件类型'

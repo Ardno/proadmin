@@ -22,17 +22,22 @@
               <span>{{scope.row.name}}</span>
             </template>
           </el-table-column>
+          <el-table-column align="center" label="区域名称">
+            <template scope="scope">
+              <span>{{scope.row.regionname}}</span>
+            </template>
+          </el-table-column>
           <el-table-column align="center" label="执行日期">
             <template scope="scope">
               <span>{{scope.row.atte_type | statusFilter(scope.row.day_time)}}</span>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="上班时间">
+          <el-table-column align="center" label="开始时间">
             <template scope="scope">
               <span>{{scope.row.start_time}}</span>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="下班时间">
+          <el-table-column align="center" label="结束时间">
             <template scope="scope">
               <span>{{scope.row.end_time}}</span>
             </template>
@@ -63,20 +68,21 @@
             <el-form-item label="规则名称" prop="name">
               <el-input v-model="dataa.name"></el-input>
             </el-form-item>
-            <el-form-item label="上班时间" prop="start_time">
+            
+            <el-form-item label="开始时间" prop="start_time">
               <el-time-select v-model="dataa.start_time" :picker-options="{start: '00:00',step: '00:15',end: '23:45'}" placeholder="开始时间">
               </el-time-select>
             </el-form-item>
-            <el-form-item label="下班时间" prop="end_time">
+            <el-form-item label="结束时间" prop="end_time">
               <el-time-select v-model="dataa.end_time" :picker-options="{start: '00:00',step: '00:15',end: '23:45'}" placeholder="结束时间">
               </el-time-select>
             </el-form-item>
-            <!-- <el-form-item label="所在区域" >
+            <el-form-item label="所在区域" >
               <el-select  v-model="dataa.region_id" placeholder="请选择">
-                <el-option>
+                <el-option v-for="item in regionArr" :key="item._id" :label="item.name" :value="item._id">
                 </el-option>
               </el-select>
-            </el-form-item> -->
+            </el-form-item>
             <el-form-item label="执行类型" >
               <el-select  v-model="dataa.atte_type" placeholder="请选择">
                 <el-option v-for="item in statusArr" :key="item.id" :label="item.text" :value="item.id">
@@ -105,12 +111,13 @@ import { getadcArr, addAdc, updateAdc } from '@/api/schedule'
 import { deepClone } from '@/utils/index'
 import { isAccess } from '@/utils/auth'
 import { parseTime } from '@/utils/index'
-
+import { getRegionArr } from '@/api/grid'
 export default {
   data() {
     return {
       totalPages: 0,
       currentPage: 1,
+      regionArr: [],
       pageobj: {
         start_index: 0,
         length: 9,
@@ -155,6 +162,12 @@ export default {
   },
   created() {
     this.getadcArray()
+    getRegionArr({ start_index: 0, length: 10000, status: 0 }).then(response => {
+      const arr = response.info.list.filter(function(element) {
+        return element.status === 0
+      }, this)
+      this.regionArr = arr
+    })
   },
   methods: {
     isAccess: isAccess,

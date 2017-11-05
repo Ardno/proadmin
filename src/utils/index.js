@@ -389,3 +389,42 @@ export function sortBy(attr, rev) {
     return 0
   }
 }
+/**
+ * 将时间转化成需要的格式
+ * @param msgTime: 需要转换的时间毫秒数
+ * @return string 时间的标识，根据标识可以再页面应用不同的date管道
+ * 当天 --- today
+ * 昨天和前天 --- yesterday或the day before
+ * 近7天（排除今天，昨天，前天） --- day
+ * 今年其他时间 --- month
+ * 今年之前的时间 --- year
+ */
+export function reducerDate(msgTime) {
+  const time = new Date(msgTime)
+  const now = new Date()
+  const msgYear = time.getFullYear()
+  const nowYear = now.getFullYear()
+  const nowHour = now.getHours()
+  const nowMinute = now.getMinutes()
+  const nowSecond = now.getSeconds()
+  const nowTime = now.getTime()
+  const todayTime = nowHour * 60 * 1000 * 60 + nowMinute * 1000 * 60 + nowSecond * 1000
+  const gapDate = (nowTime - todayTime - msgTime) / 1000 / 60 / 60 / 24
+  let showTime = ''
+  if (msgYear !== nowYear) {
+    showTime = 'year'
+  } else if (gapDate > 6) {
+    showTime = 'month'
+  } else if (gapDate <= 6 && gapDate > 2) {
+    showTime = 'day'
+  } else if (gapDate <= 2 && gapDate > 1) {
+    showTime = 'the day before'
+  } else if (gapDate <= 1 && gapDate > 0) {
+    showTime = 'yesterday'
+  } else if (gapDate <= 0) {
+    showTime = 'today'
+  } else {
+    showTime = ''
+  }
+  return showTime
+}

@@ -330,6 +330,7 @@ export default {
       }, this)
       fetchList(this.listQuery).then(response => {
         this.list = response.info.list
+        this.listQuery.totalPages = response.info.count
         this.list.forEach(function(element) {
           element.birthday = element.birthday * 1000
         }, this)

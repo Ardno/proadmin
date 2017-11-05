@@ -59,12 +59,12 @@
           <span>{{scope.row.change_content}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="100">
+      <!-- <el-table-column align="center" label="操作" width="100">
         <template scope="scope">
           <el-button size="small" type="success" v-if="scope.row.change_state == '0'"  @click="updateshift(scope.row)">修改
           </el-button>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
     <!-- 分页 -->
     <div class="block pt20 pb20">

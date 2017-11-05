@@ -45,6 +45,7 @@ import VueAMap from 'vue-amap'
 import SideBar from './sidebar'
 import { getRegionArr, updateRegion } from '@/api/grid'
 import { fetchList } from '@/api/department'
+import { isAccess } from '@/utils/auth'
 
 const amapManager = new VueAMap.AMapManager()
 export default {
@@ -186,6 +187,7 @@ export default {
     })
   },
   methods: {
+    isAccess: isAccess,
     loadInit() { // 初始化加载
       this.getRegion()
       this.getUserArr()
@@ -264,18 +266,6 @@ export default {
 }
 </script>
 <style lang="scss">
-html,
-body,
-#app,
-.main-container,
-.app-container {
-  height: 100%;
-}
-
-.app-main {
-  min-height: auto !important;
-  height: calc(100% - 50px);
-}
 .pottoolbar{
   position: fixed;
   top: 64px;
