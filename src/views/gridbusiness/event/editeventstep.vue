@@ -153,7 +153,7 @@ export default {
     },
     removePare(item) { // 移除参数
       if (item.para_name) {
-        const reg = new RegExp('{{' + item.para_name + '}}', 'g')
+        const reg = new RegExp('\\{\\{' + item.para_name + '\\}\\}', 'g')
         this.postForm.content = this.postForm.content.replace(reg, '')
         window.tinymce.get('tinymce').setContent(this.postForm.content)
       }
@@ -165,10 +165,15 @@ export default {
     addPare() { // 添加参数
       this.postForm.para_list.push({
         para_name: '',
-        para_type: 0
+        para_type: '0'
       })
     },
     removeRole(item) { // 移除审核人
+      if (item._id) {
+        const reg = new RegExp('\\{\\{' + item._id + '\\}\\}', 'g')
+        this.postForm.content = this.postForm.content.replace(reg, '')
+        window.tinymce.get('tinymce').setContent(this.postForm.content)
+      }
       var index = this.postForm.roleArr.indexOf(item)
       if (index !== -1) {
         this.postForm.roleArr.splice(index, 1)
