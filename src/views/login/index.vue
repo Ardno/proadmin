@@ -49,6 +49,7 @@
 <script>
 import { validateMblNo } from '@/utils/validate'
 import { uuid } from '@/utils/index'
+
 export default {
   name: 'login',
   data() {
@@ -134,6 +135,7 @@ export default {
       this.timeout = null
     }
   }
+
 }
 </script>
 

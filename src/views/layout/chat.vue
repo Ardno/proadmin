@@ -226,7 +226,11 @@
 
 <script>
 import drag from '@/directive/drag/index.js'
+// import store from './store'
 import chatck from './chatck'
+import { getJMessage, authPayload, errorApiTip } from '@/utils/IM'
+import { createSignature } from '@/utils/utils'
+import { md5 } from '@/utils/md5'
 export default {
   name: 'chat',
   components: {
@@ -243,8 +247,12 @@ export default {
       searchflg: false,
       closechatck: true,
       activeName: 'first',
+      JIM: null,
       overflow: 'hidden'
     }
+  },
+  created() {
+    this.JIMInit()
   },
   methods: {
     hoverflow(type) {
@@ -257,6 +265,39 @@ export default {
     },
     handleClick(tab, event) {
       console.log(tab, event)
+    },
+    JIMInit() { // IM初始化
+      this.JIM = getJMessage()
+      console.log(this.JIM)
+      const timestamp = new Date().getTime()
+      const signature = createSignature(timestamp)
+      this.JIM.init({
+        appkey: authPayload.appKey,
+        random_str: authPayload.randomStr,
+        signature: authPayload.signature || signature,
+        timestamp: authPayload.timestamp || timestamp,
+        flag: authPayload.flag
+      }).onSuccess((data) => {
+        this.JIMLogin()
+      }).onFail((error) => {
+        errorApiTip(error)
+      }).onTimeout((data) => {
+        const error = { text: 'IM初始化', code: 910000 }
+        errorApiTip(error)
+      })
+    },
+    JIMLogin() {
+      this.JIM.login({
+        // username: store.getters.useinfo.username,
+        // password: store.getters.useinfo.password,
+        username: 'lc1993116',
+        password: md5('lc1993116'),
+        is_md5: true
+      }).onSuccess((login) => {
+        console.log(login)
+      }).onFail((error) => {
+        errorApiTip(error)
+      })
     }
   }
 }
