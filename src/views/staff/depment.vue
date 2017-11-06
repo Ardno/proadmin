@@ -9,7 +9,7 @@
       </div>
       <div class="left-side">
         <div class="grid-content bg-purple">
-          <el-tree :data="depList" :props="defaultProps" node-key="id" :node-click="nodeClick" :expand-on-click-node="true"  :render-content="renderContent">
+          <el-tree :data="depList" :props="defaultProps" node-key="id" @node-click="nodeClick" :expand-on-click-node="true"  :render-content="renderContent">
           </el-tree>
         </div>
       </div>
@@ -21,7 +21,7 @@
               <h4 v-show="!infotype" class="n g3 pt10 pb10">单位人员信息 </h4>
             </div>
             <el-form v-if="infotype" :key="'1'" label-position="left" label-width="80px" :rules="infodepRules" ref="depUpateFrom" :model="depInfo" v-loading="fromloading" class=" pl10 cusfom">
-              <el-form-item label="部门名称" prop="name">
+              <el-form-item label="部门名称" class="nostar" prop="name">
                 <span v-if="infoupdate" class="g6">{{depInfo.name}}</span>
                 <el-input v-else v-model="depInfo.name"></el-input>
               </el-form-item>
@@ -493,6 +493,7 @@ export default {
       })
     },
     toview(store, data) {
+      event.cancelBubble = true
       this.fromloading = true
       this.firstflg = true
       this.infoupdate = true
@@ -560,13 +561,16 @@ export default {
           </span>)
       } else {
         let cls = 'g6'
+        let flg = 'dn'
         if (data.status) {
           cls = 'g9'
+          flg = 'f12 ml5 vm'
         }
         return (
           <span>
             <span class={cls}>
               <span>{node.label}</span>
+              <el-tag class={flg} type='gray'>已删除</el-tag>
             </span>
             <span style='float: right; margin-right: 20px'>
               <el-button size='mini' on-click={() => this.toview(store, data)}>查看</el-button>
@@ -620,7 +624,7 @@ export default {
         })
     },
     nodeClick(data, node, store) {
-      debugger
+      // console.log(data, node, store)
       this.toview(store, data)
     },
     renderContentP(h, { node, data, store }) {

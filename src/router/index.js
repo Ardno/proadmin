@@ -28,14 +28,14 @@ export const constantRouterMap = [
     hidden: true,
     children: [{ path: 'dashboard', component: _import('map/index') }]
   },
-  {
-    path: '/introduction',
-    component: Layout,
-    redirect: '/introduction/index',
-    icon: 'people',
-    noDropdown: true,
-    children: [{ path: 'index', component: _import('introduction/index'), name: '个人信息' }]
-  },
+  // {
+  //   path: '/introduction',
+  //   component: Layout,
+  //   redirect: '/introduction/index',
+  //   icon: 'people',
+  //   noDropdown: true,
+  //   children: [{ path: 'index', component: _import('introduction/index'), name: '个人信息' }]
+  // },
   {
     path: '/map',
     component: Layout,

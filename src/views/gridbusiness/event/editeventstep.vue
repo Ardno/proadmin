@@ -39,7 +39,7 @@
                 <el-button v-show="index !== 0" @click.prevent="removePare(para)">删除</el-button>
                 <el-button @click.prevent="insertContent(para.para_name)">插入</el-button>
               </el-form-item>
-              <p class="f12 g9">提示：参数类型指的是用户以何种方式填写事件原由，插入参数后，不可直接在富文本框里面去参数进行修改。</p>
+              <p class="f12 g9">提示：参数类型指的是用户以何种方式填写事件原由，插入参数后，不可直接在富文本框里面对参数进行修改。</p>
             </el-col>
             <el-col :span="11">
               <el-form-item label-width="80px" v-for="(role, index) in postForm.roleArr" :label="'审核'+ (index)" :key="role._id">
@@ -71,13 +71,13 @@ import MDinput from '@/components/MDinput'
 import { fetchDepartments, fetchRoles } from '@/api/department'
 import { getSteps, addSteps, updateSteps } from '@/api/depevent'
 const paraTypeArr = [
-  { _id: 0, name: '文本控件' },
-  { _id: 1, name: '多行文本控件' },
-  { _id: 2, name: '时间控件' },
-  { _id: 3, name: '图片控件（多图上传）' },
-  { _id: 4, name: '文件控件（视频，语音均是文件，只做上传）' },
-  { _id: 5, name: '人员选择控件（当前人员所在部门下）' },
-  { _id: 6, name: '法律法规选择控件' }
+  { _id: '0', name: '文本控件' },
+  { _id: '1', name: '多行文本控件' },
+  { _id: '2', name: '时间控件' },
+  { _id: '3', name: '图片控件（多图上传）' },
+  { _id: '4', name: '文件控件（视频，语音均是文件，只做上传）' },
+  { _id: '5', name: '人员选择控件（当前人员所在部门下）' },
+  { _id: '6', name: '法律法规选择控件' }
 ]
 export default {
   components: { Tinymce, Sticky, MDinput },
@@ -94,7 +94,7 @@ export default {
         para_list: [
           {
             para_name: '',
-            para_type: 0
+            para_type: '0'
           }
         ],
         para: '',
@@ -122,8 +122,12 @@ export default {
     console.log(this.$route.params.id)
     if (this.$route.params.id !== ':id') {
       this.getSteps(this.$route.params.id)
+      fetchDepartments('').then(response => {
+        this.depArr = response.info
+      })
+    } else {
+      this.init()
     }
-    this.init()
   },
   methods: {
     insertContent(str) {
@@ -137,13 +141,21 @@ export default {
       getSteps({ _id: id }).then(response => {
         this.isEdit = true
         this.postForm = Object.assign(this.postForm, response.info)
+        const arr = this.postForm.role_id_access.split(',')
+        this.postForm.roleArr = []
+        arr.forEach(function(element) {
+          this.postForm.roleArr.push({
+            _id: Number(element)
+          })
+        }, this)
+        this.changeDepRule()
       })
     },
     removePare(item) { // 移除参数
       if (item.para_name) {
         const reg = new RegExp('{{' + item.para_name + '}}', 'g')
-        this.postForm.content = this.content.replace(reg, '')
-        window.tinymce.get('tinymce').setContent(this.content)
+        this.postForm.content = this.postForm.content.replace(reg, '')
+        window.tinymce.get('tinymce').setContent(this.postForm.content)
       }
       var index = this.postForm.para_list.indexOf(item)
       if (index !== -1) {
@@ -221,7 +233,11 @@ export default {
         errAlet('请选择完审核人~')
         return
       }
-      this.postForm.role_id_access = this.postForm.roleArr.join(',')
+      const copeArr = []
+      this.postForm.roleArr.forEach(function(element) {
+        copeArr.push(element._id)
+      }, this)
+      this.postForm.role_id_access = copeArr.join(',')
       this.$confirm('确认进行此操作？').then(() => {
         if (this.isEdit) {
           updateSteps(this.postForm).then(response => {

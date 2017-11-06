@@ -18,7 +18,7 @@
       </el-table-column>
       <el-table-column prop="name" label="步骤名称" >
       </el-table-column>
-      <el-table-column prop="name" width="180" label="审核人" >
+      <el-table-column prop="name" width="180" label="审核职务" >
         <template scope="scope">
             <span>{{filetUser(scope.row.role_id_access)}}</span>
         </template>
@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { fetchDepartments, fetchList } from '@/api/department'
+import { fetchDepartments, fetchRoles } from '@/api/department'
 import { getStepsArr } from '@/api/depevent'
 export default {
   data() {
@@ -96,8 +96,8 @@ export default {
       fetchDepartments('').then(res => {
         this.depArr = res.info
       })
-      fetchList({ start_index: 0, length: 10000 }).then(res => {
-        this.userArr = res.info.list
+      fetchRoles({ start_index: 0, length: 10000 }).then(res => {
+        this.userArr = res.info
       })
     },
     handleSizeChange(val) {

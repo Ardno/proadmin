@@ -6,7 +6,17 @@
 
 <script>
   export default{
-    name: 'APP'
+    name: 'APP',
+    created() {
+      try {
+        // document.body.removeChild(document.getElementById('appLoading'))
+        // setTimeout(function() {
+        //   document.getElementById('app').style.display = 'block'
+        // }, 500)
+      } catch (e) {
+        console.log(e)
+      }
+    }
   }
 </script>
 
