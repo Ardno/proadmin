@@ -3,15 +3,15 @@
     <transition name="el-fade-in-linear">
       <div v-if="!minchatck && !closechatck" class="layui-layim-chat">
         <!-- 当前聊天列表 -->
-        <ul class="layim-chat-list">
-          <li class="tabChat" v-for="(item,index) in chatlist" :class="{active:index===1}" @mouseenter="colseim=index" @mouseleave="colseim=-1" :key="item._id">
+        <!-- <ul class="layim-chat-list">
+          <li class="tabChat" v-for="(item,index) in tabList" @click="selectTargetEmit(item,index)" :class="{active:index===activeItem.activeIndex}" @mouseenter="colseim=index" @mouseleave="colseim=-1" :key="index">
             <img src="//tva1.sinaimg.cn/crop.0.0.512.512.180/6a4acad5jw8eqi6yaholjj20e80e8t9f.jpg">
             <span>{{item.name}}</span>
             <i v-if="colseim === index" class="layui-icon">
               <icon-svg icon-class="icon-shanchu" />
             </i>
           </li>
-        </ul>
+        </ul> -->
         <!-- 聊天框 -->
         <div class="chat-ct">
           <!-- 头部 -->
@@ -120,6 +120,9 @@ export default {
     closechatck: {
       type: Boolean,
       default: true
+    },
+    activeUser: {
+      type: Object
     }
   },
   computed: {
@@ -130,31 +133,38 @@ export default {
   data() {
     return {
       messageList: [],
-      hasOffline: 0,
       JIM: null,
       chatlist: [{ _id: 1, name: '小红' }, { _id: 2, name: '小名' }, { _id: 3, name: '小啊' }],
       minchatck: false,
-      colseim: false
+      colseim: false,
+      activeItem: {
+        // 当前active的用户
+        name: '',
+        nickName: '',
+        key: '',
+        activeIndex: -1,
+        type: 0,
+        change: false,
+        shield: false,
+        appkey: ''
+      },
+      tabList: [] // 当前tab列表
+    }
+  },
+  watch: {
+    activeUser(val, oldVal) {
+      console.log('new: %s, old: %s', val, oldVal)
     }
   },
   created() {
     this.JIM = getJMessage()
-    this.onSyncConversation()
   },
   methods: {
     togglechatck() {
       this.$emit('update:closechatck', true)
-    },
-    // 离线消息同步监听
-    onSyncConversation() {
-      this.JIM.onSyncConversation((data) => {
-          // 限制只触发一次
-        if (this.hasOffline === 0) {
-          this.hasOffline ++
-          console.log(data)
-        }
-      })
     }
+    // selectTargetEmit(item) { // 切换当前对话用户
+    // },
   }
 }
 </script>
@@ -235,7 +245,7 @@ export default {
   .chat-ct {
     width: 600px;
     height: 100%;
-    margin-left: 200px;
+    // margin-left: 200px;
     background: url(~assets/images/chatbg1.jpg) no-repeat center center;
     background-size: cover;
     .chat-title {

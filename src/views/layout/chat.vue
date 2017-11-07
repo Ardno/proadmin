@@ -65,11 +65,10 @@
                         <img :src="list.avatar||list.avatarUrl">
                         <span v-if="list.type === 3">{{list.username}}</span>
                         <time class="r g9 time">{{list.mtime | reducerDate}}</time>
-                        <p v-if="list.type === 3">{{list.signature || '暂无签名'}}
+                        <span v-if="list.type === 4">{{list.name}}</span>
+                        <p >{{list.content && list.content.msg_body && list.content.msg_body.text}}
                           <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
                         </p>
-                        <span v-if="list.type === 4">{{list.name}}</span>
-                        <p v-if="list.type === 4"><em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em></p>
                       </li>
                     </ul>
                   </li>
@@ -117,7 +116,7 @@
       </div>
     </transition>
     <transition name="el-fade-in-linear">
-       <chatck :closechatck.sync="closechatck" ></chatck>
+       <chatck :closechatck.sync="closechatck" :activeUser="activeUser" ></chatck>
     </transition>
   </div>
 </template>
@@ -150,6 +149,7 @@ export default {
   data() {
     return {
       avteinfo,
+      hasOffline: 0,
       colseIm: true,
       searchflg: false,
       closechatck: true,
@@ -159,6 +159,8 @@ export default {
       friend_list: [],
       group_list: [],
       conversations: [],
+      activeUser: null,
+      MsgList: null,
       userInfo: {
         username: '',
         signature: ''
@@ -170,7 +172,6 @@ export default {
   },
   methods: {
     hoverflow(type) {
-      console.log(type)
       if (type === 'on') {
         this.overflow = 'auto'
       } else {
@@ -181,6 +182,7 @@ export default {
     },
     imCkPanle(item) {
       this.closechatck = false
+      this.activeUser = item
     },
     JIMInit() { // IM初始化
       this.JIM = getJMessage()
@@ -213,6 +215,11 @@ export default {
         this.JIMgetFriendList()
         this.JIMgetGroups()
         this.JIMgetConversation()
+        this.onMsgReceive()
+        this.onSyncConversation()
+        this.onMsgReceiptChange()
+        this.onMutiUnreadMsgUpdate()
+        this.onSyncMsgReceipt()
       }).onFail((error) => {
         errorApiTip(error)
       })
@@ -285,7 +292,6 @@ export default {
           group.avatarUrl = group_avatar
         }
         this.group_list = group_list
-        console.log(group_list)
       }).onFail((error) => {
         errorApiTip(error)
       })
@@ -300,9 +306,56 @@ export default {
             conver.avatarUrl = group_avatar
           }
         }
-        this.conversations = conversations
+        this.conversations = conversations.reverse()
+        for (let i = 0; i < this.conversations.length; i++) {
+          inter:
+          for (let j = 0; j < this.MsgList.length; j++) {
+            if (this.conversations[i].type === 3) {
+              if (this.conversations[i].username === this.MsgList[j].from_username) {
+                this.conversations[i].unread_msg_count = this.MsgList[j].unread_msg_count
+                this.conversations[i].mtime = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].ctime_ms
+                this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
+                break inter
+              }
+            } else {
+              if (this.conversations[i].gid === this.MsgList[j].from_gid) {
+                this.conversations[i].unread_msg_count = this.MsgList[j].unread_msg_count
+                this.conversations[i].mtime = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].ctime_ms
+                this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
+                break inter
+              }
+            }
+          }
+        }
       }).onFail((error) => {
         errorApiTip(error)
+      })
+    },
+    onSyncConversation() { // 离线消息同步监听
+      this.JIM.onSyncConversation((data) => {
+        this.MsgList = data
+        console.log(data)
+        this.$store.dispatch('SetMsgList', data)
+      })
+    },
+    onMsgReceive() { // 聊天消息实时监听
+      this.JIM.onMsgReceive((data) => {
+        console.log(data)
+      })
+    },
+    onMsgReceiptChange() { // 消息已读数变更事件实时监听
+      this.JIM.onMsgReceiptChange((data) => {
+        console.log('onMsgReceiptChange', data)
+      })
+    },
+    onSyncMsgReceipt() { // 消息已读数变更事件实时监听
+      this.JIM.onSyncMsgReceipt((data) => {
+        console.log('onSyncMsgReceipt', data)
+      })
+    },
+    onMutiUnreadMsgUpdate() { // 会话未读数变更监听（多端在线）
+      this.JIM.onMutiUnreadMsgUpdate((data) => {
+        console.log('onMutiUnreadMsgUpdate', data)
       })
     }
   }
@@ -577,7 +630,7 @@ export default {
 
   .layui-layim-list li span {
     margin-top: 4px;
-    max-width: 155px;
+    max-width: 150px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
