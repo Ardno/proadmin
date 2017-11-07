@@ -400,6 +400,12 @@ export function sortBy(attr, rev) {
  * 今年之前的时间 --- year
  */
 export function reducerDate(msgTime) {
+  // <time *ngSwitchCase="'year'">{{item.recentMsg.ctime_ms | time:"yy-MM-dd"}}</time>
+  // <time *ngSwitchCase="'month'">{{item.recentMsg.ctime_ms | time:"MM-dd"}}</time>
+  // <time *ngSwitchCase="'day'">{{item.recentMsg.ctime_ms | day}}</time>
+  // <time *ngSwitchCase="'the day before'">前天</time>
+  // <time *ngSwitchCase="'yesterday'">昨天</time>
+  // <time *ngSwitchCase="'today'">{{item.recentMsg.ctime_ms | time:"HH:mm"}}</time>
   const time = new Date(msgTime)
   const now = new Date()
   const msgYear = time.getFullYear()
@@ -411,18 +417,27 @@ export function reducerDate(msgTime) {
   const todayTime = nowHour * 60 * 1000 * 60 + nowMinute * 1000 * 60 + nowSecond * 1000
   const gapDate = (nowTime - todayTime - msgTime) / 1000 / 60 / 60 / 24
   let showTime = ''
+  const t = {
+    y: time.getFullYear(),
+    m: time.getMonth() + 1,
+    d: time.getDate(),
+    h: time.getHours(),
+    i: time.getMinutes(),
+    s: time.getSeconds(),
+    a: time.getDay()
+  }
   if (msgYear !== nowYear) {
-    showTime = 'year'
+    showTime = `${t.y}-${t.m}-${t.d}`
   } else if (gapDate > 6) {
-    showTime = 'month'
+    showTime = `${t.m}-${t.d}`
   } else if (gapDate <= 6 && gapDate > 2) {
-    showTime = 'day'
+    showTime = `${t.a}`
   } else if (gapDate <= 2 && gapDate > 1) {
-    showTime = 'the day before'
+    showTime = '前天'
   } else if (gapDate <= 1 && gapDate > 0) {
-    showTime = 'yesterday'
+    showTime = '昨天'
   } else if (gapDate <= 0) {
-    showTime = 'today'
+    showTime = `${t.h}:${t.m}`
   } else {
     showTime = ''
   }

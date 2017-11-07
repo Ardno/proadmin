@@ -112,6 +112,7 @@
 </template>
 
 <script>
+import { getJMessage } from '@/utils/IM'
 import drag from '@/directive/drag/index.js'
 export default {
   name: 'chatck',
@@ -128,14 +129,31 @@ export default {
   },
   data() {
     return {
+      messageList: [],
+      hasOffline: 0,
+      JIM: null,
       chatlist: [{ _id: 1, name: '小红' }, { _id: 2, name: '小名' }, { _id: 3, name: '小啊' }],
       minchatck: false,
       colseim: false
     }
   },
+  created() {
+    this.JIM = getJMessage()
+    this.onSyncConversation()
+  },
   methods: {
     togglechatck() {
       this.$emit('update:closechatck', true)
+    },
+    // 离线消息同步监听
+    onSyncConversation() {
+      this.JIM.onSyncConversation((data) => {
+          // 限制只触发一次
+        if (this.hasOffline === 0) {
+          this.hasOffline ++
+          console.log(data)
+        }
+      })
     }
   }
 }

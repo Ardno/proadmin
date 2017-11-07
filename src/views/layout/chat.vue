@@ -9,11 +9,11 @@
           <div class="layui-layim-main">
             <!-- 头部信息 -->
             <div class="layui-layim-info">
-              <div class="layui-layim-user">纸飞机</div>
+              <div class="layui-layim-user">{{userInfo.username}}</div>
               <div class="layui-layim-status">
                 <span class="layim-status-online"></span>
               </div>
-              <span class="layui-layim-remark">在深邃的编码世界，做一枚轻盈的纸飞机</span>
+              <span class="layui-layim-remark">{{userInfo.signature || '暂无签名'}}</span>
             </div>
             <!-- 面板 -->
             <el-tabs v-model="activeName" @tab-click="handleClick">
@@ -22,61 +22,17 @@
                   <icon-svg icon-class="people_fill" />
                 </span>
                 <el-collapse :style="{overflow:'auto'}" class="layim-tab-content">
-                  <el-collapse-item>
+                  <el-collapse-item v-for="(flist, index) in friend_list" :key="index" >
                     <template slot="title">
-                      <span>知名人物</span>
+                      <span>{{flist.groupname}}</span>
                       <em>(
-                        <cite class="layim-count">5</cite>)</em>
+                        <cite class="layim-count">{{flist.len}}</cite>)</em>
                     </template>
                     <ul class="layui-layim-list">
-                      <li @click="closechatck=false" layim-event="chat" data-type="friend" data-index="0" class="layim-friend100001 "><img src="//tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg">
-                        <span>贤心</span>
-                        <p>这些都是测试数据，实际使用请严格按照该格式返回</p>
-                      </li>
-                      <li layim-event="chat" data-type="friend" data-index="0" class="layim-friend100001222 "><img src="//tva4.sinaimg.cn/crop.0.1.1125.1125.180/475bb144jw8f9nwebnuhkj20v90vbwh9.jpg">
-                        <span>刘涛tamia</span>
-                        <p>如约而至，不负姊妹欢乐颂</p>
-                      </li>
-                      <li layim-event="chat" data-type="friend" data-index="0" class="layim-friend10034001 "><img src="//tva2.sinaimg.cn/crop.1.0.747.747.180/633f068fjw8f9h040n951j20ku0kr74t.jpg">
-                        <span>谢楠</span>
-                        <p></p>
-                      </li>
-                      <li layim-event="chat" data-type="friend" data-index="0" class="layim-friend168168 "><img src="//tva1.sinaimg.cn/crop.0.0.180.180.180/7fde8b93jw1e8qgp5bmzyj2050050aa8.jpg">
-                        <span>马小云</span>
-                        <p>让天下没有难写的代码</p>
-                      </li>
-                      <li layim-event="chat" data-type="friend" data-index="0" class="layim-friend666666 "><img src="//tva1.sinaimg.cn/crop.0.0.512.512.180/6a4acad5jw8eqi6yaholjj20e80e8t9f.jpg">
-                        <span>徐小峥</span>
-                        <p>代码在囧途，也要写到底</p>
-                      </li>
-                    </ul>
-                  </el-collapse-item>
-                  <el-collapse-item>
-                    <template slot="title">
-                      <span>这些都是测试数据</span>
-                      <em>(
-                        <cite class="layim-count">5</cite>)</em>
-                    </template>
-                    <ul class="layui-layim-list">
-                      <li layim-event="chat" data-type="friend" data-index="0" class="layim-friend100001 "><img src="//tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg">
-                        <span>贤心</span>
-                        <p>这些都是测试数据，实际使用请严格按照该格式返回</p>
-                      </li>
-                      <li layim-event="chat" data-type="friend" data-index="0" class="layim-friend100001222 "><img src="//tva4.sinaimg.cn/crop.0.1.1125.1125.180/475bb144jw8f9nwebnuhkj20v90vbwh9.jpg">
-                        <span>刘涛tamia</span>
-                        <p>如约而至，不负姊妹欢乐颂</p>
-                      </li>
-                      <li layim-event="chat" data-type="friend" data-index="0" class="layim-friend10034001 "><img src="//tva2.sinaimg.cn/crop.1.0.747.747.180/633f068fjw8f9h040n951j20ku0kr74t.jpg">
-                        <span>谢楠</span>
-                        <p></p>
-                      </li>
-                      <li layim-event="chat" data-type="friend" data-index="0" class="layim-friend168168 "><img src="//tva1.sinaimg.cn/crop.0.0.180.180.180/7fde8b93jw1e8qgp5bmzyj2050050aa8.jpg">
-                        <span>马小云</span>
-                        <p>让天下没有难写的代码</p>
-                      </li>
-                      <li layim-event="chat" data-type="friend" data-index="0" class="layim-friend666666 "><img src="//tva1.sinaimg.cn/crop.0.0.512.512.180/6a4acad5jw8eqi6yaholjj20e80e8t9f.jpg">
-                        <span>徐小峥</span>
-                        <p>代码在囧途，也要写到底</p>
+                      <li @click="imCkPanle(clist)" v-for="(clist, index) in flist.list" :key="index">
+                        <img :src="clist.avatar||clist.avatarUrl" >
+                        <span>{{clist.username}}</span>
+                        <p>{{clist.signature || '暂无签名'}}</p>
                       </li>
                     </ul>
                   </el-collapse-item>
@@ -89,13 +45,10 @@
                 <ul @mouseenter="hoverflow('on')" @mouseleave="hoverflow('off')" class="layim-tab-content" :style="{overflow:overflow}">
                   <li>
                     <ul class="layui-layim-list layui-show layim-list-group">
-                      <li layim-event="chat" data-type="group" data-index="0" class="layim-group101 "><img src="//tva1.sinaimg.cn/crop.0.0.200.200.50/006q8Q6bjw8f20zsdem2mj305k05kdfw.jpg">
-                        <span>前端群</span>
-                        <p></p>
-                      </li>
-                      <li layim-event="chat" data-type="group" data-index="1" class="layim-group102 "><img src="//tva2.sinaimg.cn/crop.0.0.199.199.180/005Zseqhjw1eplix1brxxj305k05kjrf.jpg">
-                        <span>Fly社区官方群</span>
-                        <p></p>
+                      <li @click="imCkPanle(list)" v-for="(list, index) in group_list" :key="index">
+                        <img :src="list.avatar||list.avatarUrl">
+                        <span>{{list.name}}</span>
+                        <p>{{list.desc  || '暂无群描述'}}</p>
                       </li>
                     </ul>
                   </li>
@@ -108,69 +61,15 @@
                 <ul @mouseenter="hoverflow('on')" @mouseleave="hoverflow('off')" class="layim-tab-content layui-show" :style="{overflow:overflow}">
                   <li>
                     <ul class="layui-layim-list layui-show layim-list-history">
-                      <li layim-event="chat"><img src="//tva4.sinaimg.cn/crop.0.1.1125.1125.180/475bb144jw8f9nwebnuhkj20v90vbwh9.jpg">
-                        <span>刘涛tamia</span>
-                        <p>如约而至，不负姊妹欢乐颂</p>
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="friend168168" class="layim-friend168168 "><img src="//tva1.sinaimg.cn/crop.0.0.180.180.180/7fde8b93jw1e8qgp5bmzyj2050050aa8.jpg">
-                        <span>马小云</span>
-                        <p>让天下没有难写的代码</p>
-
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="friend121286" class="layim-friend121286 "><img src="//tva4.sinaimg.cn/crop.0.0.640.640.180/4a02849cjw8fc8vn18vktj20hs0hs75v.jpg">
-                        <span>罗玉凤</span>
-                        <p>在自己实力不济的时候，不要去相信什么媒体和记者。他们不是善良的人，有时候候他们的采访对当事人而言就是陷阱</p>
-
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="group101" class="layim-group101 "><img src="//tva1.sinaimg.cn/crop.0.0.200.200.50/006q8Q6bjw8f20zsdem2mj305k05kdfw.jpg">
-                        <span>前端群</span>
-                        <p></p>
-
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="friend12123454" class="layim-friend12123454 "><img src="//tva2.sinaimg.cn/crop.0.0.512.512.180/005LMAegjw8f2bp9qg4mrj30e80e8dg5.jpg">
-                        <span>大鱼_MsYuyu</span>
-                        <p>我瘋了！這也太準了吧 超級笑點低</p>
-
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="friend102101" class="layim-friend102101 "><img src="//tva4.sinaimg.cn/crop.0.0.180.180.180/6d424ea5jw1e8qgp5bmzyj2050050aa8.jpg">
-                        <span>Lemon_CC</span>
-                        <p></p>
-
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="group12333333" class="layim-group12333333 "><img src="//tva3.sinaimg.cn/crop.64.106.361.361.50/7181dbb3jw8evfbtem8edj20ci0dpq3a.jpg">
-                        <span>Angular开发</span>
-                        <p></p>
-
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="group102" class="layim-group102 "><img src="//tva2.sinaimg.cn/crop.0.0.199.199.180/005Zseqhjw1eplix1brxxj305k05kjrf.jpg">
-                        <span>Fly社区官方群</span>
-                        <p></p>
-
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="friend4803920" class="layim-friend4803920 "><img src="//tva3.sinaimg.cn/crop.0.0.750.750.180/5033b6dbjw8etqysyifpkj20ku0kuwfw.jpg">
-                        <span>佟丽娅</span>
-                        <p>我也爱贤心吖吖啊</p>
-
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="friend198909151014" class="layim-friend198909151014 "><img src="//tva1.sinaimg.cn/crop.7.0.736.736.50/bd986d61jw8f5x8bqtp00j20ku0kgabx.jpg">
-                        <span>小酱</span>
-                        <p></p>
-
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="friend76543" class="layim-friend76543 "><img src="//tva3.sinaimg.cn/crop.0.0.512.512.180/48f122e6jw8fcmi072lkyj20e80e8t9i.jpg">
-                        <span>林心如</span>
-                        <p>我爱贤心</p>
-
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="friend100001" class="layim-friend100001 "><img src="//tva1.sinaimg.cn/crop.0.0.118.118.180/5db11ff4gw1e77d3nqrv8j203b03cweg.jpg">
-                        <span>贤心</span>
-                        <p>这些都是测试数据，实际使用请严格按照该格式返回</p>
-
-                      </li>
-                      <li layim-event="chat" data-type="history" data-index="friend1008612" class="layim-friend1008612 "><img src="//tva3.sinaimg.cn/crop.0.0.180.180.180/7f5f6861jw1e8qgp5bmzyj2050050aa8.jpg">
-                        <span>小闲</span>
-                        <p></p>
-
+                      <li @click="imCkPanle(list)" v-for="(list, index) in conversations" :key="index" >
+                        <img :src="list.avatar||list.avatarUrl">
+                        <span v-if="list.type === 3">{{list.username}}</span>
+                        <time class="r g9 time">{{list.mtime | reducerDate}}</time>
+                        <p v-if="list.type === 3">{{list.signature || '暂无签名'}}
+                          <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
+                        </p>
+                        <span v-if="list.type === 4">{{list.name}}</span>
+                        <p v-if="list.type === 4"><em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em></p>
                       </li>
                     </ul>
                   </li>
@@ -213,7 +112,7 @@
     </transition>
     <transition name="el-zoom-in-bottom">
       <div v-if="colseIm" @click="colseIm=false" class="layui-layim-close">
-        <img  src="//res.layui.com/images/fly/avatar/00.jpg">
+        <img  :src="avteinfo">
         <span >我的聊天</span>
       </div>
     </transition>
@@ -230,7 +129,11 @@ import drag from '@/directive/drag/index.js'
 import chatck from './chatck'
 import { getJMessage, authPayload, errorApiTip } from '@/utils/IM'
 import { createSignature } from '@/utils/utils'
+import { reducerDate } from '@/utils/index'
 import { md5 } from '@/utils/md5'
+import group_avatar from '@/assets/images/group-avatar.svg'
+import single_avatar from '@/assets/images/single-avatar.svg'
+import avteinfo from '@/assets/images/avteinfo.svg'
 export default {
   name: 'chat',
   components: {
@@ -239,16 +142,27 @@ export default {
   directives: {
     drag
   },
+  filters: {
+    reducerDate
+  },
   computed: {
   },
   data() {
     return {
+      avteinfo,
       colseIm: true,
       searchflg: false,
       closechatck: true,
-      activeName: 'first',
+      activeName: 'third',
       JIM: null,
-      overflow: 'hidden'
+      overflow: 'hidden',
+      friend_list: [],
+      group_list: [],
+      conversations: [],
+      userInfo: {
+        username: '',
+        signature: ''
+      }
     }
   },
   created() {
@@ -264,11 +178,12 @@ export default {
       }
     },
     handleClick(tab, event) {
-      console.log(tab, event)
+    },
+    imCkPanle(item) {
+      this.closechatck = false
     },
     JIMInit() { // IM初始化
       this.JIM = getJMessage()
-      console.log(this.JIM)
       const timestamp = new Date().getTime()
       const signature = createSignature(timestamp)
       this.JIM.init({
@@ -290,11 +205,102 @@ export default {
       this.JIM.login({
         // username: store.getters.useinfo.username,
         // password: store.getters.useinfo.password,
-        username: 'lc1993116',
-        password: md5('lc1993116'),
+        username: 'lc2017116',
+        password: md5('lc2017116'),
         is_md5: true
       }).onSuccess((login) => {
-        console.log(login)
+        this.JIMgetUserInfo(login.username)
+        this.JIMgetFriendList()
+        this.JIMgetGroups()
+        this.JIMgetConversation()
+      }).onFail((error) => {
+        errorApiTip(error)
+      })
+    },
+    JIMgetUserInfo(name) { // 获取用户信息
+      this.JIM.getUserInfo({ username: name, appkey: authPayload.appKey }).onSuccess((data) => {
+        const user = data.user_info
+        const item = {
+          avatar: user.avatar,
+          mtime: user.mtime,
+          name: user.username,
+          nickName: user.nickname,
+          username: user.username,
+          nickname: user.nickname,
+          type: 3,
+          signature: user.signature,
+          gender: user.gender,
+          region: user.region,
+          avatarUrl: single_avatar
+          // infoType,
+          // eventId: info.eventId,
+          // stateType: info.stateType
+        }
+        this.userInfo = item
+      }).onFail((error) => {
+        errorApiTip(error)
+      }).onTimeout((data) => {
+        const error = { code: 910000 }
+        errorApiTip(error)
+      })
+    },
+    JIMgetFriendList() { // 获取用户列表
+      this.JIM.getFriendList().onSuccess((data) => {
+        const friend_list = data.friend_list
+        for (const friend of friend_list) {
+          friend.avatarUrl = single_avatar
+        }
+        const memo = {}
+        friend_list.forEach(function(element) {
+          if (element.memo_others) {
+            if (memo[element.memo_others]) {
+              memo[element.memo_others].push(element)
+            } else {
+              memo[element.memo_others] = [element]
+            }
+          } else {
+            if (memo['我的好友']) {
+              memo['我的好友'].push(element)
+            } else {
+              memo['我的好友'] = [element]
+            }
+          }
+        }, this)
+        for (const key in memo) {
+          const obj = {
+            groupname: key,
+            len: memo[key].length,
+            list: memo[key]
+          }
+          this.friend_list.push(obj)
+        }
+      }).onFail((error) => {
+        errorApiTip(error)
+      })
+    },
+    JIMgetGroups() { // 获取群组列表
+      this.JIM.getGroups().onSuccess((data) => {
+        const group_list = data.group_list
+        for (const group of group_list) {
+          group.avatarUrl = group_avatar
+        }
+        this.group_list = group_list
+        console.log(group_list)
+      }).onFail((error) => {
+        errorApiTip(error)
+      })
+    },
+    JIMgetConversation() { // 获取会话列表
+      this.JIM.getConversation().onSuccess((data) => {
+        const conversations = data.conversations
+        for (const conver of conversations) {
+          if (conver.type === 3) {
+            conver.avatarUrl = single_avatar
+          } else {
+            conver.avatarUrl = group_avatar
+          }
+        }
+        this.conversations = conversations
       }).onFail((error) => {
         errorApiTip(error)
       })
@@ -532,6 +538,26 @@ export default {
     font-size: 0;
     cursor: pointer;
     box-sizing: content-box;
+    .time{
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .count{
+      min-width: 13px;
+      height: 13px;
+      line-height: 13px;
+      padding: 1px 2px;
+      border-radius: 13px;
+      background: #33DF83;
+      color: #fff;
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      text-align: center;
+      font-size: 12px;
+      font-style: normal;
+      
+    }
   }
 
   .layui-layim-list li img {
@@ -558,6 +584,7 @@ export default {
   }
 
   .layui-layim-list li p {
+    position: relative;
     display: block;
     padding-right: 30px;
     line-height: 18px;
@@ -643,7 +670,6 @@ export default {
   .layim-tool-msgbox .layer-anim-05 {
     display: block;
   }
-
   .layim-tool-msgbox span {
     display: none;
     position: absolute;
