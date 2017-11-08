@@ -1,7 +1,7 @@
 <template>
   <div>
     <transition name="el-fade-in-linear">
-      <div v-if="!minchatck && !closechatck" class="layui-layim-chat">
+      <div v-show="!minchatck && !closechatck" class="layui-layim-chat">
         <!-- 当前聊天列表 -->
         <!-- <ul class="layim-chat-list">
           <li class="tabChat" v-for="(item,index) in tabList" @click="selectTargetEmit(item,index)" :class="{active:index===activeItem.activeIndex}" @mouseenter="colseim=index" @mouseleave="colseim=-1" :key="index">
@@ -36,17 +36,16 @@
           </div>
           <!-- 主体 -->
           <div class="layim-chat-bg">
-            <div class="layim-chat-main">
+            <div class="layim-chat-main"  ref="layscoll">
               <ul>
-                <li v-for="(list,index) in activeItem.msgs" :key="index"  :class="{'layim-chat-mine':activeItem.id === list.content.from_id }">
+                <li v-for="(list,index) in activeItem.msgs" :key="index"  :class="{'layim-chat-mine':userInfo.username == list.content.from_id }">
                   <div class="layim-chat-user"><img :src="activeItem.avatar||activeItem.avatarUrl">
-                    <cite v-if="activeItem.id === list.content.from_id">
-                      <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i>{{list.content.from_name}}</cite>
-                    <cite v-else>
-                      {{list.content.from_name}}
+                    <cite >
+                      {{ userInfo.username == list.content.from_id ? '':list.content.from_name}}
                     <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
                   </div>
-                  <div class="layim-chat-text" v-html="list.content.msg_body.text"></div>
+                  <div class="layim-chat-text" v-if="list.content.msg_type=='text'" v-html="list.content.msg_body.text"></div>
+                  <div class="layim-chat-text" v-else><img src="//.sadasd.asd.png" alt=""></div>
                 </li>
               </ul>
             </div>
@@ -75,7 +74,7 @@
             </div>
             <div class="layim-chat-bottom">
               <div class="layim-chat-send">
-                <span class="layim-send-close" layim-event="closeThisChat">关闭</span>
+                <span class="layim-send-close" @click="togglechatck" layim-event="closeThisChat">关闭</span>
                 <span class="layim-send-btn" layim-event="send">发送</span>
               </div>
             </div>
@@ -85,8 +84,9 @@
     </transition>
     <transition name="el-fade-in-linear">
       <div v-if="minchatck && !closechatck" @click="minchatck=false" class="layui-layim-close">
-        <img src="//tva3.sinaimg.cn/crop.0.0.750.750.180/5033b6dbjw8etqysyifpkj20ku0kuwfw.jpg">
-        <span>佟丽娅</span>
+        <img :src="activeItem.avatar||activeItem.avatarUrl">
+        <span  v-if="activeItem.type === 3">{{activeItem.username}}</span>
+        <span v-if="activeItem.type === 4">{{activeItem.name}}</span>
       </div>
     </transition>
   </div>
@@ -113,7 +113,6 @@ export default {
   data() {
     return {
       JIM: null,
-      chatlist: [{ _id: 1, name: '小红' }, { _id: 2, name: '小名' }, { _id: 3, name: '小啊' }],
       minchatck: false,
       colseim: false,
       activeItem: {
@@ -129,6 +128,7 @@ export default {
         appkey: '',
         msgs: []
       },
+      msgs: [],
       tabList: [] // 当前tab列表
     }
   },
@@ -136,13 +136,20 @@ export default {
     activeUser(val, oldVal) {
       // console.log('new: %s, old: %s', val, oldVal)
       // console.log(this.messageList)
+      this.minchatck = false
       this.activeItem.msgs = []
       this.selectTargetEmit()
+    },
+    msgs(val, oldVal) {
+      setTimeout(() => {
+        this.$refs.layscoll.scrollTop = this.$refs.layscoll.scrollHeight
+      })
     }
   },
   computed: {
     ...mapGetters({
-      messageList: 'messageList'
+      messageList: 'messageList',
+      userInfo: 'imUserinfo'
     })
   },
   created() {
@@ -162,11 +169,12 @@ export default {
             this.activeItem.id = this.activeItem.username
           }
         } else if (element.msg_type === 4 && this.activeItem.type === 4) {
-          if (element.from_gid === this.activeItem.from_gid) {
+          if (Number(element.from_gid) === Number(this.activeItem.gid)) {
             this.activeItem.msgs = element.msgs
-            this.activeItem.id = this.activeItem.from_gid
+            this.activeItem.id = this.activeItem.gid
           }
         }
+        this.msgs = element.msgs
       }, this)
       console.log(this.activeItem)
     }
@@ -415,7 +423,6 @@ export default {
           text-align: right;
           i {
             padding-left: 0;
-            padding-right: 15px;
           }
         }
       }

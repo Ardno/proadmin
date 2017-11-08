@@ -11,6 +11,7 @@ const getters = {
   setting: state => state.user.setting,
   permission_routers: state => state.permission.routers,
   addRouters: state => state.permission.addRouters,
-  messageList: state => state.webim.messageList
+  messageList: state => state.webim.messageList,
+  imUserinfo: state => state.webim.imUserinfo
 }
 export default getters

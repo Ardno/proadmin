@@ -19,6 +19,26 @@
             <el-tabs v-model="activeName" @tab-click="handleClick">
               <el-tab-pane name="first">
                 <span slot="label">
+                  <icon-svg icon-class="message_fill" />
+                </span>
+                <ul @mouseenter="hoverflow('on')" @mouseleave="hoverflow('off')" class="layim-tab-content layui-show" :style="{overflow:overflow}">
+                  <li>
+                    <ul class="layui-layim-list layui-show layim-list-history">
+                      <li @click="imCkPanle(list)" v-for="(list, index) in conversations" :key="index" >
+                        <img :src="list.avatar||list.avatarUrl">
+                        <span v-if="list.type === 3">{{list.username}}</span>
+                        <time class="r g9 time">{{list.mtime | reducerDate}}</time>
+                        <span v-if="list.type === 4">{{list.name}}</span>
+                        <p >{{list.content && list.content.msg_body && list.content.msg_body.text}}
+                          <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
+                        </p>
+                      </li>
+                    </ul>
+                  </li>
+                </ul>
+              </el-tab-pane>
+              <el-tab-pane name="second">
+                <span slot="label">
                   <icon-svg icon-class="people_fill" />
                 </span>
                 <el-collapse :style="{overflow:'auto'}" class="layim-tab-content">
@@ -38,7 +58,7 @@
                   </el-collapse-item>
                 </el-collapse>
               </el-tab-pane>
-              <el-tab-pane name="second">
+              <el-tab-pane name="third">
                 <span slot="label">
                   <icon-svg icon-class="group_fill" />
                 </span>
@@ -54,26 +74,6 @@
                   </li>
                 </ul>
               </el-tab-pane>
-              <el-tab-pane name="third">
-                <span slot="label">
-                  <icon-svg icon-class="message_fill" />
-                </span>
-                <ul @mouseenter="hoverflow('on')" @mouseleave="hoverflow('off')" class="layim-tab-content layui-show" :style="{overflow:overflow}">
-                  <li>
-                    <ul class="layui-layim-list layui-show layim-list-history">
-                      <li @click="imCkPanle(list)" v-for="(list, index) in conversations" :key="index" >
-                        <img :src="list.avatar||list.avatarUrl">
-                        <span v-if="list.type === 3">{{list.username}}</span>
-                        <time class="r g9 time">{{list.mtime | reducerDate}}</time>
-                        <span v-if="list.type === 4">{{list.name}}</span>
-                        <p >{{list.content && list.content.msg_body && list.content.msg_body.text}}
-                          <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
-                        </p>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </el-tab-pane>
             </el-tabs>
             <!-- 底部 -->
             <ul class="layui-unselect layui-layim-tool">
@@ -82,7 +82,7 @@
               </li>
               <li class="layui-icon layim-tool-msgbox " title="消息盒子">
                 <icon-svg icon-class="icon-laba" />
-                <span class="layui-anim layui-anim-loop layer-anim-05">5</span>
+                <!-- <span class="layui-anim layui-anim-loop layer-anim-05">5</span> -->
               </li>
               <li class="layui-icon layim-tool-find" title="查找">
                 <icon-svg icon-class="icon-jia1" />
@@ -153,7 +153,7 @@ export default {
       colseIm: true,
       searchflg: false,
       closechatck: true,
-      activeName: 'third',
+      activeName: 'first',
       JIM: null,
       overflow: 'hidden',
       friend_list: [],
@@ -187,6 +187,27 @@ export default {
     imCkPanle(item) {
       this.closechatck = false
       this.activeUser = item
+      item.unread_msg_count = 0
+      let req = {}
+      if (item.type === 3) {
+        req = {
+          username: item.username
+        }
+      } else {
+        req = {
+          gid: item.gid
+        }
+      }
+      this.resetUnreadCount(req)
+    },
+    receivedMsg(item) {
+      console.log(item)
+      console.log(this.activeUser)
+      // const messages = item.messages
+      this.JIMgetConversation(true)
+      // if(this.activeUser.type.eq(item.msg_type)){
+
+      // }
     },
     JIMInit() { // IM初始化
       this.JIM = getJMessage()
@@ -246,6 +267,7 @@ export default {
           // eventId: info.eventId,
           // stateType: info.stateType
         }
+        this.$store.dispatch('SetImUser', item)
         this.userInfo = item
       }).onFail((error) => {
         errorApiTip(error)
@@ -259,6 +281,7 @@ export default {
         const friend_list = data.friend_list
         for (const friend of friend_list) {
           friend.avatarUrl = single_avatar
+          friend.type = 3
         }
         const memo = {}
         friend_list.forEach(function(element) {
@@ -293,13 +316,34 @@ export default {
         const group_list = data.group_list
         for (const group of group_list) {
           group.avatarUrl = group_avatar
+          group.type = 4
         }
         this.group_list = group_list
       }).onFail((error) => {
         errorApiTip(error)
       })
     },
-    JIMgetConversation() { // 获取会话列表
+    initConverMsg() { // 初始化 离线消息最后一条对应到会话
+      if (this.MsgList) {
+        for (let i = 0; i < this.conversations.length; i++) {
+          inter:
+          for (let j = 0; j < this.MsgList.length; j++) {
+            if (this.conversations[i].type === 3) {
+              if (this.conversations[i].username === this.MsgList[j].from_username) {
+                this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
+                break inter
+              }
+            } else {
+              if (this.conversations[i].gid === this.MsgList[j].from_gid) {
+                this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
+                break inter
+              }
+            }
+          }
+        }
+      }
+    },
+    JIMgetConversation(flg) { // 获取会话列表
       this.JIM.getConversation().onSuccess((data) => {
         const conversations = data.conversations
         for (const conver of conversations) {
@@ -310,28 +354,7 @@ export default {
           }
         }
         this.conversations = conversations.reverse()
-        if (this.MsgList) {
-          for (let i = 0; i < this.conversations.length; i++) {
-            inter:
-            for (let j = 0; j < this.MsgList.length; j++) {
-              if (this.conversations[i].type === 3) {
-                if (this.conversations[i].username === this.MsgList[j].from_username) {
-                  this.conversations[i].unread_msg_count = this.MsgList[j].unread_msg_count
-                  this.conversations[i].mtime = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].ctime_ms
-                  this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
-                  break inter
-                }
-              } else {
-                if (this.conversations[i].gid === this.MsgList[j].from_gid) {
-                  this.conversations[i].unread_msg_count = this.MsgList[j].unread_msg_count
-                  this.conversations[i].mtime = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].ctime_ms
-                  this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
-                  break inter
-                }
-              }
-            }
-          }
-        }
+        this.initConverMsg()
       }).onFail((error) => {
         errorApiTip(error)
       })
@@ -339,24 +362,32 @@ export default {
     onSyncConversation() { // 离线消息同步监听
       this.JIM.onSyncConversation((data) => {
         this.MsgList = data
-        console.log(data)
         this.$store.dispatch('SetMsgList', data)
         this.JIMgetConversation()
       })
     },
     onMsgReceive() { // 聊天消息实时监听
       this.JIM.onMsgReceive((data) => {
-        console.log(data)
+        const obj = data.messages[0].content
+        const title = obj.from_name
+        let alert = '你有新的消息'
+        if (obj.msg_type === 'text') {
+          alert = obj.msg_body.text
+        }
         imNotification({
-          title: '测试',
-          alert: 'lalsdasd'
+          title: title,
+          alert: alert
         })
+        this.receivedMsg(data)
       })
     },
     onMsgReceiptChange() { // 消息已读数变更事件实时监听
       this.JIM.onMsgReceiptChange((data) => {
         console.log('onMsgReceiptChange', data)
       })
+    },
+    resetUnreadCount(req) { // 重置单聊会话，调用则成功，无回调函数
+      this.JIM.resetUnreadCount(req)
     },
     onSyncMsgReceipt() { // 消息已读数变更事件实时监听
       this.JIM.onSyncMsgReceipt((data) => {

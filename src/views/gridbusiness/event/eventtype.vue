@@ -47,7 +47,7 @@
       </template>
       </el-table-column>
     </el-table>
-    <el-dialog :title="titles" :visible.sync="dialogFormVisible" size="tiny">
+    <el-dialog :title="titles" :visible.sync="dialogFormVisible" size="small">
       <el-form class="small-space" :model="eventInfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="120px">
         <el-form-item label="部门" prop="dept_id">
           <el-select filterable v-model="eventInfo.dept_id" @change="changeStep" placeholder="请选择部门">
@@ -145,6 +145,10 @@ export default {
       this.eventInfo = Object.assign({ steparr: [] }, item)
       if (this.eventInfo.step_ids) {
         this.eventInfo.steparr = this.eventInfo.step_ids.split(',')
+        for (var key in this.eventInfo.steparr) {
+          this.eventInfo.steparr[key] = Number(this.eventInfo.steparr[key])
+        }
+        console.log(this.eventInfo.steparr)
       } else {
         this.eventInfo.steparr = []
       }
@@ -207,7 +211,7 @@ export default {
       getStepsArr({
         start_index: 0,
         length: 10000 }).then(res => {
-          this.allStepsArr = res.info
+          this.allStepsArr = res.info.list
         })
     },
     changeStep(id) { //  获取部门下面的步骤集合
@@ -239,6 +243,8 @@ export default {
   }
 }
 </script>
-<style lang="scss">
-
+<style lang="scss" scoped>
+.el-select{
+  width: 70%;
+}
 </style>

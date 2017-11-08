@@ -132,6 +132,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { fetchList, fetchDepartments, fetchRoles, updatePeInfo } from '@/api/department'
 import { validateMblNo, validateIdNum } from '@/utils/validate'
 import { isAccess } from '@/utils/auth'
@@ -204,16 +205,22 @@ export default {
       return statusMap[status]
     }
   },
+  computed: {
+    ...mapGetters({
+      useinfo: 'useinfo'
+    })
+  },
   created() {
+    this.listQuery.department = this.useinfo.dept_name
+    this.listQuery.department_id = this.useinfo.department_id
     this.loadRls('')
     this.loadDps()
-    this.getList()
+    this.getList(true)
   },
   methods: {
     isAccess: isAccess,
     querySearch(queryString, cb) {
       var restaurants = this.restaurants
-      console.log(restaurants)
       var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants
       // 调用 callback 返回建议列表的数据
       cb(results)
@@ -319,15 +326,17 @@ export default {
     formatDate(te) {
       // this.temp.birthday = Math.round(new Date(te).getTime() / 1000)
     },
-    getList() {
+    getList(flg) {
       this.listLoading = true
       const array = this.restaurants
-      this.listQuery.department_id = this.listQuery.department
-      array.forEach(function(element) { // 在已有部门查找是否存在该部门，
-        if (this.listQuery.department === element.value) {
-          this.listQuery.department_id = element._id
-        }
-      }, this)
+      if (!flg) {
+        this.listQuery.department_id = this.listQuery.department
+        array.forEach(function(element) { // 在已有部门查找是否存在该部门，
+          if (this.listQuery.department === element.value) {
+            this.listQuery.department_id = element._id
+          }
+        }, this)
+      }
       fetchList(this.listQuery).then(response => {
         this.list = response.info.list
         this.listQuery.totalPages = response.info.count
