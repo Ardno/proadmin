@@ -17,9 +17,10 @@
           <!-- 头部 -->
           <div class="chat-title">
             <div class="layim-chat-other">
-              <img src="//tva3.sinaimg.cn/crop.0.0.750.750.180/5033b6dbjw8etqysyifpkj20ku0kuwfw.jpg">
-              <span class="layim-chat-username ell" layim-event="">佟丽娅 </span>
-              <p class="layim-chat-status ell">在新as</p>
+              <img :src="activeItem.avatar||activeItem.avatarUrl">
+              <span class="layim-chat-username ell" v-if="activeItem.type === 3">{{activeItem.username}}</span>
+              <span class="layim-chat-username ell" v-if="activeItem.type === 4">{{activeItem.name}}</span>
+              <!-- <p class="layim-chat-status ell">暂无签名</p> -->
             </div>
             <span class="layui-layer-setwin">
               <span @click="minchatck=true">
@@ -37,35 +38,15 @@
           <div class="layim-chat-bg">
             <div class="layim-chat-main">
               <ul>
-                <li class="layim-chat-mine">
-                  <div class="layim-chat-user"><img src="//res.layui.com/images/fly/avatar/00.jpg">
-                    <cite>
-                      <i>2017-10-22 11:19:48</i>纸飞机</cite>
+                <li v-for="(list,index) in activeItem.msgs" :key="index"  :class="{'layim-chat-mine':activeItem.id === list.content.from_id }">
+                  <div class="layim-chat-user"><img :src="activeItem.avatar||activeItem.avatarUrl">
+                    <cite v-if="activeItem.id === list.content.from_id">
+                      <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i>{{list.content.from_name}}</cite>
+                    <cite v-else>
+                      {{list.content.from_name}}
+                    <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
                   </div>
-                  <div class="layim-chat-text">sda sdasd</div>
-                </li>
-                <li>
-                  <div class="layim-chat-user"><img src="//tva3.sinaimg.cn/crop.0.0.750.750.180/5033b6dbjw8etqysyifpkj20ku0kuwfw.jpg">
-                    <cite>佟丽娅
-                      <i>2017-10-22 11:19:49</i>
-                    </cite>
-                  </div>
-                  <div class="layim-chat-text">你好，我是主人的美女秘书，有什么事就跟我说吧，等他回来我会转告他的。<img alt="[心]" title="[心]" src="http://res.layui.com/layui/dist/images/face/47.gif"> <img alt="[心]" title="[心]" src="http://res.layui.com/layui/dist/images/face/47.gif"> <img alt="[心]" title="[心]" src="http://res.layui.com/layui/dist/images/face/47.gif"> </div>
-                </li>
-                <li class="layim-chat-mine">
-                  <div class="layim-chat-user"><img src="//res.layui.com/images/fly/avatar/00.jpg">
-                    <cite>
-                      <i>2017-10-22 11:20:11</i>纸飞机</cite>
-                  </div>
-                  <div class="layim-chat-text">sadsadsa</div>
-                </li>
-                <li>
-                  <div class="layim-chat-user"><img src="//tva3.sinaimg.cn/crop.0.0.750.750.180/5033b6dbjw8etqysyifpkj20ku0kuwfw.jpg">
-                    <cite>佟丽娅
-                      <i>2017-10-22 11:20:12</i>
-                    </cite>
-                  </div>
-                  <div class="layim-chat-text">您好，我现在有事不在，一会再和您联系。</div>
+                  <div class="layim-chat-text" v-html="list.content.msg_body.text"></div>
                 </li>
               </ul>
             </div>
@@ -112,6 +93,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { getJMessage } from '@/utils/IM'
 import drag from '@/directive/drag/index.js'
 export default {
@@ -125,36 +107,43 @@ export default {
       type: Object
     }
   },
-  computed: {
-  },
   directives: {
     drag
   },
   data() {
     return {
-      messageList: [],
       JIM: null,
       chatlist: [{ _id: 1, name: '小红' }, { _id: 2, name: '小名' }, { _id: 3, name: '小啊' }],
       minchatck: false,
       colseim: false,
       activeItem: {
         // 当前active的用户
+        id: '',
         name: '',
-        nickName: '',
+        info: '',
         key: '',
         activeIndex: -1,
         type: 0,
         change: false,
         shield: false,
-        appkey: ''
+        appkey: '',
+        msgs: []
       },
       tabList: [] // 当前tab列表
     }
   },
   watch: {
     activeUser(val, oldVal) {
-      console.log('new: %s, old: %s', val, oldVal)
+      // console.log('new: %s, old: %s', val, oldVal)
+      // console.log(this.messageList)
+      this.activeItem.msgs = []
+      this.selectTargetEmit()
     }
+  },
+  computed: {
+    ...mapGetters({
+      messageList: 'messageList'
+    })
   },
   created() {
     this.JIM = getJMessage()
@@ -162,9 +151,25 @@ export default {
   methods: {
     togglechatck() {
       this.$emit('update:closechatck', true)
+    },
+    selectTargetEmit() { // 切换当前对话用户
+      const a = this.activeUser
+      this.activeItem = Object.assign(this.activeItem, a)
+      this.messageList.forEach(function(element) {
+        if (element.msg_type === 3 && this.activeItem.type === 3) {
+          if (element.from_username === this.activeItem.username) {
+            this.activeItem.msgs = element.msgs
+            this.activeItem.id = this.activeItem.username
+          }
+        } else if (element.msg_type === 4 && this.activeItem.type === 4) {
+          if (element.from_gid === this.activeItem.from_gid) {
+            this.activeItem.msgs = element.msgs
+            this.activeItem.id = this.activeItem.from_gid
+          }
+        }
+      }, this)
+      console.log(this.activeItem)
     }
-    // selectTargetEmit(item) { // 切换当前对话用户
-    // },
   }
 }
 </script>

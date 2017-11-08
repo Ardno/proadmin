@@ -127,7 +127,7 @@ import drag from '@/directive/drag/index.js'
 // import store from './store'
 import chatck from './chatck'
 import { getJMessage, authPayload, errorApiTip } from '@/utils/IM'
-import { createSignature } from '@/utils/utils'
+import { createSignature, imNotification } from '@/utils/utils'
 import { reducerDate } from '@/utils/index'
 import { md5 } from '@/utils/md5'
 import group_avatar from '@/assets/images/group-avatar.svg'
@@ -168,6 +168,10 @@ export default {
     }
   },
   created() {
+    if (window.Notification) {
+      Notification.requestPermission((permission) => { // 通知用户显示通知
+      })
+    }
     this.JIMInit()
   },
   methods: {
@@ -214,7 +218,6 @@ export default {
         this.JIMgetUserInfo(login.username)
         this.JIMgetFriendList()
         this.JIMgetGroups()
-        this.JIMgetConversation()
         this.onMsgReceive()
         this.onSyncConversation()
         this.onMsgReceiptChange()
@@ -307,22 +310,24 @@ export default {
           }
         }
         this.conversations = conversations.reverse()
-        for (let i = 0; i < this.conversations.length; i++) {
-          inter:
-          for (let j = 0; j < this.MsgList.length; j++) {
-            if (this.conversations[i].type === 3) {
-              if (this.conversations[i].username === this.MsgList[j].from_username) {
-                this.conversations[i].unread_msg_count = this.MsgList[j].unread_msg_count
-                this.conversations[i].mtime = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].ctime_ms
-                this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
-                break inter
-              }
-            } else {
-              if (this.conversations[i].gid === this.MsgList[j].from_gid) {
-                this.conversations[i].unread_msg_count = this.MsgList[j].unread_msg_count
-                this.conversations[i].mtime = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].ctime_ms
-                this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
-                break inter
+        if (this.MsgList) {
+          for (let i = 0; i < this.conversations.length; i++) {
+            inter:
+            for (let j = 0; j < this.MsgList.length; j++) {
+              if (this.conversations[i].type === 3) {
+                if (this.conversations[i].username === this.MsgList[j].from_username) {
+                  this.conversations[i].unread_msg_count = this.MsgList[j].unread_msg_count
+                  this.conversations[i].mtime = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].ctime_ms
+                  this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
+                  break inter
+                }
+              } else {
+                if (this.conversations[i].gid === this.MsgList[j].from_gid) {
+                  this.conversations[i].unread_msg_count = this.MsgList[j].unread_msg_count
+                  this.conversations[i].mtime = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].ctime_ms
+                  this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
+                  break inter
+                }
               }
             }
           }
@@ -336,11 +341,16 @@ export default {
         this.MsgList = data
         console.log(data)
         this.$store.dispatch('SetMsgList', data)
+        this.JIMgetConversation()
       })
     },
     onMsgReceive() { // 聊天消息实时监听
       this.JIM.onMsgReceive((data) => {
         console.log(data)
+        imNotification({
+          title: '测试',
+          alert: 'lalsdasd'
+        })
       })
     },
     onMsgReceiptChange() { // 消息已读数变更事件实时监听
