@@ -86,7 +86,7 @@
                 <el-button v-show="isAccess('12') && index===0" class="r ml10" type="text" @click="handleUpdatePeInfo('0',pitem,index)"> 添加</el-button>
               </el-form-item>
               <el-form-item label="加入时间">
-                <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+                <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
               </el-form-item>
             </el-form>
           </el-card>
@@ -581,24 +581,24 @@ export default {
     loadDps() { // 获取部门集合
       axios.all([fetchDepartments(''), fetchList({ start_index: 0, length: 10000 })])
         .then(axios.spread((acct, perms) => {
-          var data = perms.info.list
+          var data = deepClone(perms.info.list)
           this.restaurants = []
           acct.info.forEach(function(element) {
             if (!element.status) {
               this.restaurants.push(element)
             }
           }, this)
-          debugger
+          const perpArr = []
           data.forEach(function(element) { // 将用户对象修改成带parent的对象以便和部门对象数组合并
-            for (const key in element) {
-              if (key === '_id') {
-                element.cid = element[key]
-                delete element[key]
-              }
-              if (key === 'department_id') {
-                element.parent = element[key]
-              }
-            }
+            element.department_roles.forEach(function(cls) {
+              const ars = deepClone(element)
+              ars.cid = ars['_id']
+              delete ars['_id']
+              ars.department_id = cls.department_id
+              ars.role_id = cls.role_id
+              ars.parent = cls.department_id
+              perpArr.push(ars)
+            }, this)
           }, this)
           const map = { name: 'label', _id: 'id' }
           const list = deepClone(acct.info)
@@ -609,7 +609,7 @@ export default {
               }
             }
           }, this)
-          list.push(...data)
+          list.push(...perpArr)
           try {
             const tree1 = new TreeUtil(list, '_id', 'parent', map)
             this.depList = tree1.toTree()
@@ -640,12 +640,17 @@ export default {
     getDepPepArr(id) {
       axios.all([fetchRoles(''), fetchList({ start_index: 0, length: 10000, department_id: id })])
       .then(axios.spread((acct, perms) => {
-        var data = perms.info
+        debugger
+        var data = perms.info.list
         acct.info.forEach(function(element) { // 赋值职位级别到对象
           data.forEach(function(els) {
-            if (element['_id'] === els['roleid']) {
-              els['level'] = element['level']
-            }
+            els.department_roles.forEach(function(asf) {
+              if (Number(asf.department_id) === id) {
+                if (element['_id'] === Number(asf.role_id)) {
+                  els['level'] = element['level']
+                }
+              }
+            }, this)
           }, this)
         }, this)
         data.sort(sortBy('level'))
