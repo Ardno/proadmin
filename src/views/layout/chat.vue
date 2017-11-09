@@ -82,7 +82,7 @@
               </li>
               <li class="layui-icon layim-tool-msgbox " title="消息盒子">
                 <icon-svg icon-class="icon-laba" />
-                <!-- <span class="layui-anim layui-anim-loop layer-anim-05">5</span> -->
+                <span v-if="totalCount" class="layui-anim layui-anim-loop layer-anim-05">{{totalCount}}</span>
               </li>
               <li class="layui-icon layim-tool-find" title="查找">
                 <icon-svg icon-class="icon-jia1" />
@@ -116,7 +116,7 @@
       </div>
     </transition>
     <transition name="el-fade-in-linear">
-       <chatck :closechatck.sync="closechatck" :activeUser="activeUser" ></chatck>
+       <chatck :closechatck.sync="closechatck" :activeUser="activeUser" :newmsg="newmsg" ></chatck>
     </transition>
   </div>
 </template>
@@ -133,6 +133,7 @@ import { md5 } from '@/utils/md5'
 import group_avatar from '@/assets/images/group-avatar.svg'
 import single_avatar from '@/assets/images/single-avatar.svg'
 import avteinfo from '@/assets/images/avteinfo.svg'
+import store from '@/store/index'
 export default {
   name: 'chat',
   components: {
@@ -161,6 +162,8 @@ export default {
       conversations: [],
       activeUser: null,
       MsgList: null,
+      newmsg: null,
+      totalCount: 0,
       userInfo: {
         username: '',
         signature: ''
@@ -187,27 +190,92 @@ export default {
     imCkPanle(item) {
       this.closechatck = false
       this.activeUser = item
-      item.unread_msg_count = 0
       let req = {}
       if (item.type === 3) {
         req = {
           username: item.username
         }
+        this.UpdateConversationList(item.username, true)
       } else {
         req = {
           gid: item.gid
         }
+        this.UpdateConversationList(item.gid, true)
       }
       this.resetUnreadCount(req)
     },
-    receivedMsg(item) {
-      console.log(item)
-      console.log(this.activeUser)
-      // const messages = item.messages
-      this.JIMgetConversation(true)
-      // if(this.activeUser.type.eq(item.msg_type)){
-
-      // }
+    UpdateConversationList(id, flg, content) {
+      // 更新会话列表
+      const cons = []
+      cons.push(...this.conversations)
+      for (let i = 0; i <= cons.length; i++) {
+        if (cons[i].gid) {
+          cons[i].gid = Number(cons[i].gid)
+        }
+        if (id === cons[i].gid || id === cons[i].username) {
+          const arr = this.conversations.splice(i, 1) // 把收到的消息的会话提到第一位
+          if (content) {
+            arr[0].content = content
+            if (content.create_time) {
+              arr[0].mtime = content.create_time
+            }
+          }
+          if (flg) { // 设置已读
+            this.totalCount = this.totalCount - arr[0].unread_msg_count
+            arr[0].unread_msg_count = 0
+          } else {
+            arr[0].unread_msg_count++ // 消息+1
+            this.totalCount ++
+          }
+          this.conversations.unshift(arr[0])
+          break
+        }
+      }
+    },
+    receivedMsg(data) {
+      const msglist = store.getters.messageList // 离线消息列表
+      let id = ''
+      data.messages.forEach(function(element) { // 循环收到的消息
+        if (element.msg_type === 3) {
+          id = element.from_username
+        } else if (element.msg_type === 4) {
+          id = element.from_gid
+        }
+        if (msglist[id]) { // 判断新消息是否存在已有的离线消息列表中
+          msglist[id].msgs.push(element) // 把新消息插入到离线消息列表中
+          if (!this.closechatck) { // 如果当前存在聊天窗口且是当前窗口的消息
+            if (this.activeUser.username === id) {
+              // 通知聊天窗口接受新的聊天消息
+              this.newmsg = element
+              this.UpdateConversationList(id, true, element.content)
+            } else {
+              this.UpdateConversationList(id, false, element.content)
+            }
+          } else {
+            this.UpdateConversationList(id, false, element.content)
+          }
+        } else { // 更新会话列表，
+          if (element.msg_type === 3) {
+            msglist[id] = {
+              from_username: element.from_username,
+              key: element.key,
+              msgs: [],
+              msg_type: 3
+            }
+          } else if (element.msg_type === 4) {
+            msglist[id] = {
+              from_gid: element.from_gid,
+              key: element.key,
+              msgs: [],
+              msg_type: 4
+            }
+          }
+          msglist[id].msgs.push(element)
+          this.JIMgetConversation()
+        }
+        this.MsgList = msglist
+        this.$store.dispatch('SetMsgList', msglist)
+      }, this)
     },
     JIMInit() { // IM初始化
       this.JIM = getJMessage()
@@ -326,19 +394,11 @@ export default {
     initConverMsg() { // 初始化 离线消息最后一条对应到会话
       if (this.MsgList) {
         for (let i = 0; i < this.conversations.length; i++) {
-          inter:
-          for (let j = 0; j < this.MsgList.length; j++) {
-            if (this.conversations[i].type === 3) {
-              if (this.conversations[i].username === this.MsgList[j].from_username) {
-                this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
-                break inter
-              }
-            } else {
-              if (this.conversations[i].gid === this.MsgList[j].from_gid) {
-                this.conversations[i].content = this.MsgList[j].msgs[this.MsgList[j].msgs.length - 1].content
-                break inter
-              }
-            }
+          const c = this.conversations[i]
+          if (c.type === 3) {
+            c.content = this.MsgList[c.username].msgs[this.MsgList[c.username].msgs.length - 1].content
+          } else {
+            c.content = this.MsgList[c.gid].msgs[this.MsgList[c.gid].msgs.length - 1].content
           }
         }
       }
@@ -352,32 +412,46 @@ export default {
           } else {
             conver.avatarUrl = group_avatar
           }
+          this.totalCount += conver.unread_msg_count
         }
         this.conversations = conversations.reverse()
-        this.initConverMsg()
+        if (!flg) {
+          this.initConverMsg()
+        }
       }).onFail((error) => {
         errorApiTip(error)
       })
     },
     onSyncConversation() { // 离线消息同步监听
       this.JIM.onSyncConversation((data) => {
-        this.MsgList = data
-        this.$store.dispatch('SetMsgList', data)
+        const arr = data
+        const obj = {}
+        arr.forEach(function(element) { // 将数组转换对象的形式，方便查询消息
+          if (element.msg_type === 3) {
+            obj[element.from_username] = element
+          } else if (element.msg_type === 4) {
+            obj[element.from_gid] = element
+          }
+        }, this)
+        this.$store.dispatch('SetMsgList', obj)
+        this.MsgList = obj
         this.JIMgetConversation()
       })
     },
     onMsgReceive() { // 聊天消息实时监听
       this.JIM.onMsgReceive((data) => {
-        const obj = data.messages[0].content
-        const title = obj.from_name
         let alert = '你有新的消息'
-        if (obj.msg_type === 'text') {
-          alert = obj.msg_body.text
-        }
-        imNotification({
-          title: title,
-          alert: alert
-        })
+        data.messages.forEach(function(element) {
+          const obj = data.messages[0].content
+          const title = obj.from_name
+          if (obj.msg_type === 'text') {
+            alert = obj.msg_body.text
+          }
+          imNotification({
+            title: title,
+            alert: alert
+          })
+        }, this)
         this.receivedMsg(data)
       })
     },
