@@ -2,10 +2,10 @@
   <div class="app-container calendar-list-container">
     <div class="layui-elem-quote">
       <el-autocomplete class="inline-input vt" v-model="listQuery.department" :fetch-suggestions="querySearch" placeholder="请输入部门" :trigger-on-focus="false" @select="handleSelect"></el-autocomplete>
-      <el-select clearable class="filter-item" style="width: 130px" v-model="listQuery.role_id" placeholder="职位">
+      <!-- <el-select clearable class="filter-item" style="width: 130px" v-model="listQuery.role_id" placeholder="职位">
         <el-option v-for="item in  solerr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
-      </el-select>
+      </el-select> -->
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
     </div>
 
@@ -52,12 +52,12 @@
       </el-table-column>
       <el-table-column align="center" label="部门">
         <template scope="scope">
-          <span>{{scope.row.dept_name}}</span>
+          <span>{{filterDepRose(scope.row.department_roles,true)}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="职位">
         <template scope="scope">
-          <span>{{scope.row.role_name}}</span>
+          <span>{{filterDepRose(scope.row.department_roles,false)}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="190" v-if="isAccess('12')">
@@ -224,6 +224,27 @@ export default {
       var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants
       // 调用 callback 返回建议列表的数据
       cb(results)
+    },
+    filterDepRose(arr, flg) { // 转换部门和集合
+      let name = ''
+      arr.forEach(function(element) {
+        if (element.is_enable) {
+          if (flg) {
+            this.restaurants.forEach(function(els) {
+              if (Number(element.department_id) === els._id) {
+                name = els.value
+              }
+            }, this)
+          } else {
+            this.solerr.forEach(function(els) {
+              if (Number(element.role_id) === els._id) {
+                name = els.name
+              }
+            }, this)
+          }
+        }
+      }, this)
+      return name
     },
     createFilter(queryString) {
       return (restaurant) => {
