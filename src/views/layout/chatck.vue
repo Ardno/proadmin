@@ -23,12 +23,12 @@
               <!-- <p class="layim-chat-status ell">暂无签名</p> -->
             </div>
             <span class="layui-layer-setwin">
-              <span @click="minchatck=true">
+              <!-- <span @click="minchatck=true">
                 <icon-svg icon-class="icon-iconmianxingshujujian" />
-              </span>
-              <span>
+              </span> -->
+              <!-- <span>
                 <icon-svg icon-class="fullscreen" />
-              </span>
+              </span> -->
               <span @click="togglechatck">
                 <icon-svg  icon-class="close" />
               </span>
@@ -96,6 +96,7 @@
 import { mapGetters } from 'vuex'
 import { getJMessage } from '@/utils/IM'
 import drag from '@/directive/drag/index.js'
+import store from '@/store/index'
 export default {
   name: 'chatck',
   props: {
@@ -104,6 +105,9 @@ export default {
       default: true
     },
     activeUser: {
+      type: Object
+    },
+    newmsg: {
       type: Object
     }
   },
@@ -118,14 +122,8 @@ export default {
       activeItem: {
         // 当前active的用户
         id: '',
-        name: '',
         info: '',
-        key: '',
-        activeIndex: -1,
         type: 0,
-        change: false,
-        shield: false,
-        appkey: '',
         msgs: []
       },
       msgs: [],
@@ -134,16 +132,17 @@ export default {
   },
   watch: {
     activeUser(val, oldVal) {
-      // console.log('new: %s, old: %s', val, oldVal)
-      // console.log(this.messageList)
       this.minchatck = false
-      this.activeItem.msgs = []
       this.selectTargetEmit()
     },
     msgs(val, oldVal) {
       setTimeout(() => {
         this.$refs.layscoll.scrollTop = this.$refs.layscoll.scrollHeight
       })
+    },
+    newmsg(val, oldVal) { // 收到新的消息
+      this.messageList = store.getters.messageList
+      this.getActiveMsg()
     }
   },
   computed: {
@@ -159,24 +158,27 @@ export default {
     togglechatck() {
       this.$emit('update:closechatck', true)
     },
+    getActiveMsg() {
+      const m = this.messageList
+      const a = this.activeItem
+      if (m[a.id]) { // 判断当前用户是否存在历史消息
+        a.msgs = m[a.id].msgs
+        this.msgs = m[a.id].msgs
+      } else {
+        // 通知更新会话面板
+      }
+    },
     selectTargetEmit() { // 切换当前对话用户
       const a = this.activeUser
-      this.activeItem = Object.assign(this.activeItem, a)
-      this.messageList.forEach(function(element) {
-        if (element.msg_type === 3 && this.activeItem.type === 3) {
-          if (element.from_username === this.activeItem.username) {
-            this.activeItem.msgs = element.msgs
-            this.activeItem.id = this.activeItem.username
-          }
-        } else if (element.msg_type === 4 && this.activeItem.type === 4) {
-          if (Number(element.from_gid) === Number(this.activeItem.gid)) {
-            this.activeItem.msgs = element.msgs
-            this.activeItem.id = this.activeItem.gid
-          }
-        }
-        this.msgs = element.msgs
-      }, this)
-      console.log(this.activeItem)
+      const activeItem = {
+        id: '',
+        info: '',
+        type: 0,
+        msgs: []
+      }
+      activeItem.id = a.username || a.gid
+      this.activeItem = Object.assign(activeItem, a)
+      this.getActiveMsg()
     }
   }
 }

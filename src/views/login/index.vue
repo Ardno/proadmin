@@ -69,7 +69,7 @@ export default {
     }
     return {
       loginForm: {
-        username: '18320920245',
+        username: '18320920248',
         password: '123456',
         qr_code: ''
       },

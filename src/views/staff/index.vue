@@ -60,11 +60,12 @@
           <span>{{filterDepRose(scope.row.department_roles,false)}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="190" v-if="isAccess('12')">
+      <el-table-column align="center" label="操作" width="250" v-if="isAccess('12')">
         <template scope="scope">
           <el-button size="small" type="success" @click="handleUpdateDa(scope.row)">修改
           </el-button>
           <el-button :plain="true" size="small" type="success" @click="handlePwd(scope.row)">重置密码</el-button>
+          <el-button :plain="true" size="small" type="success" @click="handleKaoq(scope.row)">设置考勤</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -127,11 +128,21 @@
         <el-button type="primary" @click="handleUpdate">确 定</el-button>
       </div>
     </el-dialog>
-
+    <el-dialog title="设置考勤规则" size="tiny" :visible.sync="dialogFormVisiblek" class="customxing">
+      <el-select  class="filter-item" v-model="reqkaoq.dance_config_id" placeholder="默认规则">
+        <el-option v-for="item in  kaoqingArr" :key="item._id" :label="item.name" :value="item._id">
+        </el-option>
+      </el-select>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisiblek = false">取 消</el-button>
+        <el-button type="primary" @click="handleUpdateKq">确 定</el-button>
+      </div>
+    </el-dialog>  
   </div>
 </template>
 
 <script>
+import { getadcArr } from '@/api/schedule'
 import { mapGetters } from 'vuex'
 import { fetchList, fetchDepartments, fetchRoles, updatePeInfo } from '@/api/department'
 import { validateMblNo, validateIdNum } from '@/utils/validate'
@@ -170,6 +181,7 @@ export default {
         department_id: '',
         role_id: ''
       },
+      dialogFormVisiblek: false,
       dialogFormVisible: false,
       list: null,
       currentPage1: 5,
@@ -191,6 +203,11 @@ export default {
         idNum: [{ required: true, trigger: 'blur', validator: validateUserIdNum }],
         mobile: [{ required: true, trigger: 'blur', validator: validateUsername }]
       },
+      reqkaoq: {
+        _id: '',
+        dance_config_id: ''
+      },
+      kaoqingArr: [],
       listLoading: true,
       tableKey: 0
     }
@@ -255,6 +272,9 @@ export default {
       fetchRoles(rq).then(response => {
         this.solerr = response.info
       })
+      getadcArr({ start_index: 0, length: 10000 }).then(response => {
+        this.kaoqingArr = response.info.list
+      })
     },
     loadDps() {
       fetchDepartments('').then(response => {
@@ -316,6 +336,23 @@ export default {
         }
       })
     },
+    handleUpdateKq() { // 修改人员考勤规则
+      updatePeInfo(this.reqkaoq).then(response => {
+        this.dialogFormVisiblek = false
+        this.$message({
+          message: '个人考勤规则修改成功！',
+          type: 'success',
+          duration: 4 * 1000
+        })
+        this.getList()
+      }).catch(() => {
+        this.$message({
+          message: '个人考勤规则修改失败，请稍后再试',
+          type: 'error',
+          duration: 4 * 1000
+        })
+      })
+    },
     handlePwd(item) {
       this.$prompt('请输入密码', '提示', {
         confirmButtonText: '确定',
@@ -343,6 +380,11 @@ export default {
       }).catch(() => {
         console.log('取消修改')
       })
+    },
+    handleKaoq(item) { // 设置考勤规则
+      this.dialogFormVisiblek = true
+      this.reqkaoq._id = item._id
+      this.reqkaoq.dance_config_id = item.dance_config_id
     },
     formatDate(te) {
       // this.temp.birthday = Math.round(new Date(te).getTime() / 1000)

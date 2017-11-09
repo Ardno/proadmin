@@ -54,7 +54,7 @@
                 <span class="g6">{{ kaoqFiler(depInfo.dance_config_id)}}</span>
               </el-form-item>
               <el-form-item label="录入时间">
-                <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+                <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}',true)}}</span>
               </el-form-item>
               <el-form-item style="border:none" v-if="isAccess('22')">
                 <el-button type="primary" v-show="firstflg" @click="updateInfo">{{infoupdate?'修改':'保存'}}</el-button>
@@ -588,6 +588,7 @@ export default {
               this.restaurants.push(element)
             }
           }, this)
+          debugger
           data.forEach(function(element) { // 将用户对象修改成带parent的对象以便和部门对象数组合并
             for (const key in element) {
               if (key === '_id') {
