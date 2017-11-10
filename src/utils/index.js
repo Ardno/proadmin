@@ -427,11 +427,11 @@ export function reducerDate(msgTime) {
     a: time.getDay()
   }
   if (msgYear !== nowYear) {
-    showTime = `${t.y}-${t.m}-${t.d}`
+    showTime = `${t.y}年${t.m}月${t.d}日`
   } else if (gapDate > 6) {
-    showTime = `${t.m}-${t.d}`
+    showTime = `${t.m}月${t.d}日`
   } else if (gapDate <= 6 && gapDate > 2) {
-    showTime = `${t.a}`
+    showTime = `${t.m}月${t.d}日`
   } else if (gapDate <= 2 && gapDate > 1) {
     showTime = '前天'
   } else if (gapDate <= 1 && gapDate > 0) {

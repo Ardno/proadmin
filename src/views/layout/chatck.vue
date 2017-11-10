@@ -44,9 +44,9 @@
                       {{ userInfo.username == list.content.from_id ? '':list.content.from_name}}
                     <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
                   </div>
-                  
-                  <span class="spinrose mr10 activespin"></span>
-                  <!-- <span class="dib f24 g9 activespin mr10"><icon-svg icon-class="refresh" /></span> -->
+                  {{list}}
+                  <span v-if="list.success == 1" class="spinrose mr10 activespin"></span>
+                  <span v-if="list.success == 3" @click="repeatSendMsg(list)" class="dib f24 g9 mt30 poi mr10"><icon-svg icon-class="refresh" /></span>
                   <div class="layim-chat-text" v-if="list.content.msg_type=='text'" v-html="list.content.msg_body.text">
                   </div>
                   <div class="layim-chat-text" v-else><img src="//.sadasd.asd.png" alt=""></div>
@@ -79,7 +79,7 @@
             <div class="layim-chat-bottom">
               <div class="layim-chat-send">
                 <span class="layim-send-close" @click="togglechatck()" layim-event="closeThisChat">关闭</span>
-                <span class="layim-send-btn" @click="sendMsgEmit('')"  layim-event="send">发送</span>
+                <span class="layim-send-btn" @click="sendMsgEmit('')"  layim-event="send" title="按Ctrl+Enter键发送消息">发送</span>
               </div>
             </div>
           </div>
@@ -137,6 +137,7 @@ export default {
         atList: '',
         isAtAll: ''
       },
+      msgKey: 0,
       msgs: [],
       tabList: [] // 当前tab列表
     }
@@ -191,6 +192,19 @@ export default {
       console.log(this.activeItem)
       this.getActiveMsg()
     },
+    repeatSendMsg(msg) {
+      msg.success = 1
+      const req = {
+        content: msg.content.msg_body.text,
+        repeatSend: true,
+        extras: '',
+        localExtras: '',
+        atList: '',
+        isAtAll: '',
+        msgKey: msg.msgKey
+      }
+      this.sendMsgEmit(req)
+    },
     sendMsgEmit(resl) { // 发送文本消息
       const activePerson = this.activeItem
       const data = resl || this.requstData
@@ -213,7 +227,8 @@ export default {
           }
         },
         ctime_ms: new Date().getTime(),
-        success: 1
+        success: 1,
+        msgKey: resl.msgKey || this.msgKey ++
       }
       if (activePerson.type === 3 && !data.repeatSend) {
         const singleMsg = {
@@ -260,9 +275,11 @@ export default {
         }
       }
       this.JIMsendSingleMsg(obj)
-      const msglist = this.messageList // 离线消息列表
-      if (msglist[activePerson.id]) {
-        msglist[activePerson.id].msgs.push(msgs)
+      if (!data.repeatSend) {
+        const msglist = this.messageList // 离线消息列表
+        if (msglist[activePerson.id]) {
+          msglist[activePerson.id].msgs.push(msgs)
+        }
       }
       // this.$store.dispatch('SetMsgList', msglist)
     }, // end 文本消息
@@ -277,18 +294,26 @@ export default {
         msg_body: msgBody
       })
       .onSuccess((data, msgs) => {
-        this.sendMsgComplete(true, msgs)
+        this.sendMsgComplete(true, msgs, text)
       }).onFail((erros) => {
         this.sendMsgComplete(false)
       }).onTimeout((data) => {
         this.sendMsgComplete(false)
       })
     },
-    sendMsgComplete(flg, msgs) { // 发送消息完成
-      if (flg) { // 发送成功
-
-      } else { // 发送失败
-
+    sendMsgComplete(flg, msgs, text) { // 发送消息完成
+      if (this.messageList[this.activeItem.id]) {
+        const arr = this.messageList[this.activeItem.id].msgs
+        for (let index = 0; index < arr.length; index++) {
+          if (text.msgs.msgKey === arr[index].msgKey) {
+            if (flg) { // 发送成功
+              arr[index].success = 2
+              arr[index] = msgs
+            } else { // 发送失败
+              arr[index].success = 3
+            }
+          }
+        }
       }
     } // end 完成消息发送
   }
