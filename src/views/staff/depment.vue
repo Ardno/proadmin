@@ -640,7 +640,6 @@ export default {
     getDepPepArr(id) {
       axios.all([fetchRoles(''), fetchList({ start_index: 0, length: 10000, department_id: id })])
       .then(axios.spread((acct, perms) => {
-        debugger
         var data = perms.info.list
         acct.info.forEach(function(element) { // 赋值职位级别到对象
           data.forEach(function(els) {

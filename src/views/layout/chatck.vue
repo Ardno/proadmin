@@ -44,7 +44,11 @@
                       {{ userInfo.username == list.content.from_id ? '':list.content.from_name}}
                     <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
                   </div>
-                  <div class="layim-chat-text" v-if="list.content.msg_type=='text'" v-html="list.content.msg_body.text"></div>
+                  
+                  <span class="spinrose mr10 activespin"></span>
+                  <!-- <span class="dib f24 g9 activespin mr10"><icon-svg icon-class="refresh" /></span> -->
+                  <div class="layim-chat-text" v-if="list.content.msg_type=='text'" v-html="list.content.msg_body.text">
+                  </div>
                   <div class="layim-chat-text" v-else><img src="//.sadasd.asd.png" alt=""></div>
                 </li>
               </ul>
@@ -70,12 +74,12 @@
             </div>
             <!-- 输入框 -->
             <div class="layim-chat-textarea">
-              <textarea></textarea>
+              <textarea v-model="requstData.content" @keydown.ctrl.enter="sendMsgEmit('')"></textarea>
             </div>
             <div class="layim-chat-bottom">
               <div class="layim-chat-send">
-                <span class="layim-send-close" @click="togglechatck" layim-event="closeThisChat">关闭</span>
-                <span class="layim-send-btn" layim-event="send">发送</span>
+                <span class="layim-send-close" @click="togglechatck()" layim-event="closeThisChat">关闭</span>
+                <span class="layim-send-btn" @click="sendMsgEmit('')"  layim-event="send">发送</span>
               </div>
             </div>
           </div>
@@ -96,7 +100,6 @@
 import { mapGetters } from 'vuex'
 import { getJMessage } from '@/utils/IM'
 import drag from '@/directive/drag/index.js'
-import store from '@/store/index'
 export default {
   name: 'chatck',
   props: {
@@ -126,6 +129,14 @@ export default {
         type: 0,
         msgs: []
       },
+      requstData: {
+        content: '',
+        repeatSend: false,
+        extras: '',
+        localExtras: '',
+        atList: '',
+        isAtAll: ''
+      },
       msgs: [],
       tabList: [] // 当前tab列表
     }
@@ -141,7 +152,6 @@ export default {
       })
     },
     newmsg(val, oldVal) { // 收到新的消息
-      this.messageList = store.getters.messageList
       this.getActiveMsg()
     }
   },
@@ -178,8 +188,109 @@ export default {
       }
       activeItem.id = a.username || a.gid
       this.activeItem = Object.assign(activeItem, a)
+      console.log(this.activeItem)
       this.getActiveMsg()
-    }
+    },
+    sendMsgEmit(resl) { // 发送文本消息
+      const activePerson = this.activeItem
+      const data = resl || this.requstData
+      // repeatSend = true重发消息
+      /**
+        * success
+        * 取值 状态
+        * 1  正在发送
+        * 2  发送成功
+        * 3  发送失败
+        */
+      const msgs = {
+        content: {
+          create_time: new Date().getTime(),
+          msg_type: 'text',
+          from_id: this.userInfo.username,
+          msg_body: {
+            text: data.content,
+            extras: data.localExtras
+          }
+        },
+        ctime_ms: new Date().getTime(),
+        success: 1
+      }
+      if (activePerson.type === 3 && !data.repeatSend) {
+        const singleMsg = {
+          target_username: activePerson.name,
+          content: data.content,
+          need_receipt: true
+        }
+        if (data.extras) {
+          singleMsg.extras = data.extras
+        }
+        msgs.singleMsg = singleMsg
+        msgs.msg_type = 3
+        this.requstData.content = ''
+        // 发送群组消息
+      } else if (activePerson.type === 4 && !data.repeatSend) {
+        const groupMsg = {
+          target_gid: activePerson.key,
+          content: data.content,
+          need_receipt: true
+        }
+        if (data.extras) {
+          groupMsg.extras = data.extras
+        }
+        if (data.isAtAll) {
+          groupMsg.at_list = []
+        } else if (data.atList && data.atList.length > 0) {
+          groupMsg.at_list = data.atList
+        }
+        msgs.groupMsg = groupMsg
+        msgs.msg_type = 4
+        this.requstData.content = ''
+        // 重发单聊消息
+      } else if (activePerson.type === 3 && data.repeatSend) {
+
+      // 重发群聊消息
+      } else if (activePerson.type === 4 && data.repeatSend) {
+        console.log(data)
+      }
+      const obj = {
+        msgs: msgs,
+        select: {
+          name: activePerson.id,
+          nickName: activePerson.name
+        }
+      }
+      this.JIMsendSingleMsg(obj)
+      const msglist = this.messageList // 离线消息列表
+      if (msglist[activePerson.id]) {
+        msglist[activePerson.id].msgs.push(msgs)
+      }
+      // this.$store.dispatch('SetMsgList', msglist)
+    }, // end 文本消息
+    JIMsendSingleMsg(text) {
+      const msgBody = {
+        text: text.msgs.content.msg_body.text,
+        extras: text.msgs.content.msg_body.extras
+      }
+      this.JIM.sendSingleMsg({
+        target_username: text.select.name,
+        target_nickname: text.select.nickName,
+        msg_body: msgBody
+      })
+      .onSuccess((data, msgs) => {
+        this.sendMsgComplete(true, msgs)
+      }).onFail((erros) => {
+        this.sendMsgComplete(false)
+      }).onTimeout((data) => {
+        this.sendMsgComplete(false)
+      })
+    },
+    sendMsgComplete(flg, msgs) { // 发送消息完成
+      if (flg) { // 发送成功
+
+      } else { // 发送失败
+
+      }
+    } // end 完成消息发送
   }
 }
 </script>
@@ -376,7 +487,7 @@ export default {
         border-radius: 3px;
         color: #333;
         word-break: break-all;
-        max-width: 462px\9;
+        max-width: 450px;
         display: inline-block;
         vertical-align: top;
         font-size: 14px;
@@ -507,5 +618,20 @@ export default {
       }
     }
   }
+}
+.spinrose{
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  margin-top: 32px;
+  background: url(../../assets/icon/icon-spin-s.png) no-repeat center;
+  background-size: cover;
+}
+.activespin{
+  animation: spin 800ms infinite linear;
+}
+@keyframes spin {
+  0%   { transform: rotate(360deg); }
+  100% { transform: rotate(0deg); }
 }
 </style>

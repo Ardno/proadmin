@@ -208,7 +208,7 @@ export default {
       // 更新会话列表
       const cons = []
       cons.push(...this.conversations)
-      for (let i = 0; i <= cons.length; i++) {
+      for (let i = 0; i < cons.length; i++) {
         if (cons[i].gid) {
           cons[i].gid = Number(cons[i].gid)
         }
@@ -244,7 +244,7 @@ export default {
         if (msglist[id]) { // 判断新消息是否存在已有的离线消息列表中
           msglist[id].msgs.push(element) // 把新消息插入到离线消息列表中
           if (!this.closechatck) { // 如果当前存在聊天窗口且是当前窗口的消息
-            if (this.activeUser.username === id) {
+            if (this.activeUser.username === id || this.activeUser.gid === id) {
               // 通知聊天窗口接受新的聊天消息
               this.newmsg = element
               this.UpdateConversationList(id, true, element.content)
