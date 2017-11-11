@@ -46,10 +46,11 @@
                   </div>
                   {{list}}
                   <span v-if="list.success == 1" class="spinrose mr10 activespin"></span>
-                  <span v-if="list.success == 3" @click="repeatSendMsg(list)" class="dib f24 g9 mt30 poi mr10"><icon-svg icon-class="refresh" /></span>
+                  <span v-if="list.success == 3" title="重新发送" @click="repeatSendMsg(list)" class="dib f24 g9 mt30 poi mr10"><icon-svg icon-class="refresh" /></span>
                   <div class="layim-chat-text" v-if="list.content.msg_type=='text'" v-html="list.content.msg_body.text">
                   </div>
-                  <div class="layim-chat-text" v-else><img src="//.sadasd.asd.png" alt=""></div>
+                  <div class="layim-chat-img" v-else-if="list.content.msg_type=='image'" ><img :style="{width:cpount(list.content.msg_body.width, list.content.msg_body.height, true),height:cpount(list.content.msg_body.width, list.content.msg_body.height, false)}" :src="list.content.msg_body.media_url" alt=""></div>
+                  <div class="layim-chat-file" v-else ><img src="//.sadasd.asd.png" alt=""></div>
                 </li>
               </ul>
             </div>
@@ -57,16 +58,16 @@
             <div class="layim-chat-tool">
               <span class="layui-icon layim-tool-image g9" title="上传图片" layim-event="image">
                 <icon-svg icon-class="picture" />
-                <input type="file" name="file"></span>
+                <input type="file" name="file" @change="sendPicEmit" id="sendPic"></span>
               <span class="layui-icon layim-tool-image g9" style="font-size:19px" title="发送文件" layim-event="image" data-type="file">
                 <icon-svg icon-class="icon-wenjian" />
                 <input type="file" name="file"></span>
-              <span class="layui-icon layim-tool-audio g9" style="font-size:21px" title="发送网络音频" layim-event="media" data-type="audio">
+              <!-- <span class="layui-icon layim-tool-audio g9" style="font-size:21px" title="发送网络音频" layim-event="media" data-type="audio">
                 <icon-svg icon-class="icon-erji" />
               </span>
               <span class="layui-icon layim-tool-video g9" title="发送网络视频" layim-event="media" data-type="video">
                 <icon-svg icon-class="video" />
-              </span>
+              </span> -->
               <span class="layim-tool-log" layim-event="chatLog">
                 <icon-svg class="f20 g9" icon-class="time" />
                 <i>聊天记录</i>
@@ -98,7 +99,8 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { getJMessage } from '@/utils/IM'
+import { getJMessage, authPayload } from '@/utils/IM'
+import { imgReader, getFileFormData } from '@/utils/utils'
 import drag from '@/directive/drag/index.js'
 export default {
   name: 'chatck',
@@ -166,6 +168,28 @@ export default {
     this.JIM = getJMessage()
   },
   methods: {
+    cpount(wi, hi, flg) { // 计算图片宽高
+      let w = 0
+      let h = 0
+      if (wi / hi > 1) { // 宽大于高
+        if (wi > 219) {
+          w = 219
+          h = w * hi / wi
+        } else {
+          w = wi
+          h = hi
+        }
+      } else { // 高大宽
+        if (hi > 300) {
+          h = 300
+          w = wi * h / hi
+        } else {
+          w = wi
+          h = hi
+        }
+      }
+      return flg ? w + 'px' : h + 'px'
+    },
     togglechatck() {
       this.$emit('update:closechatck', true)
     },
@@ -175,6 +199,17 @@ export default {
       if (m[a.id]) { // 判断当前用户是否存在历史消息
         a.msgs = m[a.id].msgs
         this.msgs = m[a.id].msgs
+        for (let index = 0; index < this.msgs.length; index++) {
+          const element = this.msgs[index]
+          if (element.content.msg_type === 'image') {
+            this.JIM.getResource({ media_id: element.content.msg_body.media_id })
+            .onSuccess((urlInfo) => {
+              this.$set(this.msgs[index].content.msg_body, 'media_url', urlInfo.url)
+            }).onFail((errr) => {
+              this.$set(this.msgs[index].content.msg_body, 'media_url', '')
+            })
+          }
+        }
       } else {
         // 通知更新会话面板
       }
@@ -230,24 +265,27 @@ export default {
         success: 1,
         msgKey: resl.msgKey || this.msgKey ++
       }
-      if (activePerson.type === 3 && !data.repeatSend) {
+      if (activePerson.type === 3) {
         const singleMsg = {
           target_username: activePerson.name,
           content: data.content,
-          need_receipt: true
+          need_receipt: false
         }
         if (data.extras) {
           singleMsg.extras = data.extras
         }
         msgs.singleMsg = singleMsg
         msgs.msg_type = 3
-        this.requstData.content = ''
+        if (!data.repeatSend) {
+          this.requstData.content = ''
+        }
+        this.JIMsendSingleMsg(singleMsg, msgs)
         // 发送群组消息
-      } else if (activePerson.type === 4 && !data.repeatSend) {
+      } else if (activePerson.type === 4) {
         const groupMsg = {
           target_gid: activePerson.key,
           content: data.content,
-          need_receipt: true
+          need_receipt: false
         }
         if (data.extras) {
           groupMsg.extras = data.extras
@@ -259,22 +297,11 @@ export default {
         }
         msgs.groupMsg = groupMsg
         msgs.msg_type = 4
-        this.requstData.content = ''
-        // 重发单聊消息
-      } else if (activePerson.type === 3 && data.repeatSend) {
-
-      // 重发群聊消息
-      } else if (activePerson.type === 4 && data.repeatSend) {
-        console.log(data)
-      }
-      const obj = {
-        msgs: msgs,
-        select: {
-          name: activePerson.id,
-          nickName: activePerson.name
+        if (!data.repeatSend) {
+          this.requstData.content = ''
         }
+        this.sendGroupMsg(groupMsg, msgs)
       }
-      this.JIMsendSingleMsg(obj)
       if (!data.repeatSend) {
         const msglist = this.messageList // 离线消息列表
         if (msglist[activePerson.id]) {
@@ -283,32 +310,129 @@ export default {
       }
       // this.$store.dispatch('SetMsgList', msglist)
     }, // end 文本消息
-    JIMsendSingleMsg(text) {
-      const msgBody = {
-        text: text.msgs.content.msg_body.text,
-        extras: text.msgs.content.msg_body.extras
+    sendPicEmit(event) { // 发送图片消息
+      const file = document.getElementById('sendPic')
+      const activePerson = this.activeItem
+      if (!event.target.files[0]) {
+        return
       }
-      this.JIM.sendSingleMsg({
-        target_username: text.select.name,
-        target_nickname: text.select.nickName,
-        msg_body: msgBody
-      })
-      .onSuccess((data, msgs) => {
-        this.sendMsgComplete(true, msgs, text)
+      let msgs
+      const img = getFileFormData(event.target)
+      if (activePerson.type === 3) {
+        imgReader(file, () => {
+          this.$message.error('选择的文件必须是图片')
+        }, (value) => {
+          this.sendPicContent(msgs, value, img)
+        })
+      }
+    }, // end发送图片消息
+    sendPicContent(msgs, value, data, repeatSend) {
+      msgs = {
+        content: {
+          from_id: this.userInfo.username,
+          create_time: new Date().getTime(),
+          msg_type: 'image',
+          msg_body: {
+            media_url: value.src,
+            width: value.width,
+            height: value.height
+          }
+        },
+        ctime_ms: new Date().getTime(),
+        success: 1,
+        msgKey: this.msgKey ++,
+        unread_count: 0
+      }
+      // 发送单聊图片
+      if (this.activeItem.type === 3) {
+        const singlePicFormData = {
+          target_username: this.activeItem.name,
+          appkey: authPayload.appKey,
+          image: data,
+          need_receipt: false
+        }
+        msgs.singlePicFormData = singlePicFormData
+        msgs.msg_type = 3
+        this.JIMsendSinglePic(singlePicFormData, msgs)
+      // 发送群聊图片
+      } else if (this.activeItem.type === 4) {
+        const groupPicFormData = {
+          target_gid: this.activeItem.name,
+          image: data,
+          need_receipt: false
+        }
+        msgs.groupPicFormData = groupPicFormData
+        msgs.msg_type = 4
+        this.JIMsendGroupPic(groupPicFormData, msgs)
+      }
+      if (!repeatSend) {
+        const msglist = this.messageList // 离线消息列表
+        if (msglist[this.activeItem.id]) {
+          msglist[this.activeItem.id].msgs.push(msgs)
+        }
+      }
+    },
+    JIMsendSingleMsg(singleMsg, msgs) { // 发送单人文本消息
+      this.JIM.sendSingleMsg(singleMsg)
+      .onSuccess((data, msg) => {
+        this.sendMsgComplete(true, msg, msgs)
       }).onFail((erros) => {
-        this.sendMsgComplete(false)
+        this.sendMsgComplete(false, '', msgs)
       }).onTimeout((data) => {
-        this.sendMsgComplete(false)
+        this.sendMsgComplete(false, '', msgs)
       })
     },
-    sendMsgComplete(flg, msgs, text) { // 发送消息完成
+    sendGroupMsg(groupMsg, msgs) { // 发送群组文本消息
+      this.JIM.sendGroupMsg(groupMsg)
+      .onSuccess((data, msg) => {
+        this.sendMsgComplete(true, msg, msgs)
+      }).onFail((erros) => {
+        this.sendMsgComplete(false, '', msgs)
+      }).onTimeout((data) => {
+        this.sendMsgComplete(false, '', msgs)
+      })
+    },
+    JIMsendSinglePic(singlePicFormData, msgs) { // 发送单人图片消息
+      this.JIM.sendSinglePic(singlePicFormData)
+      .onSuccess((data, msg) => {
+        this.sendMsgComplete(true, msg, msgs)
+      }).onFail((erros) => {
+        this.sendMsgComplete(false, '', msgs)
+      }).onTimeout((data) => {
+        this.sendMsgComplete(false, '', msgs)
+      })
+    },
+    JIMsendGroupPic(groupPicFormData, msgs) { // 发送单人图片消息
+      this.JIM.sendGroupPic(groupPicFormData)
+      .onSuccess((data, msg) => {
+        this.sendMsgComplete(true, msg, msgs)
+      }).onFail((erros) => {
+        this.sendMsgComplete(false, '', msgs)
+      }).onTimeout((data) => {
+        this.sendMsgComplete(false, '', msgs)
+      })
+    },
+    sendMsgComplete(flg, msg, msgs) { // 发送消息完成
       if (this.messageList[this.activeItem.id]) {
         const arr = this.messageList[this.activeItem.id].msgs
         for (let index = 0; index < arr.length; index++) {
-          if (text.msgs.msgKey === arr[index].msgKey) {
+          if (msgs.msgKey === arr[index].msgKey) {
             if (flg) { // 发送成功
-              arr[index].success = 2
-              arr[index] = msgs
+              console.log(index)
+              if (msg.content.msg_type === 'image') {
+                this.JIM.getResource({ media_id: msg.content.msg_body.media_id })
+                .onSuccess((urlInfo) => {
+                  arr[index].success = 2
+                  msg.content.msg_body.media_url = urlInfo.url
+                  arr[index] = msg
+                  // this.$set(this.msgs[index].content.msg_body, 'media_url', urlInfo.url)
+                }).onFail((errr) => {
+                  // this.$set(this.msgs[index].content.msg_body, 'media_url', '')
+                  arr[index].success = 2
+                  msg.content.msg_body.media_url = ''
+                  arr[index] = msg
+                })
+              }
             } else { // 发送失败
               arr[index].success = 3
             }
@@ -535,6 +659,24 @@ export default {
           border: none;
         }
       }
+      .layim-chat-img{
+            max-width: 219px;
+            max-height: 300px;
+            cursor: -webkit-zoom-in;
+            cursor: zoom-in;
+            border-radius: 5px;
+            overflow: hidden;
+            display: inline-block;
+            margin-top: 25px;
+            .ws{
+              width: 100%;
+              height: auto;
+            }
+            .hs{
+              width: 100%;
+              height: auto;
+            }
+        }
       .layim-chat-mine {
         text-align: right;
         padding-left: 0;
@@ -555,6 +697,7 @@ export default {
             border-top-color: #5FB878;
           }
         }
+        
         cite {
           left: auto;
           right: 60px;
