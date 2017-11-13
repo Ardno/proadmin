@@ -88,3 +88,33 @@ export function getStepsArr(data) { // 获取事件步骤集合
     data: data
   })
 }
+
+export function addLaws(data) { // 添加法律法规
+  return fetch({
+    url: 'regulations/add',
+    method: 'post',
+    data: data
+  })
+}
+export function updateLaws(data) { // 修改法律法规
+  return fetch({
+    url: 'regulations/update',
+    method: 'post',
+    data: data
+  })
+}
+export function getLaws(data) { // 获取法律法规
+  return fetch({
+    url: 'regulations/get',
+    method: 'post',
+    data: data
+  })
+}
+
+export function getLawsArr(data) { // 获取法律法规集合
+  return fetch({
+    url: 'regulations/list',
+    method: 'post',
+    data: data
+  })
+}

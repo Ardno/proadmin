@@ -101,3 +101,14 @@ export function html2Text(val) {
 export function toThousandslsFilter(num) {
   return (+num || 0).toString().replace(/^-?\d+/g, m => m.replace(/(?=(?!\b)(\d{3})+$)/g, ','))
 }
+export function FileSize(size) {
+  let newSize = ''
+  if (size > 1024 * 1024) {
+    newSize = (size / (1024 * 1024)).toFixed(2) + 'M'
+  } else {
+    const sizeNum = (size / 1024).toFixed(2)
+    // 小于0.01KB的文件显示0.01KB
+    newSize = (Number(sizeNum) >= 0.01 ? sizeNum : 0.01) + 'KB'
+  }
+  return newSize
+}

@@ -55,9 +55,15 @@
                         <div class="image"></div>
                         <p class="text flex-1">{{list.content.msg_body.fname}}</p>
                       </div>
-                      <div class="bottom fix">
-                        <span class="l">{{list.content.msg_body.fsize}}kb</span>
-                        <span class="r">已发送</span>
+                      <div v-if="userInfo.username == list.content.from_id" class="bottom fix">
+                        <span class="l">{{list.content.msg_body.fsize | FileSize}}</span>
+                        <span class="r" v-if="list.success == 1">正在发送</span>
+                        <span class="r" v-else-if="list.success == 3">发送失败</span>
+                        <span class="r" v-else>已发送</span>
+                      </div>
+                      <div v-else class="bottom fix">
+                        <span class="l">{{list.content.msg_body.fsize | FileSize}}</span>
+                        <a class="r" :href="list.content.msg_body.media_url" target="_blank" style="color:#2DD0CF">查看文件</a>
                       </div>
                   </div>
                   <div class="layim-chat-file" v-else ><img src="//.sadasd.asd.png" alt=""></div>
@@ -229,7 +235,7 @@ export default {
         this.msgs = m[a.id].msgs
         for (let index = 0; index < this.msgs.length; index++) {
           const element = this.msgs[index]
-          if (element.content.msg_type === 'image') {
+          if (element.content.msg_type === 'image' || element.content.msg_type === 'file') {
             this.JIM.getResource({ media_id: element.content.msg_body.media_id })
             .onSuccess((urlInfo) => {
               this.$set(this.msgs[index].content.msg_body, 'media_url', urlInfo.url)
@@ -554,8 +560,7 @@ export default {
         for (let index = 0; index < arr.length; index++) {
           if (msgs.msgKey === arr[index].msgKey) {
             if (flg) { // 发送成功
-              console.log(index)
-              if (msg.content.msg_type === 'image') {
+              if (msg.content.msg_type === 'image' || msg.content.msg_type === 'file') {
                 this.JIM.getResource({ media_id: msg.content.msg_body.media_id })
                 .onSuccess((urlInfo) => {
                   arr[index].success = 2
