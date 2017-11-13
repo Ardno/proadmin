@@ -32,6 +32,13 @@
                         <p >{{list.content && list.content.msg_body && list.content.msg_body.text}}
                           <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
                         </p>
+                        <p v-if="list.content.msg_type=='image'">[图片]
+                          <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
+                        </p>
+                        <p v-if="list.content.msg_type=='file'">[文件]
+                          <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
+                        </p>
+                        
                       </li>
                     </ul>
                   </li>
@@ -446,6 +453,10 @@ export default {
           const title = obj.from_name
           if (obj.msg_type === 'text') {
             alert = obj.msg_body.text
+          } else if (obj.msg_type === 'image') {
+            alert = '【图片】'
+          } else if (obj.msg_type === 'file') {
+            alert = '【文件】'
           }
           imNotification({
             title: title,

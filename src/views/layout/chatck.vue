@@ -49,7 +49,17 @@
                   <span v-if="list.success == 3" title="重新发送" @click="repeatSendMsg(list)" class="dib f24 g9 mt30 poi mr10"><icon-svg icon-class="refresh" /></span>
                   <div class="layim-chat-text" v-if="list.content.msg_type=='text'" v-html="list.content.msg_body.text">
                   </div>
-                  <div class="layim-chat-img" v-else-if="list.content.msg_type=='image'" ><img :style="{width:cpount(list.content.msg_body.width, list.content.msg_body.height, true),height:cpount(list.content.msg_body.width, list.content.msg_body.height, false)}" :src="list.content.msg_body.media_url" alt=""></div>
+                  <div class="layim-chat-img" v-else-if="list.content.msg_type=='image'" ><img :style="{width:cpount(list.content.msg_body.width, list.content.msg_body.height, true),height:cpount(list.content.msg_body.width, list.content.msg_body.height, false)}" @click="showImg(list.content.msg_body.media_url)" :src="list.content.msg_body.media_url" alt=""></div>
+                  <div class="layim-chat-file" v-else-if="list.content.msg_type=='file'" >
+                      <div class="top display-flex">
+                        <div class="image"></div>
+                        <p class="text flex-1">{{list.content.msg_body.fname}}</p>
+                      </div>
+                      <div class="bottom fix">
+                        <span class="l">{{list.content.msg_body.fsize}}kb</span>
+                        <span class="r">已发送</span>
+                      </div>
+                  </div>
                   <div class="layim-chat-file" v-else ><img src="//.sadasd.asd.png" alt=""></div>
                 </li>
               </ul>
@@ -61,7 +71,7 @@
                 <input type="file" name="file" @change="sendPicEmit" id="sendPic"></span>
               <span class="layui-icon layim-tool-image g9" style="font-size:19px" title="发送文件" layim-event="image" data-type="file">
                 <icon-svg icon-class="icon-wenjian" />
-                <input type="file" name="file"></span>
+                <input type="file" name="file" @change="sendFileEmit" id="sendFile"></span>
               <!-- <span class="layui-icon layim-tool-audio g9" style="font-size:21px" title="发送网络音频" layim-event="media" data-type="audio">
                 <icon-svg icon-class="icon-erji" />
               </span>
@@ -94,13 +104,23 @@
         <span v-if="activeItem.type === 4">{{activeItem.name}}</span>
       </div>
     </transition>
+    <!-- 图片预览 -->
+    <transition name="el-fade-in-linear">
+      <div v-if="imgshow.flg" @click="imgshow.flg=false" class="imgshow">
+        <div class="wats">
+          <span style="display: table-cell; vertical-align: middle; ">
+            <img :src="imgshow.src">
+          </span>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
 import { getJMessage, authPayload } from '@/utils/IM'
-import { imgReader, getFileFormData } from '@/utils/utils'
+import { imgReader, getFileFormData, getExt } from '@/utils/utils'
 import drag from '@/directive/drag/index.js'
 export default {
   name: 'chatck',
@@ -124,6 +144,10 @@ export default {
       JIM: null,
       minchatck: false,
       colseim: false,
+      imgshow: {
+        flg: false,
+        src: ''
+      },
       activeItem: {
         // 当前active的用户
         id: '',
@@ -168,6 +192,10 @@ export default {
     this.JIM = getJMessage()
   },
   methods: {
+    showImg(src) { //  放大图片
+      this.imgshow.flg = true
+      this.imgshow.src = src
+    },
     cpount(wi, hi, flg) { // 计算图片宽高
       let w = 0
       let h = 0
@@ -227,18 +255,24 @@ export default {
       console.log(this.activeItem)
       this.getActiveMsg()
     },
-    repeatSendMsg(msg) {
+    repeatSendMsg(msg) { // 重发消息
       msg.success = 1
-      const req = {
-        content: msg.content.msg_body.text,
-        repeatSend: true,
-        extras: '',
-        localExtras: '',
-        atList: '',
-        isAtAll: '',
-        msgKey: msg.msgKey
+      if (msg.content.msg_type === 'text') {
+        const req = {
+          content: msg.content.msg_body.text,
+          repeatSend: true,
+          extras: '',
+          localExtras: '',
+          atList: '',
+          isAtAll: '',
+          msgKey: msg.msgKey
+        }
+        this.sendMsgEmit(req)
+      } else if (msg.content.msg_type === 'image') {
+        this.sendPicContent(msg, 'value', 'data', true)
+      } else if (msg.content.msg_type === 'file') {
+        this.sendFileContent(msg, true)
       }
-      this.sendMsgEmit(req)
     },
     sendMsgEmit(resl) { // 发送文本消息
       const activePerson = this.activeItem
@@ -267,7 +301,7 @@ export default {
       }
       if (activePerson.type === 3) {
         const singleMsg = {
-          target_username: activePerson.name,
+          target_username: activePerson.username,
           content: data.content,
           need_receipt: false
         }
@@ -283,7 +317,7 @@ export default {
         // 发送群组消息
       } else if (activePerson.type === 4) {
         const groupMsg = {
-          target_gid: activePerson.key,
+          target_gid: activePerson.gid,
           content: data.content,
           need_receipt: false
         }
@@ -312,64 +346,146 @@ export default {
     }, // end 文本消息
     sendPicEmit(event) { // 发送图片消息
       const file = document.getElementById('sendPic')
-      const activePerson = this.activeItem
       if (!event.target.files[0]) {
         return
       }
       let msgs
       const img = getFileFormData(event.target)
-      if (activePerson.type === 3) {
-        imgReader(file, () => {
-          this.$message.error('选择的文件必须是图片')
-        }, (value) => {
-          this.sendPicContent(msgs, value, img)
-        })
-      }
+      imgReader(file, () => {
+        this.$message.error('选择的文件必须是图片')
+      }, (value) => {
+        this.sendPicContent(msgs, value, img)
+      })
     }, // end发送图片消息
     sendPicContent(msgs, value, data, repeatSend) {
-      msgs = {
-        content: {
-          from_id: this.userInfo.username,
-          create_time: new Date().getTime(),
-          msg_type: 'image',
-          msg_body: {
-            media_url: value.src,
-            width: value.width,
-            height: value.height
-          }
-        },
-        ctime_ms: new Date().getTime(),
-        success: 1,
-        msgKey: this.msgKey ++,
-        unread_count: 0
-      }
-      // 发送单聊图片
-      if (this.activeItem.type === 3) {
-        const singlePicFormData = {
-          target_username: this.activeItem.name,
-          appkey: authPayload.appKey,
-          image: data,
-          need_receipt: false
-        }
-        msgs.singlePicFormData = singlePicFormData
-        msgs.msg_type = 3
-        this.JIMsendSinglePic(singlePicFormData, msgs)
-      // 发送群聊图片
-      } else if (this.activeItem.type === 4) {
-        const groupPicFormData = {
-          target_gid: this.activeItem.name,
-          image: data,
-          need_receipt: false
-        }
-        msgs.groupPicFormData = groupPicFormData
-        msgs.msg_type = 4
-        this.JIMsendGroupPic(groupPicFormData, msgs)
-      }
       if (!repeatSend) {
+        msgs = {
+          content: {
+            from_id: this.userInfo.username,
+            create_time: new Date().getTime(),
+            msg_type: 'image',
+            msg_body: {
+              media_url: value.src,
+              width: value.width,
+              height: value.height
+            }
+          },
+          ctime_ms: new Date().getTime(),
+          success: 1,
+          msgKey: this.msgKey ++,
+          unread_count: 0
+        }
+        // 发送单聊图片
+        if (this.activeItem.type === 3) {
+          const singlePicFormData = {
+            target_username: this.activeItem.username,
+            appkey: authPayload.appKey,
+            image: data,
+            need_receipt: false
+          }
+          msgs.singlePicFormData = singlePicFormData
+          msgs.msg_type = 3
+        // 发送群聊图片
+        } else if (this.activeItem.type === 4) {
+          const groupPicFormData = {
+            target_gid: this.activeItem.gid,
+            image: data,
+            need_receipt: false
+          }
+          msgs.groupPicFormData = groupPicFormData
+          msgs.msg_type = 4
+        }
         const msglist = this.messageList // 离线消息列表
         if (msglist[this.activeItem.id]) {
           msglist[this.activeItem.id].msgs.push(msgs)
         }
+      }
+      // 发送单聊图片
+      if (this.activeItem.type === 3) {
+        this.JIMsendSinglePic(msgs.singlePicFormData, msgs)
+      // 发送群聊图片
+      } else if (this.activeItem.type === 4) {
+        this.JIMsendGroupPic(msgs.groupPicFormData, msgs)
+      }
+    },
+    sendFileEmit(event) { // 发送文件消息
+      if (!event.target.files[0]) {
+        return
+      }
+      const file = getFileFormData(event.target)
+      this.sendFileContent({
+        file,
+        fileData: event.target.files[0]
+      })
+    }, // end发送文件消息
+    sendFileContent(data, repeatSend) {
+      let msgs
+      if (!repeatSend) {
+        const ext = getExt(data.fileData.name)
+        msgs = {
+          content: {
+            create_time: (new Date()).getTime(),
+            msg_type: 'file',
+            from_id: this.userInfo.username,
+            from_name: this.userInfo.nickname,
+            msg_body: {
+              fname: data.fileData.name,
+              fsize: data.fileData.size,
+              extras: {
+                fileSize: data.fileData.size,
+                fileType: ext
+              }
+            }
+          },
+          ctime_ms: (new Date()).getTime(),
+          success: 1,
+          msgKey: this.msgKey ++,
+          unread_count: 0
+        }
+        // 发送单聊文件
+        if (this.activeItem.type === 3) {
+          const ext = getExt(data.fileData.name)
+          const singleFile = {
+            file: data.file,
+            target_username: this.activeItem.username,
+            appkey: authPayload.appKey,
+            extras: {
+              fileSize: data.fileData.size,
+              fileType: ext
+            },
+            need_receipt: false
+          }
+          msgs.singleFile = singleFile
+          msgs.msg_type = 3
+        // 发送群聊文件
+        } else if (this.activeItem.type === 4) {
+          const ext = getExt(data.fileData.name)
+          const groupFile = {
+            file: data.file,
+            target_gid: this.activeItem.gid,
+            extras: {
+              fileSize: data.fileData.size,
+              fileType: ext
+            },
+            need_receipt: false
+          }
+          msgs.groupFile = groupFile
+          msgs.msg_type = 4
+        }
+        const msglist = this.messageList // 离线消息列表
+        if (msglist[this.activeItem.id]) {
+          msglist[this.activeItem.id].msgs.push(msgs)
+        }
+      }
+      if (repeatSend) {
+        msgs = data
+      }
+      // 发送单聊文件
+      if (this.activeItem.type === 3) {
+        this.JIMsendSingleFile(msgs.singleFile, msgs)
+      // 发送群聊文件
+      } else if (this.activeItem.type === 4) {
+        this.JIMsendGroupFile(msgs.groupFile, msgs)
       }
     },
     JIMsendSingleMsg(singleMsg, msgs) { // 发送单人文本消息
@@ -402,8 +518,28 @@ export default {
         this.sendMsgComplete(false, '', msgs)
       })
     },
-    JIMsendGroupPic(groupPicFormData, msgs) { // 发送单人图片消息
+    JIMsendGroupPic(groupPicFormData, msgs) { // 发送群组图片消息
       this.JIM.sendGroupPic(groupPicFormData)
+      .onSuccess((data, msg) => {
+        this.sendMsgComplete(true, msg, msgs)
+      }).onFail((erros) => {
+        this.sendMsgComplete(false, '', msgs)
+      }).onTimeout((data) => {
+        this.sendMsgComplete(false, '', msgs)
+      })
+    },
+    JIMsendSingleFile(singleFileData, msgs) { // 发送单人文件消息
+      this.JIM.sendSingleFile(singleFileData)
+      .onSuccess((data, msg) => {
+        this.sendMsgComplete(true, msg, msgs)
+      }).onFail((erros) => {
+        this.sendMsgComplete(false, '', msgs)
+      }).onTimeout((data) => {
+        this.sendMsgComplete(false, '', msgs)
+      })
+    },
+    JIMsendGroupFile(groupFileData, msgs) { // 发送群组文件消息
+      this.JIM.sendGroupFile(groupFileData)
       .onSuccess((data, msg) => {
         this.sendMsgComplete(true, msg, msgs)
       }).onFail((erros) => {
@@ -432,6 +568,9 @@ export default {
                   msg.content.msg_body.media_url = ''
                   arr[index] = msg
                 })
+              } else {
+                arr[index].success = 2
+                arr[index] = msg
               }
             } else { // 发送失败
               arr[index].success = 3
@@ -659,24 +798,80 @@ export default {
           border: none;
         }
       }
-      .layim-chat-img{
-            max-width: 219px;
-            max-height: 300px;
-            cursor: -webkit-zoom-in;
-            cursor: zoom-in;
-            border-radius: 5px;
-            overflow: hidden;
-            display: inline-block;
-            margin-top: 25px;
-            .ws{
-              width: 100%;
-              height: auto;
-            }
-            .hs{
-              width: 100%;
-              height: auto;
-            }
+      .layim-chat-file{
+        position: relative;
+        display: inline-block;
+        vertical-align: top;
+        margin-top: 25px;
+        width: 236px;
+        height: 110px;
+        background: #F2F6FB;
+        border: 1px solid #E2E9F0;
+        border-radius: 0 5px 5px 5px;
+        .top{
+          padding: 18px 18px 14px 18px;
         }
+        .display-flex {
+          display: -webkit-box;
+          display: -ms-flexbox;
+          display: flex;
+        }
+        .bottom{
+          width: 100%;
+          height: 27px;
+          margin-top: 1px;
+          line-height: 27px;
+          font-size: 12px;
+          color: #989898;
+          padding: 0 7px;
+          border-top: 1px solid #DCDCDC;
+        }
+        .image{
+          width: 50px;
+          height: 50px;
+          margin-right: 18px;
+          background: url(../../assets/icon/file-logo.svg) center center no-repeat;
+          background-size: 50px;
+        }
+        .text{
+          line-height: 25px;
+          text-align: left;
+          font-size: 18px;
+          color: #5A5A5A;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          word-break: break-all;
+          word-break: break-word;
+        }
+        .flex-1 {
+          -webkit-box-flex: 1;
+          -moz-flex: 1;
+          -ms-flex: 1;
+          flex: 1;
+          overflow: hidden;
+        }
+      }
+      .layim-chat-img{
+        max-width: 219px;
+        max-height: 300px;
+        cursor: -webkit-zoom-in;
+        cursor: zoom-in;
+        border-radius: 5px;
+        overflow: hidden;
+        display: inline-block;
+        margin-top: 25px;
+        .ws{
+          width: 100%;
+          height: auto;
+        }
+        .hs{
+          width: 100%;
+          height: auto;
+        }
+      }
       .layim-chat-mine {
         text-align: right;
         padding-left: 0;
@@ -797,6 +992,27 @@ export default {
 }
 .activespin{
   animation: spin 800ms infinite linear;
+}
+.imgshow{
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  padding: 20px 0;
+  background-color: rgba(0, 0, 0, .9);
+  text-align: center;
+  .wats{
+    width: 100%;
+    height: 100%;
+    display: table;
+    img{
+      display: inline-block;
+      max-width: 100%;
+      max-height: 100%;
+    }
+  }
 }
 @keyframes spin {
   0%   { transform: rotate(360deg); }
