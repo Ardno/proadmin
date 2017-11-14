@@ -756,7 +756,7 @@ export default {
 
   .layui-layim-list li span {
     margin-top: 4px;
-    max-width: 150px;
+    max-width: 120px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

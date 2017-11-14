@@ -5,7 +5,7 @@
       <el-amap-polygon v-for="(polygon, index) in polygons" :key="index" :vid="index" :ref="`polygon_${index}`" :path="polygon.path" :events="polygon.events">
       </el-amap-polygon>
       <!-- 点坐标 -->
-      <el-amap-marker v-for="(marker, index) in markers" :ref="`marker_${index}`" :key="index" :position="marker.position"  :title="marker.title" :events="marker.events" :visible="marker.visible" :draggable="marker.draggable">
+      <el-amap-marker v-for="(marker, index) in markers" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :events="marker.events" :visible="marker.visible" :draggable="marker.draggable">
       </el-amap-marker>
       <!-- 信息窗体 -->
       <el-amap-info-window v-for="(window, index) in windows" :ref="`window_${index}`" :key="index" :position="window.position" :content="window.content" :visible="window.visible" :events="window.events">
@@ -46,6 +46,7 @@ import SideBar from './sidebar'
 import { getRegionArr, updateRegion } from '@/api/grid'
 import { fetchList } from '@/api/department'
 import { isAccess } from '@/utils/auth'
+import personicon from '@/assets/icon/personicon.png'
 
 const amapManager = new VueAMap.AMapManager()
 export default {
@@ -103,6 +104,7 @@ export default {
       markers: [
         {
           position: [121.5273285, 31.21515044],
+          icon: personicon,
           events: {
             init: (marker) => {
               marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
@@ -286,4 +288,13 @@ export default {
 .pht100{
   height: 100%;
 }
+.amap-marker{
+  .amap-icon{
+    img{
+      width: 27px;
+      height: 36px;
+    }
+  }
+}
+
 </style>

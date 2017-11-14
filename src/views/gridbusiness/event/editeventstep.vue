@@ -34,10 +34,14 @@
                   <el-option v-for="item in  paraTypeArr" :key="item._id" :label="item.name" :value="item._id">
                   </el-option>
                 </el-select>
-                <el-input style="width: 130px" placeholder="参数名" v-model="para.para_name"></el-input>
+                <el-select style="width: 130px" v-if="para.para_type === '6'"  v-model="para.para_name"  placeholder="请选择">
+                  <el-option v-for="item in  lawArr" :key="item._id" :label="item.name" :value="item.content">
+                  </el-option>
+                </el-select>
+                <el-input style="width: 130px" v-else placeholder="参数名" v-model="para.para_name"></el-input>
                 <el-button v-if="index === 0" @click="addPare">新增</el-button>
                 <el-button v-show="index !== 0" @click.prevent="removePare(para)">删除</el-button>
-                <el-button @click.prevent="insertContent(para.para_name)">插入</el-button>
+                <el-button @click.prevent="insertContent(para)">插入</el-button>
               </el-form-item>
               <p class="f12 g9">提示：参数类型指的是用户以何种方式填写事件原由，插入参数后，不可直接在富文本框里面对参数进行修改。</p>
             </el-col>
@@ -69,7 +73,7 @@ import Tinymce from '@/components/Tinymce'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import MDinput from '@/components/MDinput'
 import { fetchDepartments, fetchRoles } from '@/api/department'
-import { getSteps, addSteps, updateSteps } from '@/api/depevent'
+import { getSteps, addSteps, updateSteps, getLawsArr } from '@/api/depevent'
 const paraTypeArr = [
   { _id: '0', name: '文本控件' },
   { _id: '1', name: '多行文本控件' },
@@ -106,7 +110,8 @@ export default {
         role_id_access: ''
       },
       depArr: [],
-      fetchArr: []
+      fetchArr: [],
+      lawArr: []
     }
   },
   computed: {
@@ -130,11 +135,17 @@ export default {
     }
   },
   methods: {
-    insertContent(str) {
+    insertContent(para) {
+      const str = para.para_name
       if (!str) {
         return
       }
-      const strHtml = `{{${str}}}`
+      let strHtml = ''
+      if (para.para_type === '6') {
+        strHtml = `${str}`
+      } else {
+        strHtml = `{{${str}}}`
+      }
       window.tinymce.get('tinymce').insertContent(strHtml)
     },
     getSteps(id) {
@@ -153,7 +164,12 @@ export default {
     },
     removePare(item) { // 移除参数
       if (item.para_name) {
-        const reg = new RegExp('\\{\\{' + item.para_name + '\\}\\}', 'g')
+        let reg = null
+        if (item.para_type === '6') {
+          reg = new RegExp(item.para_name, 'g')
+        } else {
+          reg = new RegExp('\\{\\{' + item.para_name + '\\}\\}', 'g')
+        }
         this.postForm.content = this.postForm.content.replace(reg, '')
         window.tinymce.get('tinymce').setContent(this.postForm.content)
       }
@@ -280,6 +296,9 @@ export default {
     init() { // 初始化
       fetchDepartments('').then(response => {
         this.depArr = response.info
+      })
+      getLawsArr().then(response => {
+        this.lawArr = response.info
       })
       this.changeDepRule()
     }

@@ -145,6 +145,7 @@ export default {
         department_id: '',
         content: ''
       }
+      this.creguArr = this.reguArr
       this.dialogFormVisible = true
     },
     updateRegu(item) {
