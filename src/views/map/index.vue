@@ -5,7 +5,9 @@
       <el-amap-polygon v-for="(polygon, index) in polygons" :key="index" :vid="index" :ref="`polygon_${index}`" :path="polygon.path" :events="polygon.events">
       </el-amap-polygon>
       <!-- 点坐标 -->
-      <el-amap-marker v-for="(marker, index) in markers" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :events="marker.events" :visible="marker.visible" :draggable="marker.draggable">
+      <el-amap-marker v-for="(marker, index) in personArr" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :events="marker.events" :visible="marker.visible" :draggable="marker.draggable">
+      </el-amap-marker>
+      <el-amap-marker v-for="(marker, index) in eventArr" :ref="`eventmarker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :events="marker.events" :visible="marker.visible" :draggable="marker.draggable">
       </el-amap-marker>
       <!-- 信息窗体 -->
       <el-amap-info-window v-for="(window, index) in windows" :ref="`window_${index}`" :key="index" :position="window.position" :content="window.content" :visible="window.visible" :events="window.events">
@@ -43,10 +45,14 @@
 <script>
 import VueAMap from 'vue-amap'
 import SideBar from './sidebar'
-import { getRegionArr, updateRegion } from '@/api/grid'
+import { mapGetters } from 'vuex'
+import { getRegionArr, updateRegion, getLatlonArr } from '@/api/grid'
+import { parseTime } from '@/utils/index'
 import { fetchList } from '@/api/department'
+import { getEventArr } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
 import personicon from '@/assets/icon/personicon.png'
+import eventicon from '@/assets/icon/zuob2.png'
 
 const amapManager = new VueAMap.AMapManager()
 export default {
@@ -101,32 +107,6 @@ export default {
         }
       }],
       polygons: [],
-      markers: [
-        {
-          position: [121.5273285, 31.21515044],
-          icon: personicon,
-          events: {
-            init: (marker) => {
-              marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
-                offset: new AMap.Pixel(20, 20), // 修改label相对于maker的位置
-                content: '我是marker的label标签'
-              })
-            },
-            click: (e) => {
-              console.log(e)
-              this.windows[0].position = [e.lnglat.lng, e.lnglat.lat]
-              this.windows[0].visible = true
-              this.windows[0].content = '<a  href="#/introduction/index" class="router-link-active">个人信息</a>'
-            },
-            dragend: (e) => {
-              this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
-            }
-          },
-          title: '你是不是傻呢',
-          visible: true,
-          draggable: false
-        }
-      ],
       windows: [
         {
           position: [121.5273285, 31.21515044],
@@ -140,6 +120,8 @@ export default {
         }
       ],
       userArr: [],
+      personArr: [],
+      eventArr: [],
       regionobj: {
         name: '',
         username: '',
@@ -193,6 +175,8 @@ export default {
     loadInit() { // 初始化加载
       this.getRegion()
       this.getUserArr()
+      this.getLatlon()
+      this.getEventArr()
     },
     getUserArr() {
       fetchList({ start_index: 0, length: 10000 }).then(response => {
@@ -224,6 +208,91 @@ export default {
             this.polygons.push(obj)
           }
         }, this)
+      })
+    },
+    getLatlon() { // 获取部门人员位置
+      const dep = this.useinfo.department_roles.filter(function(obj) {
+        return obj.is_enable
+      })
+      this.personArr = []
+      getLatlonArr({ department_id: dep[0].department_id }).then(res => {
+        res.info.forEach((element, index) => {
+          const obj = {
+            position: [element.location.lat, element.location.lon],
+            icon: personicon,
+            events: {
+              init: (marker) => {
+                this.$refs['marker_0'].$$getInstance().setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
+                  offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
+                  content: '123213'
+                })
+              },
+              click: (e) => {
+                const obj = element
+                const uploadtime = parseTime(obj.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                this.windows[0].position = [e.lnglat.lng, e.lnglat.lat]
+                this.windows[0].visible = true
+                const ctstr = `<div class="info">
+                 <div class="info-top">${obj.name}<span style="font-size:11px;color:blue;">在线</span></div>
+                 <div class="info-middle" style="background-color: white;">
+                 <img src="http://gridmap-file.xiaoketech.com/images/user/${obj.location.user_id}.png">
+                 地址：${obj.location.address}<br>更新时间：${uploadtime}<br>
+                 </div></div>`
+                this.windows[0].content = ctstr
+              },
+              dragend: (e) => {
+                this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
+              }
+            },
+            title: element.name,
+            visible: true,
+            draggable: false
+          }
+          this.personArr.push(obj)
+        })
+      })
+    },
+    getEventArr() { // 获取事件位置
+      const dep = this.useinfo.department_roles.filter(function(obj) {
+        return obj.is_enable
+      })
+      this.eventArr = []
+      getEventArr({ start_index: 0, length: 1000, department_id: dep[0].department_id }).then(res => {
+        res.info.list.forEach((element, index) => {
+          const obj = {
+            position: [element.lat, element.lon],
+            icon: eventicon,
+            events: {
+              init: (marker) => {
+                this.$refs['eventmarker_0'].$$getInstance().setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
+                  offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
+                  content: '123'
+                })
+              },
+              click: (e) => {
+                const obj = element
+                const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                this.windows[0].position = [e.lnglat.lng, e.lnglat.lat]
+                this.windows[0].visible = true
+                const ctstr = `<div class="info">
+                 <div class="info-top">${obj.name}</div>
+                 <div class="info-middle" style="background-color: white;">
+                 时间：${happen_time}<br>
+                 地址：${obj.address}<br>
+                 <a href="#" style="color:blue">点击查看事件</a>
+                 </div></div>`
+                this.windows[0].content = ctstr
+              },
+              dragend: (e) => {
+                this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
+              }
+            },
+            title: element.name,
+            visible: true,
+            draggable: false
+          }
+          this.eventArr.push(obj)
+        })
       })
     },
     updateRegion() { // 修改区域用户
@@ -264,6 +333,11 @@ export default {
         })
       }).catch(() => { console.log('取消修改') })
     }
+  },
+  computed: {
+    ...mapGetters({
+      useinfo: 'useinfo'
+    })
   }
 }
 </script>
@@ -296,5 +370,36 @@ export default {
     }
   }
 }
-
+.amap-marker-label{
+  border-radius: 2px;
+  border-color: #ddd;
+}
+.info {
+  .info-top {
+    position: relative;
+    border-bottom: 1px solid #CCC;
+  }
+  .info-top div {
+      display: inline-block;
+      color: #333333;
+      font-size: 14px;
+      font-weight: bold;
+      line-height: 31px;
+      padding: 0 10px;
+  }
+  .info-middle {
+      font-size: 12px;
+      padding: 6px;
+      line-height: 20px;
+      min-width: 300px;
+  }
+  span {
+      margin-left: 5px;
+      font-size: 11px;
+  }
+  .info-middle img {
+      float: left;
+      margin-right: 6px;
+  }
+}     
 </style>

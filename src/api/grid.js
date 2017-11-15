@@ -29,3 +29,10 @@ export function getRegionArr(data) { // 获取网格区域集合
   })
 }
 
+export function getLatlonArr(data) { // 查询部门附近人员
+  return fetch({
+    url: 'people/latlon',
+    method: 'post',
+    data: data
+  })
+}
