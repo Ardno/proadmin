@@ -16,6 +16,11 @@
           <span class="oico"><icon-svg icon-class="addressbook" /></span>
         </el-tooltip>
       </li>
+      <li @click="seeting.dialogFormVisible=true">
+        <el-tooltip class="item" effect="dark" content="地图显示设置" placement="left">
+          <span class="oico"><icon-svg icon-class="setup" /></span>
+        </el-tooltip>
+      </li>
       <li  @click="addPolygon">
         <el-tooltip class="item" effect="dark" content="添加区域" placement="left">
           <span class="oico"><icon-svg icon-class="editor" /></span>
@@ -27,7 +32,7 @@
         </el-tooltip>
       </li>
     </ul>
-        <!-- 新增区域 -->
+    <!-- 新增区域 -->
     <el-dialog :title="regionobj.title" @close="closeCall" :visible.sync="regionobj.dialogFormVisible" :close-on-click-modal="false" >
       <el-form class="small-space" :model="requestAdd" :rules="regionobj.infoRules" ref="infoForm" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="区域负责人" prop="user_id">
@@ -42,6 +47,27 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="regionobj.dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="handleAdd">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- 地图显示设置 -->
+    <el-dialog title="显示配置信息" @close="stcloseCall" :visible.sync="seeting.dialogFormVisible" :close-on-click-modal="false" >
+      <el-form class="small-space"  ref="settForm" label-position="right"  style='width: 400px; margin-left:50px;'>
+        <el-form-item label="人员显示">
+          <el-switch on-text="" off-text="" v-model="seeting.person"></el-switch>
+        </el-form-item>
+        <el-form-item label="事件显示">
+          <el-switch on-text="" off-text="" v-model="seeting.event"></el-switch>
+        </el-form-item>
+        <el-form-item label="区域显示">
+          <el-switch on-text="" off-text="" v-model="seeting.region"></el-switch>
+        </el-form-item>
+        <el-form-item label="摄像显示">
+          <el-switch on-text="" off-text="" v-model="seeting.raido"></el-switch>
+        </el-form-item>
+      </el-form> 
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="seeting.dialogFormVisible = false">取 消</el-button>
         <el-button type="primary" @click="handleAdd">确 定</el-button>
       </div>
     </el-dialog>
@@ -77,6 +103,13 @@ export default {
           user_id: [{ type: 'number', required: true, message: '请区域负责人', trigger: 'blur' }],
           name: [{ required: true, message: '请输入区域名称', trigger: 'blur' }]
         }
+      },
+      seeting: {
+        dialogFormVisible: false,
+        person: true,
+        raido: true,
+        region: true,
+        event: true
       }
     }
   },
@@ -84,6 +117,9 @@ export default {
     isAccess: isAccess,
     reloadMap() {
       this.$emit('reloadMap', true)
+    },
+    stcloseCall() {
+      this.$refs.settForm.resetFields()
     },
     closeCall() {
       const o = this.mapobj.$$getInstance()

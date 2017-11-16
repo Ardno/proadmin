@@ -5,9 +5,7 @@
       <el-amap-polygon v-for="(polygon, index) in polygons" :key="index" :vid="index" :ref="`polygon_${index}`" :path="polygon.path" :events="polygon.events">
       </el-amap-polygon>
       <!-- 点坐标 -->
-      <el-amap-marker v-for="(marker, index) in personArr" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :events="marker.events" :visible="marker.visible" :draggable="marker.draggable">
-      </el-amap-marker>
-      <el-amap-marker v-for="(marker, index) in eventArr" :ref="`eventmarker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :events="marker.events" :visible="marker.visible" :draggable="marker.draggable">
+      <el-amap-marker v-for="(marker, index) in markerArr" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :events="marker.events" :visible="marker.visible" :draggable="marker.draggable">
       </el-amap-marker>
       <!-- 信息窗体 -->
       <el-amap-info-window v-for="(window, index) in windows" :ref="`window_${index}`" :key="index" :position="window.position" :content="window.content" :visible="window.visible" :events="window.events">
@@ -120,6 +118,7 @@ export default {
         }
       ],
       userArr: [],
+      markerArr: [],
       personArr: [],
       eventArr: [],
       regionobj: {
@@ -214,7 +213,6 @@ export default {
       const dep = this.useinfo.department_roles.filter(function(obj) {
         return obj.is_enable
       })
-      this.personArr = []
       getLatlonArr({ department_id: dep[0].department_id }).then(res => {
         res.info.forEach((element, index) => {
           const obj = {
@@ -222,9 +220,9 @@ export default {
             icon: personicon,
             events: {
               init: (marker) => {
-                this.$refs['marker_0'].$$getInstance().setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
+                marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
                   offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
-                  content: '123213'
+                  content: element.name
                 })
               },
               click: (e) => {
@@ -248,6 +246,7 @@ export default {
             visible: true,
             draggable: false
           }
+          this.markerArr.push(obj)
           this.personArr.push(obj)
         })
       })
@@ -256,7 +255,6 @@ export default {
       const dep = this.useinfo.department_roles.filter(function(obj) {
         return obj.is_enable
       })
-      this.eventArr = []
       getEventArr({ start_index: 0, length: 1000, department_id: dep[0].department_id }).then(res => {
         res.info.list.forEach((element, index) => {
           const obj = {
@@ -264,9 +262,9 @@ export default {
             icon: eventicon,
             events: {
               init: (marker) => {
-                this.$refs['eventmarker_0'].$$getInstance().setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
+                marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
                   offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
-                  content: '123'
+                  content: element.name
                 })
               },
               click: (e) => {
@@ -291,6 +289,7 @@ export default {
             visible: true,
             draggable: false
           }
+          this.markerArr.push(obj)
           this.eventArr.push(obj)
         })
       })
