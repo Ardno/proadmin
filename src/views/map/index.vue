@@ -15,7 +15,7 @@
         <!-- 经纬度: [{{ lng }}, {{ lat }}]  -->
         地址: {{ address }}
     </div>
-    <side-bar :mapobj="mapobj" @reloadMap="loadInit" @addRegion="getRegion"></side-bar>
+    <side-bar :mapobj="mapobj" @seeting="getSetting"  @reloadMap="loadInit" @addRegion="getRegion"></side-bar>
     <!-- 区域信息 -->
     <el-dialog title="区域信息" size="tiny" :visible.sync="regionobj.dialogFormVisible"  >
       <el-form class="small-space"  label-position="top">
@@ -121,6 +121,7 @@ export default {
       markerArr: [],
       personArr: [],
       eventArr: [],
+      polygonsArr: [],
       regionobj: {
         name: '',
         username: '',
@@ -172,10 +173,26 @@ export default {
   methods: {
     isAccess: isAccess,
     loadInit() { // 初始化加载
+      this.markerArr = []
       this.getRegion()
       this.getUserArr()
       this.getLatlon()
       this.getEventArr()
+    },
+    getSetting(obj) {
+      this.markerArr = []
+      this.polygons = []
+      if (obj.person) {
+        this.markerArr.push(...this.personArr)
+      }
+      if (obj.event) {
+        this.markerArr.push(...this.eventArr)
+      }
+      if (obj.region) {
+        this.polygons.push(...this.polygonsArr)
+      }
+      // if (obj.raido){
+      // }
     },
     getUserArr() {
       fetchList({ start_index: 0, length: 10000 }).then(response => {
@@ -186,6 +203,7 @@ export default {
       getRegionArr({ start_index: 0, length: 10000 }).then(response => {
         const polygons = response.info.list
         this.polygons = []
+        this.polygonsArr = []
         polygons.forEach(function(element) {
           if (!element.status) {
             const obj = {
@@ -205,6 +223,7 @@ export default {
               }
             }
             this.polygons.push(obj)
+            this.polygonsArr.push(obj)
           }
         }, this)
       })
@@ -213,6 +232,7 @@ export default {
       const dep = this.useinfo.department_roles.filter(function(obj) {
         return obj.is_enable
       })
+      this.personArr = []
       getLatlonArr({ department_id: dep[0].department_id }).then(res => {
         res.info.forEach((element, index) => {
           const obj = {
@@ -255,6 +275,7 @@ export default {
       const dep = this.useinfo.department_roles.filter(function(obj) {
         return obj.is_enable
       })
+      this.eventArr = []
       getEventArr({ start_index: 0, length: 1000, department_id: dep[0].department_id }).then(res => {
         res.info.list.forEach((element, index) => {
           const obj = {

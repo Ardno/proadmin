@@ -51,24 +51,16 @@
       </div>
     </el-dialog>
     <!-- 地图显示设置 -->
-    <el-dialog title="显示配置信息" @close="stcloseCall" :visible.sync="seeting.dialogFormVisible" :close-on-click-modal="false" >
-      <el-form class="small-space"  ref="settForm" label-position="right"  style='width: 400px; margin-left:50px;'>
-        <el-form-item label="人员显示">
-          <el-switch on-text="" off-text="" v-model="seeting.person"></el-switch>
-        </el-form-item>
-        <el-form-item label="事件显示">
-          <el-switch on-text="" off-text="" v-model="seeting.event"></el-switch>
-        </el-form-item>
-        <el-form-item label="区域显示">
-          <el-switch on-text="" off-text="" v-model="seeting.region"></el-switch>
-        </el-form-item>
-        <el-form-item label="摄像显示">
-          <el-switch on-text="" off-text="" v-model="seeting.raido"></el-switch>
-        </el-form-item>
-      </el-form> 
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="seeting.dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="handleAdd">确 定</el-button>
+    <el-dialog title="显示配置信息" size="tiny" @close="stcloseCall" :visible.sync="seeting.dialogFormVisible"  >
+      <div>
+        <p class="mb10">
+          <span class="mr5">人员显示</span><el-switch on-text="" off-text="" v-model="seeting.person"></el-switch>
+          <span class="ml40 mr5">事件显示</span><el-switch on-text="" off-text="" v-model="seeting.event"></el-switch>
+        </p>
+        <p>
+          <span class="mr5">区域显示</span><el-switch on-text="" off-text="" v-model="seeting.region"></el-switch>
+          <span class="ml40 mr5">摄像显示</span><el-switch on-text="" off-text="" v-model="seeting.raido"></el-switch>
+        </p>
       </div>
     </el-dialog>
   </div>
@@ -77,6 +69,7 @@
 
 <script>
 import { addRegion } from '@/api/grid'
+import Cookies from 'js-cookie'
 import { fetchList } from '@/api/department'
 import { isAccess } from '@/utils/auth'
 export default {
@@ -113,13 +106,22 @@ export default {
       }
     }
   },
+  created() {
+    const obj = Cookies.get('seeting')
+    if (obj) {
+      this.seeting = JSON.parse(obj)
+    }
+    this.loadUser()
+  },
   methods: {
     isAccess: isAccess,
     reloadMap() {
       this.$emit('reloadMap', true)
     },
     stcloseCall() {
-      this.$refs.settForm.resetFields()
+      this.$emit('seeting', this.seeting)
+      Cookies.set('seeting', this.seeting)
+      // console.log(123)
     },
     closeCall() {
       const o = this.mapobj.$$getInstance()
@@ -204,9 +206,6 @@ export default {
         }
       })
     }
-  },
-  created() {
-    this.loadUser()
   }
 }
 </script>

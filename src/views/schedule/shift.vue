@@ -59,12 +59,16 @@
           <span>{{scope.row.change_content}}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column align="center" label="操作" width="100">
+      <el-table-column align="center" label="操作" width="180">
         <template scope="scope">
-          <el-button size="small" type="success" v-if="scope.row.change_state == '0'"  @click="updateshift(scope.row)">修改
+          <!-- <el-button size="small" type="success" v-if="scope.row.change_state == '0'"  @click="updateshift(scope.row)">修改
+          </el-button> -->
+          <el-button size="small" type="info" v-if="scope.row.change_state == '0' && isUser(scope.row.to_user_id)"  @click="updateStatus(scope.row,true)">同意
+          </el-button>
+          <el-button size="small" type="warning" v-if="scope.row.change_state == '0' && isUser(scope.row.to_user_id)"  @click="updateStatus(scope.row,false)">拒绝
           </el-button>
         </template>
-      </el-table-column> -->
+      </el-table-column>
     </el-table>
     <!-- 分页 -->
     <div class="block pt20 pb20">
@@ -117,7 +121,7 @@ import { fetchList, fetchDepartments } from '@/api/department'
 import { getEventArr } from '@/api/depevent'
 import { getShiftsArr, updateShifts, addShifts } from '@/api/levelshift'
 import { getRegionArr } from '@/api/grid'
-import { isAccess } from '@/utils/auth'
+import { isAccess, isUser } from '@/utils/auth'
 import store from '@/store'
 export default {
   data() {
@@ -180,6 +184,7 @@ export default {
     }
   },
   methods: {
+    isUser: isUser,
     isAccess: isAccess,
     updateshift(item) { // 修改弹框
       this.shiftobj = Object.assign(this.shiftobj, {
@@ -199,6 +204,38 @@ export default {
         to_user_id: '',
         change_content: ''
       }
+    },
+    updateStatus(item, flg) { // 换班审核
+      let tipStr = ''
+      let status = 0
+      if (flg) { // 同意
+        tipStr = '你将同意该用户的换班！'
+        status = 1
+      } else { // 拒绝
+        tipStr = '你确定拒绝该用户的换班？'
+        status = 2
+      }
+      this.$confirm(tipStr, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        updateShifts({ _id: item._id, change_state: status }).then(response => {
+          item.change_state = status
+          this.$message({
+            message: '操作成功',
+            type: 'success',
+            duration: 4 * 1000
+          })
+        }).catch(() => {
+          this.$message({
+            message: '操作失败，请稍后再试',
+            type: 'error',
+            duration: 4 * 1000
+          })
+        })
+      }).catch(() => {
+      })
     },
     handleQuery() { // 查询换班集合
       this.pageobj.start_index = 0
