@@ -1,17 +1,17 @@
 <template>
   <div class="app-container">
-    <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
-      <el-tab-pane label="考勤规则" name="first">
+    <!-- <el-tabs v-model="activeName" type="card" @tab-click="handleClick">
+      <el-tab-pane label="考勤规则" name="first"> -->
         <div class="layui-elem-quote">
           <span class="f16">考勤规则记录</span>
           <el-button class="filter-item" type="primary" icon="plus" @click="addruleadc" v-if="isAccess('41')">添加</el-button>
         </div>
         <el-table :key='tableKey' :data="adclist" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
-          <el-table-column align="center" label="序号" width="65">
+          <!-- <el-table-column align="center" label="序号" width="65">
             <template scope="scope">
               <span>{{scope.row._id}}</span>
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <el-table-column width="180px" align="center" label="创建时间">
             <template scope="scope">
               <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
@@ -25,6 +25,12 @@
           <el-table-column align="center" label="区域名称">
             <template scope="scope">
               <span>{{scope.row.regionname}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" label="状态">
+            <template scope="scope">
+              <el-tag v-if="scope.row.status == '0'" type="success">正常</el-tag>
+              <el-tag v-if="scope.row.status == '1'" type="danger">已失效</el-tag>
             </template>
           </el-table-column>
           <el-table-column align="center" label="执行日期">
@@ -45,6 +51,10 @@
           <el-table-column align="center" label="操作" width="190">
             <template scope="scope">
               <el-button size="small" type="success" v-if="isAccess('41')"  @click="handleUpdateDa(scope.row)">修改
+              </el-button>
+              <el-button size="small" type="danger" v-if="isAccess('41')" v-show="!scope.row.status && scope.row._id!==1" @click="updateStaus(scope.row)">停用
+              </el-button>
+              <el-button size="small" type="info" v-if="isAccess('41')" v-show="scope.row.status && scope.row._id!==1" @click="updateStaus(scope.row)">启用
               </el-button>
               <span v-if="scope.row._id===1" class="f12 g9 ml15">默认规则</span>
             </template>
@@ -99,9 +109,9 @@
             <el-button type="primary" @click="handleAddUpdate">确 定</el-button>
           </div>
         </el-dialog>
-      </el-tab-pane>
+      <!-- </el-tab-pane>
       <el-tab-pane label="配置管理" name="second">配置管理</el-tab-pane>
-    </el-tabs>
+    </el-tabs> -->
 
   </div>
 </template>
@@ -120,7 +130,7 @@ export default {
       regionArr: [],
       pageobj: {
         start_index: 0,
-        length: 9,
+        length: 10,
         pagesize: 10
       },
       activeName: 'first',
@@ -237,6 +247,37 @@ export default {
           console.log('error submit!!')
           return false
         }
+      })
+    },
+    updateStaus(item) { // 修改事件类型状态
+      let tipStr = ''
+      let status = 0
+      if (item.status) { // 恢复
+        tipStr = '你确定要启用当前考勤规则？'
+      } else { // 设置失效
+        tipStr = '你确定要停用当前考勤规则？'
+        status = 1
+      }
+      this.$confirm(tipStr, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        updateAdc({ _id: item._id, status: status }).then(response => {
+          item.status = status
+          this.$message({
+            message: '修改成功',
+            type: 'success',
+            duration: 4 * 1000
+          })
+        }).catch(() => {
+          this.$message({
+            message: '修改失败，请稍后再试',
+            type: 'error',
+            duration: 4 * 1000
+          })
+        })
+      }).catch(() => {
       })
     },
     handleSet() { // 设置默认考勤规则

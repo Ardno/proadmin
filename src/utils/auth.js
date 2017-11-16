@@ -22,9 +22,17 @@ export function removeToken() {
   return Cookies.remove(TokenKey)
 }
 
-export function isAccess(what) {
+export function isAccess(what) { // 权限判断
   const roles = store.getters.roles
   if (roles.indexOf('admin') >= 0 || roles.indexOf(what) >= 0) {
+    return true
+  } else {
+    return false
+  }
+}
+export function isUser(id) { // 判断是否当前用户
+  const useinfo = store.getters.useinfo
+  if (Number(useinfo._id) === Number(id)) {
     return true
   } else {
     return false

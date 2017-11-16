@@ -351,7 +351,9 @@ export default {
     },
     getadcArray() { // 获取考勤规则集合
       getadcArr({ start_index: 0, length: 1000 }).then(response => {
-        this.kaoqingArr = response.info.list
+        this.kaoqingArr = response.info.list.filter(obj => {
+          return !obj.status
+        })
       }).catch(() => { })
     },
     updateKaoqing() {

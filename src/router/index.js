@@ -71,8 +71,8 @@ export const asyncRouterMap = [
     icon: 'wanggeyuan',
     children: [
       { path: 'event', component: _import('gridbusiness/event/event'), name: '事件列表', meta: { role: ['90'] }},
-      { path: 'laws', component: _import('gridbusiness/laws'), name: '法律法规' },
-      { path: 'treatment', component: _import('gridbusiness/treatment'), name: '业务处理' }
+      { path: 'laws', component: _import('gridbusiness/laws'), name: '法律法规' }
+      // { path: 'treatment', component: _import('gridbusiness/treatment'), name: '业务处理' }
     ]
   },
   {
@@ -106,21 +106,21 @@ export const asyncRouterMap = [
     name: '部门管理',
     icon: 'dep',
     children: [
-      { path: 'index', component: _import('staff/index'), name: '人员信息', meta: { role: ['10'] }},
-      { path: 'depment', component: _import('staff/depment'), name: '部门信息', meta: { role: ['20'] }},
-      { path: 'duty', component: _import('staff/duty'), name: '职位信息', meta: { role: ['120'] }}
+      { path: 'index', component: _import('staff/index'), name: '人员列表', meta: { role: ['10'] }},
+      { path: 'depment', component: _import('staff/depment'), name: '部门树形架构', meta: { role: ['20'] }},
+      { path: 'duty', component: _import('staff/duty'), name: '职位列表', meta: { role: ['120'] }}
     ]
   },
-  {
-    path: '/seal',
-    component: Layout,
-    redirect: '/seal/index',
-    name: '电子印章',
-    icon: 'people_fill',
-    noDropdown: true,
-    children: [
-      { path: 'index', component: _import('seal/index'), name: '电子印章' }
-    ]
-  },
+  // {
+  //   path: '/seal',
+  //   component: Layout,
+  //   redirect: '/seal/index',
+  //   name: '电子印章',
+  //   icon: 'people_fill',
+  //   noDropdown: true,
+  //   children: [
+  //     { path: 'index', component: _import('seal/index'), name: '电子印章' }
+  //   ]
+  // },
   { path: '*', redirect: '/401', hidden: true }
 ]

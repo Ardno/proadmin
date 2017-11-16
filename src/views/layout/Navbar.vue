@@ -11,7 +11,7 @@
 			<screenfull class='screenfull'></screenfull>
 			<el-dropdown class="avatar-container" trigger="click">
 				<div class="avatar-wrapper">
-					<img class="user-avatar" :src="avatar ? 'http://gridmap-file.xiaoketech.com/images/user/'+avatar+'.png':avatarm">
+					<img class="user-avatar" :src="'http://gridmap-file.xiaoketech.com/images/user/'+avatar+'.png'" :onerror="defaultImg">
 					<i class="el-icon-caret-bottom"></i>
 				</div>
 				<el-dropdown-menu class="user-dropdown" slot="dropdown">
@@ -55,6 +55,24 @@
 			<el-button type="primary" @click="handleUpdate">确 定</el-button>
 			</div>
     </el-dialog>
+    <!-- 修改个人密码 -->
+    <el-dialog title="修改密码"   :visible.sync="dialogPwdInfo">
+			<el-form class="small-space" :model="pwdRequst" :rules="pwdRules" ref="pwdForm" label-position="right"  label-width="80px" style='width: 400px; margin-left:50px;'>
+			<el-form-item label="旧密码" prop="pwd">
+					<el-input type="password" v-model="pwdRequst.pwd"></el-input>
+			</el-form-item>
+      <el-form-item label="新密码" prop="newPwd">
+					<el-input type="password" v-model="pwdRequst.newPwd"></el-input>
+			</el-form-item>
+      <el-form-item label="确认密码" prop="comPwd">
+					<el-input type="password" v-model="pwdRequst.comPwd"></el-input>
+			</el-form-item>
+			</el-form>
+			<div slot="footer" class="dialog-footer">
+			<el-button @click="dialogPwdInfo = false">取 消</el-button>
+			<el-button type="primary" @click="handlePwdUpdate">确 定</el-button>
+			</div>
+    </el-dialog>
 	</div>
 </template>
 
@@ -70,7 +88,7 @@ import avatarm from '@/assets/login_images/avatar.png'
 import { getSmsList } from '@/api/message'
 import { updatePeInfo } from '@/api/department'
 import { validateMblNo, validateIdNum } from '@/utils/validate'
-
+import { md5 } from '@/utils/md5'
 export default {
   components: {
     Levelbar,
@@ -94,15 +112,34 @@ export default {
         callback()
       }
     }
+    const validatePassword = (rule, value, callback) => {
+      if (value.length < 6) {
+        callback(new Error('请输入6位密码'))
+      } else {
+        callback()
+      }
+    }
     return {
       dialogInfo: false,
+      dialogPwdInfo: false,
+      pwdRequst: {
+        pwd: '',
+        newPwd: '',
+        comPwd: ''
+      },
       count: 0,
       log: errLogStore.state.errLog,
+      defaultImg: 'this.onerror=null;this.src="' + require('../../assets/login_images/avatar.png') + '"',
       infoRules: {
         name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
         nation: [{ required: true, trigger: 'blur', message: '请输入民族' }],
         idNum: [{ required: true, trigger: 'blur', validator: validateUserIdNum }],
         mobile: [{ required: true, trigger: 'blur', validator: validateUsername }]
+      },
+      pwdRules: {
+        pwd: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        newPwd: [{ required: true, trigger: 'blur', validator: validatePassword }],
+        comPwd: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       avatarm
     }
@@ -114,6 +151,7 @@ export default {
     ...mapGetters({
       temp: 'useinfo',
       avatar: 'avatar',
+      userpassword: 'password',
       sidebar: 'sidebar',
       name: 'name'
     })
@@ -169,32 +207,41 @@ export default {
         }
       })
     },
-    handlePwd(item) { // 修改密码
-      this.$prompt('请输入新密码', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        inputPattern: /^[a-zA-Z0-9]{6,}$/,
-        inputErrorMessage: '至少输入6位密码'
-      }).then(({ value }) => {
-        const parm = {
-          _id: item['_id'],
-          pwd: value
+    handlePwd() { // 修改密码
+      this.pwdRequst = {
+        pwd: '',
+        newPwd: '',
+        comPwd: ''
+      }
+      this.dialogPwdInfo = true
+    },
+    handlePwdUpdate(item) { // 修改密码
+      this.$refs.pwdForm.validate(valid => {
+        if (valid) {
+          if (this.pwdRequst.newPwd === this.pwdRequst.comPwd) {
+            if (this.userpassword === md5(this.pwdRequst.pwd)) {
+              updatePeInfo({ _id: this.temp['_id'], pwd: this.pwdRequst.pwd }).then(response => {
+                this.$message({
+                  message: '修改成功',
+                  type: 'success',
+                  duration: 4 * 1000
+                })
+                this.$store.dispatch('SET_PASSWORD', md5(this.pwdRequst.pwd))
+                this.dialogPwdInfo = false
+              }).catch(() => {
+                this.$message({
+                  message: '修改密码失败，请稍后再试',
+                  type: 'error',
+                  duration: 4 * 1000
+                })
+              })
+            } else {
+              this.$message.error('原密码输入错误')
+            }
+          } else {
+            this.$message.error('两次密码输入不一致')
+          }
         }
-        updatePeInfo(parm).then(response => {
-          this.$message({
-            message: '修改后密码为：' + value,
-            type: 'success',
-            duration: 4 * 1000
-          })
-        }).catch(() => {
-          this.$message({
-            message: '修改密码失败，请稍后再试',
-            type: 'error',
-            duration: 4 * 1000
-          })
-        })
-      }).catch(() => {
-        console.log('取消修改')
       })
     }
   }

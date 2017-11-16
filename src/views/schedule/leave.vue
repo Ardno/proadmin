@@ -46,12 +46,16 @@
           <span>{{scope.row.leavecontent}}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column align="center" label="操作" width="100">
+      <el-table-column align="center" label="操作" width="200">
         <template scope="scope">
-          <el-button size="small" type="success" v-if="scope.row.approval_state == '0'"  @click="updateLeave(scope.row)">修改
+          <el-button size="small" type="success" v-if="scope.row.approval_state == '0' && isUser(scope.row.user_id)"  @click="updateLeave(scope.row)">修改
+          </el-button>
+          <el-button size="small" type="info" v-if="scope.row.approval_state == '0' && !isUser(scope.row.user_id)"  @click="updateStatus(scope.row,true)">同意
+          </el-button>
+          <el-button size="small" type="warning" v-if="scope.row.approval_state == '0' && !isUser(scope.row.user_id)"  @click="updateStatus(scope.row,false)">拒绝
           </el-button>
         </template>
-      </el-table-column> -->
+      </el-table-column>
     </el-table>
     <!-- 分页 -->
     <div class="block pt20 pb20">
@@ -90,7 +94,7 @@
 <script>
 import { fetchList, fetchDepartments } from '@/api/department'
 import { getLeavesArr, updateLeaves, addLeaves } from '@/api/levelshift'
-import { isAccess } from '@/utils/auth'
+import { isAccess, isUser } from '@/utils/auth'
 export default {
   data() {
     return {
@@ -98,7 +102,7 @@ export default {
       currentPage: 1,
       pageobj: {
         start_index: 0,
-        length: 9,
+        length: 10,
         pagesize: 10,
         user_id: ''
       },
@@ -135,6 +139,7 @@ export default {
     }
   },
   methods: {
+    isUser: isUser,
     isAccess: isAccess,
     updateLeave(item) { // 修改弹框
       this.leaveobj = Object.assign(this.leaveobj, {
@@ -152,6 +157,38 @@ export default {
           end_time: new Date(),
           leavecontent: ''
         }
+      })
+    },
+    updateStatus(item, flg) { // 请假审核
+      let tipStr = ''
+      let status = 0
+      if (flg) { // 同意
+        tipStr = '你将同意该用户的请假！'
+        status = 1
+      } else { // 拒绝
+        tipStr = '你确定拒绝该用户的请假？'
+        status = 2
+      }
+      this.$confirm(tipStr, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        updateLeaves({ _id: item._id, approval_state: status }).then(response => {
+          item.approval_state = status
+          this.$message({
+            message: '操作成功',
+            type: 'success',
+            duration: 4 * 1000
+          })
+        }).catch(() => {
+          this.$message({
+            message: '操作失败，请稍后再试',
+            type: 'error',
+            duration: 4 * 1000
+          })
+        })
+      }).catch(() => {
       })
     },
     closeCall() {

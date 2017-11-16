@@ -32,7 +32,7 @@
         <template scope="scope">
           <el-tag v-if="scope.row.status == '0'" type="info">进行中</el-tag>
           <el-tag v-if="scope.row.status == '1'" type="success">完成</el-tag>
-          <el-tag v-if="scope.row.status == '2'" type="warning">已删除</el-tag>
+          <el-tag v-if="scope.row.status == '2'" type="warning">已关闭</el-tag>
         </template>
       </el-table-column>
       <el-table-column width="180" label="发生时间">
@@ -48,7 +48,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="100">
         <template scope="scope">
-          <el-button size="small" type="success" v-if="scope.row.status == '0' && isAccess('92')" >删除
+          <el-button size="small" type="danger" v-if="scope.row.status == '0' && isAccess('92')" @click="closeEvent(scope.row)" >直接关闭
           </el-button>
         </template>
       </el-table-column>
@@ -71,14 +71,14 @@
 
 <script>
 import { fetchList } from '@/api/department'
-import { getEventArr, getEventTypeArr } from '@/api/depevent'
+import { getEventArr, getEventTypeArr, updateEvent } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
 export default {
   data() {
     return {
       pageobj: {
         start_index: 0,
-        length: 9,
+        length: 10,
         pagesize: 10,
         totalPages: 0,
         currentPage: 1,
@@ -121,6 +121,29 @@ export default {
       this.pageobj.start_index = (this.pageobj.currentPage - 1) * this.pageobj.pagesize
       this.pageobj.length = this.pageobj.pagesize
       this.getEventsArr()
+    },
+    closeEvent(item) {
+      this.$confirm('你确定要将当前事件直接关闭吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        updateEvent({ _id: item._id, status: 2 }).then(response => {
+          item.status = 2
+          this.$message({
+            message: '关闭成功',
+            type: 'success',
+            duration: 4 * 1000
+          })
+        }).catch(() => {
+          this.$message({
+            message: '关闭失败，请稍后再试',
+            type: 'error',
+            duration: 4 * 1000
+          })
+        })
+      }).catch(() => {
+      })
     },
     getEventsArr() {
       getEventArr(this.pageobj).then(res => {

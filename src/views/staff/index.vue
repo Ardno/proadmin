@@ -47,7 +47,9 @@
       </el-table-column>
       <el-table-column align="center" width="110px" label="状态">
         <template scope="scope">
-          <span>{{scope.row.status | statusFilter}}</span>
+          <el-tag v-if="scope.row.status == '0'" type="success">正常</el-tag>
+          <el-tag v-if="scope.row.status == '1'" type="danger">离职</el-tag>
+          <el-tag v-if="scope.row.status == '2'" type="warning">审核中</el-tag>
         </template>
       </el-table-column>
       <el-table-column align="center" label="部门">
@@ -173,7 +175,7 @@ export default {
       solerr: [],
       listQuery: {
         start_index: 0,
-        length: 9,
+        length: 10,
         pagesize: 10,
         totalPages: 0,
         currentPage: 1,
@@ -273,7 +275,9 @@ export default {
         this.solerr = response.info
       })
       getadcArr({ start_index: 0, length: 10000 }).then(response => {
-        this.kaoqingArr = response.info.list
+        this.kaoqingArr = response.info.list.filter(obj => {
+          return !obj.status
+        })
       })
     },
     loadDps() {

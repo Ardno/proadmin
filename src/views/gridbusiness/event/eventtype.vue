@@ -27,7 +27,7 @@
       <el-table-column width="80" label="状态">
       <template scope="scope">
           <el-tag v-if="scope.row.status == '0'" type="success">正常</el-tag>
-          <el-tag v-if="scope.row.status == '1'" type="warning">隐藏</el-tag>
+          <el-tag v-if="scope.row.status == '1'" type="danger">已失效</el-tag>
       </template>
       </el-table-column>
       <el-table-column align="center" label="部门">
@@ -43,6 +43,10 @@
       <el-table-column align="center" label="操作" width="190">
       <template scope="scope">
           <el-button size="small" type="success" v-if="isAccess('82')" @click="updateshow(scope.row)">修改
+          </el-button>
+          <el-button size="small" type="danger" v-if="isAccess('82')" v-show="!scope.row.status" @click="updateStaus(scope.row)">失效
+          </el-button>
+          <el-button size="small" type="info" v-if="isAccess('82')" v-show="scope.row.status" @click="updateStaus(scope.row)">恢复
           </el-button>
       </template>
       </el-table-column>
@@ -153,6 +157,37 @@ export default {
         this.eventInfo.steparr = []
       }
       this.changeStep(this.eventInfo.dept_id)
+    },
+    updateStaus(item) { // 修改事件类型状态
+      let tipStr = ''
+      let status = 0
+      if (item.status) { // 恢复
+        tipStr = '你确定要恢复当前事件类型？'
+      } else { // 设置失效
+        tipStr = '你确定要将当前事件类型设置失效？'
+        status = 1
+      }
+      this.$confirm(tipStr, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        updateEventType({ _id: item._id, status: status }).then(response => {
+          item.status = status
+          this.$message({
+            message: '修改成功',
+            type: 'success',
+            duration: 4 * 1000
+          })
+        }).catch(() => {
+          this.$message({
+            message: '修改失败，请稍后再试',
+            type: 'error',
+            duration: 4 * 1000
+          })
+        })
+      }).catch(() => {
+      })
     },
     handleUpdateCreate() {
       this.$refs.infoForm.validate(valid => {

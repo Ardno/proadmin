@@ -62,6 +62,13 @@ export function updatePeInfo(data) { // 修改个人信息
     data: data
   })
 }
+export function passUserPwd(data) { // 验证用户密码
+  return fetch({
+    url: 'people/pass',
+    method: 'post',
+    data: data
+  })
+}
 
 export function queryDepRoles(data) { // 查询人员部门集合
   return fetch({

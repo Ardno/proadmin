@@ -15,7 +15,16 @@
       </el-table-column>
       <el-table-column width="180" prop="user_name" label="操作用户" >
       </el-table-column>
-      <el-table-column prop="content" label="操作内容" >
+      <el-table-column label="操作内容" >
+        <template scope="scope">
+          <span>{{scope.row.content | contFilter}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="操作" width="120">
+        <template scope="scope">
+          <el-button size="small" type="success"  @click="handleSee(scope.row)">查看
+          </el-button>
+        </template>
       </el-table-column>
     </el-table>
     <!-- 分页 -->
@@ -42,7 +51,7 @@ export default {
     return {
       pageobj: {
         start_index: 0,
-        length: 9,
+        length: 10,
         pagesize: 10,
         totalPages: 0,
         currentPage: 1,
@@ -52,6 +61,12 @@ export default {
       tableKey: 0,
       userArr: [],
       logArr: []
+    }
+  },
+  filters: {
+    contFilter(str) {
+      const arr = str.split('=>')
+      return arr[0]
     }
   },
   created() {
@@ -97,6 +112,14 @@ export default {
           type: 'error',
           duration: 4 * 1000
         })
+      })
+    },
+    handleSee(res) {
+      this.$alert(res.content, '操作详情', {
+        showConfirmButton: false,
+        showCancelButton: false,
+        callback: action => {
+        }
       })
     }
   }

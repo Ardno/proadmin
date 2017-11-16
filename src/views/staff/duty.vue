@@ -24,11 +24,11 @@
           <span>{{scope.row.name}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="职务权限">
+      <!-- <el-table-column align="center" label="职务权限">
         <template scope="scope">
           <span>{{statusFilter(scope.row.access)}}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column align="center" label="操作" width="190">
         <template scope="scope">
           <el-button size="small" v-if="isAccess('122')" type="success" @click="handleUpdate(scope.row)">修改
@@ -84,7 +84,7 @@ export default {
       titlea: '',
       pageobj: {
         start_index: 0,
-        length: 9,
+        length: 10,
         pagesize: 10,
         department_id: ''
       },
@@ -149,6 +149,14 @@ export default {
       this.titlea = '修改职务'
       const obj = deepClone(item)
       obj.accessarr = obj.access.split(',')
+      if (obj.access === '0') {
+        this.accessArr.forEach(element => {
+          obj.accessarr.push(element.value + '')
+        })
+      }
+      if (!obj.department_id) {
+        obj.department_id = ''
+      }
       this.duty = obj
       this.dialogFormVisible = true
     },
@@ -238,8 +246,10 @@ export default {
       }
     },
     loadDep() { // 获取用户部门和用户
-      fetchDepartments().then(response => {
-        this.depArr = response.info
+      fetchDepartments({ status: 0 }).then(response => {
+        this.depArr = response.info.filter(obj => {
+          return !obj.status
+        })
       })
     }
   },
