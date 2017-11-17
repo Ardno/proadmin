@@ -87,25 +87,19 @@
     <el-dialog :title="shiftobj.title" @close="closeCall" :visible.sync="shiftobj.dialogFormVisible">
       <el-form class="small-space" :model="requset" :rules="shiftobj.infoRules" ref="infoForm" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="工作名称" prop="work_id">
-          <el-select v-model="requset.work_id" filterable placeholder="请选择">
-            <el-option v-for="item in workArr" :key="item._id" :label="item.name" :value="item._id">
-            </el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="换班区域" prop="region_id">
-          <el-select v-model="requset.region_id" filterable placeholder="请选择">
-            <el-option v-for="item in regionArr" :key="item._id" :label="item.name" :value="item._id">
+          <el-select class="pct100" v-model="requset.work_id" filterable placeholder="请选择" @change="handleWorkClick">
+            <el-option v-for="item in workArr" :key="item._id" :label="item.regionname+' '+parseTime(item.start_time,'{m}-{d} {h}:{i}', true)+'~'+parseTime(item.end_time,'{m}-{d} {h}:{i}', true)" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="换班用户" prop="to_user_id">
-          <el-select v-model="requset.to_user_id" filterable placeholder="请选择">
+          <el-select class="pct100" v-model="requset.to_user_id" filterable placeholder="请选择">
             <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="换班原因" prop="change_content">
-          <el-input type="textarea" v-model="requset.change_content"></el-input>
+          <el-input type="textarea" v-model="requset._id"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -118,11 +112,11 @@
 
 <script>
 import { fetchList, fetchDepartments } from '@/api/department'
-import { getEventArr } from '@/api/depevent'
-import { getShiftsArr, updateShifts, addShifts } from '@/api/levelshift'
+import { getShiftsArr, updateShifts, addShifts, getWorksArr } from '@/api/levelshift'
 import { getRegionArr } from '@/api/grid'
 import { isAccess, isUser } from '@/utils/auth'
 import store from '@/store'
+import { parseTime } from '@/utils/index'
 export default {
   data() {
     return {
@@ -174,7 +168,8 @@ export default {
       requesetUser: {
         start_index: 0,
         length: 10000,
-        user_id: store.getters.useinfo._id
+        user_id: store.getters.useinfo._id,
+        isHandle: 0
       },
       shiftArr: [],
       depArr: [],
@@ -186,6 +181,7 @@ export default {
   methods: {
     isUser: isUser,
     isAccess: isAccess,
+    parseTime: parseTime,
     updateshift(item) { // 修改弹框
       this.shiftobj = Object.assign(this.shiftobj, {
         title: '修改换班信息',
@@ -204,6 +200,13 @@ export default {
         to_user_id: '',
         change_content: ''
       }
+    },
+    handleWorkClick() { // 选择工作
+      this.workArr.forEach(element => {
+        if (this.requset.work_id === element._id) {
+          this.requset.region_id = element.region_id
+        }
+      })
     },
     updateStatus(item, flg) { // 换班审核
       let tipStr = ''
@@ -255,7 +258,7 @@ export default {
       getRegionArr(this.requesetUser).then(response => {
         this.regionArr = response.info.list
       })
-      getEventArr(this.requesetUser).then(response => {
+      getWorksArr(this.requesetUser).then(response => {
         this.workArr = response.info.list
       })
     },

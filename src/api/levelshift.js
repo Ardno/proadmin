@@ -57,3 +57,11 @@ export function getShiftsArr(data) { // 获取换班集合
     data: data
   })
 }
+
+export function getWorksArr(data) { // 获取工作集合
+  return fetch({
+    url: 'works/list',
+    method: 'post',
+    data: data
+  })
+}

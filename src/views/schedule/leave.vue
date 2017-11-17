@@ -92,6 +92,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { fetchList, fetchDepartments } from '@/api/department'
 import { getLeavesArr, updateLeaves, addLeaves } from '@/api/levelshift'
 import { isAccess, isUser } from '@/utils/auth'
@@ -174,8 +175,10 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        updateLeaves({ _id: item._id, approval_state: status }).then(response => {
+        updateLeaves({ _id: item._id, approval_user_id: this.userInfo._id, approval_state: status }).then(response => {
           item.approval_state = status
+          item.approval_user_id = this.userInfo._id
+          item.approval_username = this.userInfo.name
           this.$message({
             message: '操作成功',
             type: 'success',
@@ -291,7 +294,9 @@ export default {
     this.loadLeavesArr()
   },
   computed: {
-
+    ...mapGetters({
+      userInfo: 'useinfo'
+    })
   }
 }
 </script>

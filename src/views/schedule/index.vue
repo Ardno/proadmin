@@ -118,9 +118,8 @@
 
 <script>
 import { getadcArr, addAdc, updateAdc } from '@/api/schedule'
-import { deepClone } from '@/utils/index'
+import { deepClone, parseTime } from '@/utils/index'
 import { isAccess } from '@/utils/auth'
-import { parseTime } from '@/utils/index'
 import { getRegionArr } from '@/api/grid'
 export default {
   data() {

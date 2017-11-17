@@ -43,6 +43,14 @@ export const constantRouterMap = [
     icon: 'zujian',
     noDropdown: true,
     children: [{ path: 'index', component: _import('map/index'), name: '网格地图' }]
+  },
+  {
+    path: '/msg',
+    component: Layout,
+    redirect: '/msg/index',
+    icon: 'icon-laba',
+    noDropdown: true,
+    children: [{ path: 'index', component: _import('message/index'), name: '我的消息' }]
   }
 ]
 
