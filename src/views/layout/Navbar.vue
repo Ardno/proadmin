@@ -5,7 +5,7 @@
 			<levelbar></levelbar>
 			<tabs-view></tabs-view>
 			<!-- <error-log v-if="log.length>0" class="errLog-container" :logsList="log"></error-log> -->
-			<el-badge :value="count" class="rsms">
+			<el-badge :value="msgcount" class="rsms">
         <router-link class='inlineBlock' to="/msg">
 				  <icon-svg class="" icon-class="remind" />
         </router-link>
@@ -155,7 +155,8 @@ export default {
       avatar: 'avatar',
       userpassword: 'password',
       sidebar: 'sidebar',
-      name: 'name'
+      name: 'name',
+      msgcount: 'msgcount'
     })
   },
   methods: {
@@ -170,7 +171,7 @@ export default {
             arr.push(element)
           }
         }, this)
-        this.count = arr.length
+        this.$store.dispatch('SetMsgCount', arr.length)
       })
     },
     toggleSideBar() {

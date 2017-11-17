@@ -12,6 +12,7 @@ const user = {
     introduction: '',
     useinfo: {},
     roles: [],
+    msgcount: 0,
     setting: {
       articlePlatform: []
     }
@@ -47,10 +48,16 @@ const user = {
     },
     SET_ROLES: (state, roles) => {
       state.roles = roles
+    },
+    SET_COUNT: (state, msgcount) => {
+      state.msgcount = msgcount
     }
   },
 
   actions: {
+    SetMsgCount({ commit }, data) { // 设置消息数量
+      commit('SET_COUNT', data)
+    },
     // 用户名登录
     LoginByUsername({ commit }, userInfo) {
       const username = userInfo.username.trim()

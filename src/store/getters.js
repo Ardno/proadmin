@@ -5,6 +5,7 @@ const getters = {
   avatar: state => state.user.avatar,
   password: state => state.user.password,
   useinfo: state => state.user.useinfo,
+  msgcount: state => state.user.msgcount,
   name: state => state.user.name,
   introduction: state => state.user.introduction,
   status: state => state.user.status,
