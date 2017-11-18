@@ -62,12 +62,12 @@
           <span>{{filterDepRose(scope.row.department_roles,false)}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="250" v-if="isAccess('12')">
+      <el-table-column align="center" label="操作" width="250">
         <template scope="scope">
-          <el-button size="small" type="success" @click="handleUpdateDa(scope.row)">修改
+          <el-button size="small" v-if="isAccess('12')" type="success" @click="handleUpdateDa(scope.row)">修改
           </el-button>
-          <el-button :plain="true" size="small" type="success" @click="handlePwd(scope.row)">重置密码</el-button>
-          <el-button :plain="true" size="small" type="success" @click="handleKaoq(scope.row)">设置考勤</el-button>
+          <el-button :plain="true" v-if="isAccess('13')" size="small" type="success" @click="handlePwd(scope.row)">重置密码</el-button>
+          <el-button :plain="true" v-if="isAccess('14')" size="small" type="success" @click="handleKaoq(scope.row)">设置考勤</el-button>
         </template>
       </el-table-column>
     </el-table>

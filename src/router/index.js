@@ -79,7 +79,7 @@ export const asyncRouterMap = [
     icon: 'wanggeyuan',
     children: [
       { path: 'event', component: _import('gridbusiness/event/event'), name: '事件列表', meta: { role: ['90'] }},
-      { path: 'laws', component: _import('gridbusiness/laws'), name: '法律法规' }
+      { path: 'laws', component: _import('gridbusiness/laws'), name: '法律法规', meta: { role: ['140'] }}
       // { path: 'treatment', component: _import('gridbusiness/treatment'), name: '业务处理' }
     ]
   },
@@ -91,8 +91,8 @@ export const asyncRouterMap = [
     icon: 'createtask_fill',
     children: [
       { path: 'eventtype', component: _import('gridbusiness/event/eventtype'), name: '事件类型', meta: { role: ['80'] }},
-      { path: 'eventstep', component: _import('gridbusiness/event/eventstep'), name: '事件步骤', meta: { role: ['90'] }},
-      { path: 'editeventstep/:id', component: _import('gridbusiness/event/editeventstep'), name: '编辑步骤', meta: { role: ['90'] }}
+      { path: 'eventstep', component: _import('gridbusiness/event/eventstep'), name: '事件步骤', meta: { role: ['150'] }},
+      { path: 'editeventstep/:id', component: _import('gridbusiness/event/editeventstep'), name: '编辑步骤', meta: { role: ['151', '152'] }}
     ]
   },
   {

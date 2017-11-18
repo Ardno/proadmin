@@ -21,7 +21,7 @@
           <span class="r count">{{totalCount}}条</span>
         </div>
         <ul class="ibox-ct" v-if="lishiArr.length">
-          <li class="fix" v-for="(item, index) in zuijingArr" :key="index" >
+          <li class="fix" v-for="(item, index) in lishiArr" :key="index" >
             <img class="avatar l" :src="'http://gridmap-file.xiaoketech.com/images/user/'+item.user_id+'.png'" :onerror="defaultImg" alt="">
             <div class="ovh tis">
               <h4 class="ell mt5">{{filterUser(item.user_id)}}
@@ -73,7 +73,9 @@ export default {
   methods: {
     getSmsList() { // 查询最近消息
       getSmsList({ start_index: 0, length: 10000, isread: 0 }).then((res) => {
-        const arr = res.info.list
+        const arr = res.info.list.filter(obj => {
+          return !obj.isread
+        })
         const laarr = []
         this.zuijingArr = arr
         arr.forEach(function(element) {
@@ -103,9 +105,11 @@ export default {
     },
     getlishiSmsList() { // 查询历史消息
       getSmsList({ start_index: 0, length: this.pageno, isread: 1 }).then((res) => {
-        const arr = res.info.list
-        this.lishiArr.push(arr)
-        if (this.lishiArr.length < 10) {
+        const arr = res.info.list.filter(obj => {
+          return obj.isread
+        })
+        this.lishiArr.push(...arr)
+        if (res.info.list.length < 10) {
           this.nomore = true
         }
         this.totalCount = res.info.count

@@ -21,12 +21,12 @@
           <span class="oico"><icon-svg icon-class="setup" /></span>
         </el-tooltip>
       </li>
-      <li  @click="addPolygon">
+      <li v-if="isAccess('130')"  @click="addPolygon">
         <el-tooltip class="item" effect="dark" content="添加区域" placement="left">
           <span class="oico"><icon-svg icon-class="editor" /></span>
         </el-tooltip>
       </li>
-      <li @click="completePolygon">
+      <li v-if="isAccess('130')" @click="completePolygon">
         <el-tooltip class="item" effect="dark" content="完成区域编辑" placement="left">
           <span class="oico"><icon-svg icon-class="success" /></span>
         </el-tooltip>

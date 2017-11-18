@@ -48,7 +48,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="100">
         <template scope="scope">
-          <el-button size="small" type="danger" v-if="scope.row.status == '0' && isAccess('92')" @click="closeEvent(scope.row)" >直接关闭
+          <el-button size="small" type="danger" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" >直接关闭
           </el-button>
         </template>
       </el-table-column>

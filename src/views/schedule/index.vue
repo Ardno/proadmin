@@ -50,11 +50,11 @@
           </el-table-column>
           <el-table-column align="center" label="操作" width="190">
             <template scope="scope">
-              <el-button size="small" type="success" v-if="isAccess('41')"  @click="handleUpdateDa(scope.row)">修改
+              <el-button size="small" type="success" v-if="isAccess('42')"  @click="handleUpdateDa(scope.row)">修改
               </el-button>
-              <el-button size="small" type="danger" v-if="isAccess('41')" v-show="!scope.row.status && scope.row._id!==1" @click="updateStaus(scope.row)">停用
+              <el-button size="small" type="danger" v-if="isAccess('43')" v-show="!scope.row.status && scope.row._id!==1" @click="updateStaus(scope.row)">停用
               </el-button>
-              <el-button size="small" type="info" v-if="isAccess('41')" v-show="scope.row.status && scope.row._id!==1" @click="updateStaus(scope.row)">启用
+              <el-button size="small" type="info" v-if="isAccess('43')" v-show="scope.row.status && scope.row._id!==1" @click="updateStaus(scope.row)">启用
               </el-button>
               <span v-if="scope.row._id===1" class="f12 g9 ml15">默认规则</span>
             </template>

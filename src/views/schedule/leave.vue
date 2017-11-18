@@ -50,9 +50,9 @@
         <template scope="scope">
           <el-button size="small" type="success" v-if="scope.row.approval_state == '0' && isUser(scope.row.user_id)"  @click="updateLeave(scope.row)">修改
           </el-button>
-          <el-button size="small" type="info" v-if="scope.row.approval_state == '0' && !isUser(scope.row.user_id)"  @click="updateStatus(scope.row,true)">同意
+          <el-button size="small" type="info" v-if="scope.row.approval_state == '0' && !isUser(scope.row.user_id) && isAccess('71')"  @click="updateStatus(scope.row,true)">同意
           </el-button>
-          <el-button size="small" type="warning" v-if="scope.row.approval_state == '0' && !isUser(scope.row.user_id)"  @click="updateStatus(scope.row,false)">拒绝
+          <el-button size="small" type="warning" v-if="scope.row.approval_state == '0' && !isUser(scope.row.user_id) && isAccess('71')"  @click="updateStatus(scope.row,false)">拒绝
           </el-button>
         </template>
       </el-table-column>

@@ -10,7 +10,7 @@
           </el-option>
         </el-select>
         <el-button class="filter-item" type="primary" icon="search" @click="getList">搜索</el-button>
-        <el-button class="filter-item" type="primary" icon="plus" @click="addRegu"> 添加</el-button>
+        <el-button class="filter-item" v-if="isAccess('141')" type="primary" icon="plus" @click="addRegu"> 添加</el-button>
       </div>
       <el-table :key='tableKey' :data="dataList" :default-sort = "{prop: '_id', order: 'ascending'}" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
         <el-table-column  prop="_id" align="center" label="序号" sortable width="100px">
@@ -43,7 +43,7 @@
             <div class="cts">{{scope.row.content}}</div>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="操作" width="100">
+        <el-table-column align="center" label="操作" width="100" v-if="isAccess('142')">
           <template scope="scope">
             <el-button size="small" type="success" @click="updateRegu(scope.row)">修改
             </el-button>

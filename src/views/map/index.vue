@@ -20,7 +20,8 @@
     <el-dialog title="区域信息" size="tiny" :visible.sync="regionobj.dialogFormVisible"  >
       <el-form class="small-space"  label-position="top">
         <el-form-item label="区域名称" >
-          <span class="ml20">{{regionobj.name}}</span>
+          <span v-if="!regionobj.update" class="ml20">{{regionobj.name}}</span>
+          <el-input v-else v-model="regionobj.name"></el-input>
         </el-form-item>
         <el-form-item label="区域人员">
           <span v-if="!regionobj.update" class="ml20">{{regionobj.username}}</span>
@@ -28,13 +29,13 @@
             <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
-          <el-button v-show="!regionobj.update" class="ml20" @click="regionobj.update=true" type="text">更换</el-button>
-          <el-button v-show="regionobj.update" class="ml20" @click="updateRegion" type="text">保存</el-button>
-          <el-button v-show="regionobj.update" class="ml20" @click="regionobj.update=false" type="text">取消</el-button>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="text" @click="deteleRegion">删除当前区域</el-button>
+      <div slot="footer" class="dialog-footer" v-if="isAccess('131')">
+        <el-button v-show="!regionobj.update && isAccess('131')" class="ml20" @click="regionobj.update=true" type="text">修改</el-button>
+        <el-button v-show="regionobj.update" class="ml20" @click="updateRegion" type="text">保存</el-button>
+        <el-button v-show="regionobj.update" class="ml20" @click="regionobj.update=false" type="text">取消</el-button>
+        <el-button v-show="!regionobj.update && isAccess('131')" type="text" @click="deteleRegion">删除当前区域</el-button>
       </div>
     </el-dialog>
   </div>
@@ -382,14 +383,14 @@ export default {
 .pht100{
   height: 100%;
 }
-.amap-marker{
-  .amap-icon{
-    img{
-      width: 27px;
-      height: 36px;
-    }
-  }
-}
+// .amap-marker{
+//   .amap-icon{
+//     img{
+//       width: 27px;
+//       height: 36px;
+//     }
+//   }
+// }
 .amap-marker-label{
   border-radius: 2px;
   border-color: #ddd;
