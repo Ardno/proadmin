@@ -242,7 +242,7 @@ export default {
     },
     handleQuery() { // 查询换班集合
       this.pageobj.start_index = 0
-      this.pageobj.length = 9
+      this.pageobj.length = 10
       this.loadshiftsArr()
     },
     closeCall() {
@@ -250,16 +250,24 @@ export default {
     },
     loadDep() { // 获取用户部门和用户 区域
       fetchDepartments().then(response => {
-        this.depArr = response.info
+        this.depArr = response.info.filter(obj => {
+          return !obj.status
+        })
       })
       fetchList({ start_index: 0, length: 10000 }).then(response => {
-        this.userArr = response.info.list
+        this.userArr = response.info.list.filter(obj => {
+          return !obj.status
+        })
       })
       getRegionArr(this.requesetUser).then(response => {
-        this.regionArr = response.info.list
+        this.regionArr = response.info.list.filter(obj => {
+          return !obj.status
+        })
       })
       getWorksArr(this.requesetUser).then(response => {
-        this.workArr = response.info.list
+        this.workArr = response.info.list.filter(obj => {
+          return !obj.status
+        })
       })
     },
     loadshiftsArr() { // 获取换班列表

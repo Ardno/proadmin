@@ -9,7 +9,13 @@ export function getToken() {
 export function setToken(token) {
   return Cookies.set(TokenKey, token)
 }
+export function getPwd() {
+  return Cookies.get('Pwd')
+}
 
+export function setPwd(pwd) {
+  return Cookies.set('Pwd', pwd)
+}
 export function getUserid() {
   return Cookies.get('Userid')
 }
@@ -19,6 +25,7 @@ export function setUserid(id) {
 }
 export function removeToken() {
   Cookies.remove('Userid')
+  Cookies.remove('Pwd')
   return Cookies.remove(TokenKey)
 }
 

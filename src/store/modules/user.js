@@ -1,5 +1,5 @@
 import { loginByUsername, logout, getUserInfo, getQrcode } from '@/api/login'
-import { getToken, setToken, removeToken, setUserid } from '@/utils/auth'
+import { getToken, setToken, removeToken, setUserid, setPwd, getPwd } from '@/utils/auth'
 const user = {
   state: {
     user: '',
@@ -8,7 +8,7 @@ const user = {
     token: getToken(),
     name: '',
     avatar: '',
-    password: '',
+    password: getPwd(),
     introduction: '',
     useinfo: {},
     roles: [],
@@ -65,6 +65,7 @@ const user = {
         loginByUsername(username, userInfo.password).then(response => {
           const data = response.info
           setToken(data.access_token)
+          setPwd(data.pwd)
           setUserid(data._id)
           commit('SET_TOKEN', data.access_token)
           commit('SET_PASSWORD', data.pwd)

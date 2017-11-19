@@ -131,12 +131,11 @@
 
 <script>
 import drag from '@/directive/drag/index.js'
-// import store from './store'
 import chatck from './chatck'
 import { getJMessage, authPayload, errorApiTip } from '@/utils/IM'
 import { createSignature, imNotification } from '@/utils/utils'
 import { reducerDate } from '@/utils/index'
-import { md5 } from '@/utils/md5'
+// import { md5 } from '@/utils/md5'
 import group_avatar from '@/assets/images/group-avatar.svg'
 import single_avatar from '@/assets/images/single-avatar.svg'
 import avteinfo from '@/assets/images/avteinfo.svg'
@@ -291,24 +290,20 @@ export default {
       this.JIM.init({
         appkey: authPayload.appKey,
         random_str: authPayload.randomStr,
-        signature: authPayload.signature || signature,
-        timestamp: authPayload.timestamp || timestamp,
+        signature: signature,
+        timestamp: timestamp,
         flag: authPayload.flag
       }).onSuccess((data) => {
         this.JIMLogin()
       }).onFail((error) => {
         errorApiTip(error)
-      }).onTimeout((data) => {
-        const error = { text: 'IM初始化', code: 910000 }
-        errorApiTip(error)
       })
     },
     JIMLogin() {
+      console.log(store.getters)
       this.JIM.login({
-        // username: store.getters.useinfo.username,
-        // password: store.getters.useinfo.password,
-        username: 'lc2017116',
-        password: md5('lc2017116'),
+        username: 'yzwg_' + store.getters.useinfo._id,
+        password: store.getters.password,
         is_md5: true
       }).onSuccess((login) => {
         this.JIMgetUserInfo(login.username)
@@ -320,6 +315,24 @@ export default {
         this.onMutiUnreadMsgUpdate()
         this.onSyncMsgReceipt()
       }).onFail((error) => {
+        errorApiTip(error)
+        debugger
+        this.JIMregister()
+      })
+    },
+    JIMregister() {
+      this.JIM.register({
+        username: 'yzwg_' + store.getters.useinfo._id,
+        password: store.getters.password,
+        is_md5: true,
+        extras: '',
+        address: '北京'
+      }).onSuccess((data) => {
+        this.JIMLogin()
+      }).onFail((error) => {
+        errorApiTip(error)
+      }).onTimeout((data) => {
+        const error = { text: 'IM注册', code: 910000 }
         errorApiTip(error)
       })
     },
