@@ -14,3 +14,10 @@ export function readSms(data) { //  设置已读
     data: data
   })
 }
+export function setHistoryIm(data) { //  存储用户历史记录
+  return fetch({
+    url: 'im/add',
+    method: 'post',
+    data: data
+  })
+}

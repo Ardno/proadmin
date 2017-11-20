@@ -307,7 +307,6 @@ export default {
       })
     },
     JIMLogin() {
-      console.log(store.getters)
       this.JIM.login({
         username: 'yzwg_' + store.getters.useinfo._id,
         password: store.getters.password,
@@ -650,8 +649,8 @@ export default {
     font-size: 0;
     padding: 0 15px;
   }
-
   .layui-layim-user {
+    line-height: 20px;
     max-width: 150px;
     margin-right: 5px;
     font-size: 16px;
@@ -832,6 +831,7 @@ export default {
   .layui-layim-list li span {
     margin-top: 4px;
     max-width: 120px;
+    line-height: 18px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

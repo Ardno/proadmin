@@ -43,8 +43,7 @@
                     <cite >
                       {{ userInfo.username == list.content.from_id ? '':list.content.from_name}}
                     <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
-                  </div>
-                  {{list}}
+                  </div>   
                   <span v-if="list.success == 1" class="spinrose mr10 activespin"></span>
                   <span v-if="list.success == 3" title="重新发送" @click="repeatSendMsg(list)" class="dib f24 g9 mt30 poi mr10"><icon-svg icon-class="refresh" /></span>
                   <div class="layim-chat-text" v-if="list.content.msg_type=='text'" v-html="list.content.msg_body.text">
@@ -127,6 +126,8 @@
 import { mapGetters } from 'vuex'
 import { getJMessage, authPayload } from '@/utils/IM'
 import { imgReader, getFileFormData, getExt } from '@/utils/utils'
+import { imgUpLoad } from '@/api/upload'
+import { setHistoryIm } from '@/api/message'
 import drag from '@/directive/drag/index.js'
 export default {
   name: 'chatck',
@@ -244,7 +245,9 @@ export default {
             .onSuccess((urlInfo) => {
               this.$set(this.msgs[index].content.msg_body, 'media_url', urlInfo.url)
             }).onFail((errr) => {
-              this.$set(this.msgs[index].content.msg_body, 'media_url', '')
+              if (!this.msgs[index].content.msg_body.media_url) {
+                this.$set(this.msgs[index].content.msg_body, 'media_url', '')
+              }
             })
           }
         }
@@ -353,6 +356,17 @@ export default {
         const msglist = this.messageList // 离线消息列表
         if (msglist[activePerson.id]) {
           msglist[activePerson.id].msgs.push(msgs)
+        } else {
+          msglist[activePerson.id] = { // 构造消息记录
+            from_appkey: '',
+            from_username: this.userInfo.username,
+            key: '',
+            msg_type: activePerson.type,
+            msgs: [msgs],
+            receipt_msgs: '',
+            unread_msg_count: 0
+          }
+          this.getActiveMsg()
         }
       }
       // this.$store.dispatch('SetMsgList', msglist)
@@ -409,8 +423,21 @@ export default {
           msgs.msg_type = 4
         }
         const msglist = this.messageList // 离线消息列表
+        imgUpLoad({ FileData: value.src, type: 1 }).then(obj => {
+        })
         if (msglist[this.activeItem.id]) {
           msglist[this.activeItem.id].msgs.push(msgs)
+        } else {
+          msglist[this.activeItem.id] = { // 构造消息记录
+            from_appkey: '',
+            from_username: this.userInfo.username,
+            key: '',
+            msg_type: this.activeItem.type,
+            msgs: [msgs],
+            receipt_msgs: '',
+            unread_msg_count: 0
+          }
+          this.getActiveMsg()
         }
       }
       // 发送单聊图片
@@ -488,6 +515,17 @@ export default {
         const msglist = this.messageList // 离线消息列表
         if (msglist[this.activeItem.id]) {
           msglist[this.activeItem.id].msgs.push(msgs)
+        } else {
+          msglist[this.activeItem.id] = { // 构造消息记录
+            from_appkey: '',
+            from_username: this.userInfo.username,
+            key: '',
+            msg_type: this.activeItem.type,
+            msgs: [msgs],
+            receipt_msgs: '',
+            unread_msg_count: 0
+          }
+          this.getActiveMsg()
         }
       }
       if (repeatSend) {
@@ -567,6 +605,7 @@ export default {
         for (let index = 0; index < arr.length; index++) {
           if (msgs.msgKey === arr[index].msgKey) {
             if (flg) { // 发送成功
+              this.setHistoryIm(msgs)
               if (msg.content.msg_type === 'image' || msg.content.msg_type === 'file') {
                 this.JIM.getResource({ media_id: msg.content.msg_body.media_id })
                 .onSuccess((urlInfo) => {
@@ -590,7 +629,29 @@ export default {
           }
         }
       }
-    } // end 完成消息发送
+    }, // end 完成消息发送
+    setHistoryIm(msgs) { // IM消息存储
+      const requst = {
+        user_id: msgs.content.from_id,
+        im_type: 0,
+        im_id: this.activeItem.id,
+        message_type: 0,
+        message_content: ''
+      }
+      if (msgs.msg_type === 4) {
+        requst.im_type = 1
+      }
+      if (msgs.content.msg_type === 'text') {
+        requst.message_content = msgs.content.msg_body.text
+      } else if (msgs.content.msg_type === 'image') {
+        requst.message_type = 1
+        requst.message_content = msgs.content.msg_body.media_url
+      } else if (msgs.content.msg_type === 'file') {
+        requst.message_type = 4
+        requst.message_content = msgs.content.msg_body.fname
+      }
+      setHistoryIm(requst)
+    }
   }
 }
 </script>
