@@ -25,7 +25,7 @@
                   <li>
                     <ul class="layui-layim-list layui-show layim-list-history">
                       <li @click="imCkPanle(list)" v-for="(list, index) in conversations" :key="index" >
-                        <img :src="list.avatar||list.avatarUrl">
+                        <img :src="list.avatar" :onerror="defaultImg(list.avatarUrl)">
                         <span v-if="list.type === 3">{{list.username}}</span>
                         <time class="r g9 time">{{list.mtime | reducerDate}}</time>
                         <span v-if="list.type === 4">{{list.name}}</span>
@@ -40,6 +40,7 @@
                         </p>
                         
                       </li>
+                      <li v-if="!conversations.length" style="padding-top:30%;font-size: 12px;">你当前还没有任何消息~</li>
                     </ul>
                   </li>
                 </ul>
@@ -57,7 +58,7 @@
                     </template>
                     <ul class="layui-layim-list">
                       <li @click="imCkPanle(clist)" v-for="(clist, index) in flist.list" :key="index">
-                        <img :src="clist.avatar||clist.avatarUrl" >
+                        <img :src="clist.avatar" :onerror="defaultImg(clist.avatarUrl)">
                         <span>{{clist.username}}</span>
                         <p>{{clist.signature || '暂无签名'}}</p>
                       </li>
@@ -73,10 +74,11 @@
                   <li>
                     <ul class="layui-layim-list layui-show layim-list-group">
                       <li @click="imCkPanle(list)" v-for="(list, index) in group_list" :key="index">
-                        <img :src="list.avatar||list.avatarUrl">
+                        <img :src="list.avatar" :onerror="defaultImg(list.avatarUrl)">
                         <span>{{list.name}}</span>
                         <p>{{list.desc  || '暂无群描述'}}</p>
                       </li>
+                      <li v-if="!group_list.length" style="padding-top:30%;font-size: 12px;">你还没有添加过群~</li>
                     </ul>
                   </li>
                 </ul>
@@ -132,6 +134,7 @@
 <script>
 import drag from '@/directive/drag/index.js'
 import chatck from './chatck'
+import { fetchList, fetchDepartments } from '@/api/department'
 import { getJMessage, authPayload, errorApiTip } from '@/utils/IM'
 import { createSignature, imNotification } from '@/utils/utils'
 import { reducerDate } from '@/utils/index'
@@ -140,6 +143,7 @@ import group_avatar from '@/assets/images/group-avatar.svg'
 import single_avatar from '@/assets/images/single-avatar.svg'
 import avteinfo from '@/assets/images/avteinfo.svg'
 import store from '@/store/index'
+import axios from 'axios'
 export default {
   name: 'chat',
   components: {
@@ -184,6 +188,9 @@ export default {
     this.JIMInit()
   },
   methods: {
+    defaultImg(ads) {
+      return 'this.onerror=null;this.src="' + ads + '"'
+    },
     hoverflow(type) {
       if (type === 'on') {
         this.overflow = 'auto'
@@ -316,7 +323,6 @@ export default {
         this.onSyncMsgReceipt()
       }).onFail((error) => {
         errorApiTip(error)
-        debugger
         this.JIMregister()
       })
     },
@@ -365,6 +371,62 @@ export default {
       })
     },
     JIMgetFriendList() { // 获取用户列表
+      axios.all([fetchDepartments(''), fetchList({ start_index: 0, length: 10000 })])
+        .then(axios.spread((acct, perms) => {
+          const userList = perms.info.list.filter(obj => { // 获取正常状态的用户
+            return !obj.status && obj._id !== store.getters.useinfo._id
+          })
+          const depList = acct.info // 获取用户部门
+          const arr = []
+          userList.forEach(element => { // 获取用户的部门
+            const arrs = element.department_roles.filter(obj => {
+              return Number(obj.is_enable)
+            })
+            if (arrs.length) {
+              element.department_id = Number(arrs[0].department_id)
+            }
+            depList.forEach(res => {
+              if (res._id === element.department_id) {
+                element.dept_name = res.name
+              }
+            })
+            const obj = {
+              username: 'yzwg_' + element._id,
+              nickname: element.name,
+              avatar: 'http://gridmap-file.xiaoketech.com/images/user/' + element._id + '.png',
+              avatarUrl: single_avatar,
+              gender: element.sex + 1,
+              type: 3,
+              birthday: element.birthday * 1000,
+              memo_others: element.dept_name
+            }
+            arr.push(obj)
+          })
+          const memo = {}
+          arr.forEach(function(element) {
+            if (element.memo_others) {
+              if (memo[element.memo_others]) {
+                memo[element.memo_others].push(element)
+              } else {
+                memo[element.memo_others] = [element]
+              }
+            } else {
+              if (memo['我的好友']) {
+                memo['我的好友'].push(element)
+              } else {
+                memo['我的好友'] = [element]
+              }
+            }
+          }, this)
+          for (const key in memo) { // 数据
+            const obj = {
+              groupname: key,
+              len: memo[key].length,
+              list: memo[key]
+            }
+            this.friend_list.push(obj)
+          }
+        }))
       this.JIM.getFriendList().onSuccess((data) => {
         const friend_list = data.friend_list
         for (const friend of friend_list) {

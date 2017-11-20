@@ -58,6 +58,7 @@ export default {
       pageno: 10,
       nomore: false,
       totalCount: 0,
+      start_index: 0,
       userArr: []
     }
   },
@@ -78,6 +79,7 @@ export default {
         })
         const laarr = []
         this.zuijingArr = arr
+        this.start_index = res.info.UnreadCount // 未读数量
         arr.forEach(function(element) {
           laarr.push(element._id)
         }, this)
@@ -99,12 +101,12 @@ export default {
       return '未知姓名'
     },
     moreMsg() {
-      this.start_index = this.pageno
+      this.start_index += this.pageno
       this.pageno += 10
       this.getlishiSmsList()
     },
     getlishiSmsList() { // 查询历史消息
-      getSmsList({ start_index: 0, length: this.pageno, isread: 1 }).then((res) => {
+      getSmsList({ start_index: this.start_index, length: this.pageno, isread: 1 }).then((res) => {
         const arr = res.info.list.filter(obj => {
           return obj.isread
         })

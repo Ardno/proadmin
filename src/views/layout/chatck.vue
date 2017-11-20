@@ -17,7 +17,7 @@
           <!-- 头部 -->
           <div class="chat-title">
             <div class="layim-chat-other">
-              <img :src="activeItem.avatar||activeItem.avatarUrl">
+              <img :src="activeItem.avatar" :onerror="defaultImg(activeItem.avatarUrl)">
               <span class="layim-chat-username ell" v-if="activeItem.type === 3">{{activeItem.username}}</span>
               <span class="layim-chat-username ell" v-if="activeItem.type === 4">{{activeItem.name}}</span>
               <!-- <p class="layim-chat-status ell">暂无签名</p> -->
@@ -39,7 +39,7 @@
             <div class="layim-chat-main"  ref="layscoll">
               <ul>
                 <li v-for="(list,index) in activeItem.msgs" :key="index"  :class="{'layim-chat-mine':userInfo.username == list.content.from_id }">
-                  <div class="layim-chat-user"><img :src="activeItem.avatar||activeItem.avatarUrl">
+                  <div class="layim-chat-user"><img :src="activeItem.avatar" :onerror="defaultImg(activeItem.avatarUrl)">
                     <cite >
                       {{ userInfo.username == list.content.from_id ? '':list.content.from_name}}
                     <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
@@ -105,7 +105,7 @@
     </transition>
     <transition name="el-fade-in-linear">
       <div v-if="minchatck && !closechatck" @click="minchatck=false" class="layui-layim-close">
-        <img :src="activeItem.avatar||activeItem.avatarUrl">
+        <img :src="activeItem.avatar" :onerror="defaultImg(activeItem.avatarUrl)">
         <span  v-if="activeItem.type === 3">{{activeItem.username}}</span>
         <span v-if="activeItem.type === 4">{{activeItem.name}}</span>
       </div>
@@ -198,6 +198,10 @@ export default {
     this.JIM = getJMessage()
   },
   methods: {
+    defaultImg(ads) {
+      // return 'this.onerror=null;this.src="' + ads + '"'
+      return 'this.src="' + ads + '"'
+    },
     showImg(src) { //  放大图片
       this.imgshow.flg = true
       this.imgshow.src = src
@@ -291,6 +295,9 @@ export default {
         * 2  发送成功
         * 3  发送失败
         */
+      if (!data.content) {
+        return false
+      }
       const msgs = {
         content: {
           create_time: new Date().getTime(),
