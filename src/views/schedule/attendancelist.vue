@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="layui-elem-quote">
-      <el-select clearable class="filter-item" style="width: 130px" filterable v-model="pageobj.user_id" placeholder="用户">
+      <el-select class="filter-item" style="width: 130px" filterable v-model="pageobj.user_id" placeholder="用户">
         <el-option v-for="item in  userArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
@@ -10,45 +10,94 @@
       <el-date-picker  type="datetime" v-model="end_time" placeholder="选择结束时间"></el-date-picker>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
     </div>
-    <el-table :key='tableKey' :data="monthdanceArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="180" label="创建时间">
-        <template scope="scope">
-          <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
-        </template>
-      </el-table-column>
-      <el-table-column prop="deptname" label="所属部门" >
-      </el-table-column>
-      <el-table-column prop="username" label="创建人" >
-      </el-table-column>
-      <el-table-column prop="typename" label="事件类型">
-      </el-table-column>
-      <el-table-column prop="name" label="事件名称">
-      </el-table-column>
-      <el-table-column width="120" label="状态">
-        <template scope="scope">
-          <el-tag v-if="scope.row.status == '0'" type="info">进行中</el-tag>
-          <el-tag v-if="scope.row.status == '1'" type="success">完成</el-tag>
-          <el-tag v-if="scope.row.status == '2'" type="warning">已关闭</el-tag>
-        </template>
-      </el-table-column>
-      <el-table-column width="180" label="发生时间">
-        <template scope="scope">
-          <span>{{scope.row.happen_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
-        </template>
-      </el-table-column>
-      <el-table-column label="结束时间">
-        <template scope="scope">
-          <span v-if="scope.row.close_time">{{scope.row.close_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
-          <span v-else>无</span>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="操作" width="100">
-        <template scope="scope">
-          <el-button size="small" type="danger" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" >直接关闭
-          </el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <el-tabs v-model="activeName" >
+      <el-tab-pane label="请假" name="first">
+        <el-table :key='tableKey' :data="leaveArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
+          <el-table-column width="180" label="申请时间">
+            <template scope="scope">
+              <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column prop="username" label="姓名" width="180">
+          </el-table-column>
+          <el-table-column width="120" label="审核结果">
+            <template scope="scope">
+              <el-tag v-if="scope.row.approval_state == '1'" type="success">同意</el-tag>
+              <el-tag v-if="scope.row.approval_state == '0'" type="info">待审核</el-tag>
+              <el-tag v-if="scope.row.approval_state == '2'" type="warning">拒绝</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="审批人" width="100">
+            <template scope="scope">
+              <span>{{scope.row.approval_username || '无'}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column width="180" label="开始时间">
+            <template scope="scope">
+              <span>{{scope.row.start_time | parseTime('{y}-{m}-{d} {h}:{i}',true)}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column width="180" label="结束时间">
+            <template scope="scope">
+              <span>{{scope.row.end_time | parseTime('{y}-{m}-{d} {h}:{i}',true)}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column  label="请假理由">
+            <template scope="scope">
+              <span>{{scope.row.leavecontent}}</span>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-tab-pane>
+      <el-tab-pane label="工作" name="second">
+        <el-table :key='tableKey' :data="workArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
+          <el-table-column width="180" label="创建时间">
+            <template scope="scope">
+              <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column width="180" label="所属区域">
+            <template scope="scope">
+              <span>{{scope.row.regionname}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="执行用户" width="180">
+            <template scope="scope">
+              <span>{{filterName(scope.row.user_id)}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column width="300" label="计划完成时间">
+            <template scope="scope">
+              {{scope.row.r_start_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}} - {{scope.row.r_end_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}
+            </template>
+          </el-table-column>
+          <el-table-column width="300" label="实际完成时间">
+            <template scope="scope">
+              <span v-if="scope.row.start_time">{{scope.row.start_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span> -
+              <span v-if="scope.row.end_time">{{scope.row.end_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
+            </template>
+          </el-table-column>
+          <el-table-column  label="工作类型" width="100">
+            <template scope="scope">
+              <el-tag v-if="scope.row.work_type == '1'" type="warning">换班</el-tag>
+              <el-tag v-if="scope.row.work_type == '0'" type="success">正常</el-tag>
+              <el-tag v-if="scope.row.work_type == '2'" type="warning">代班</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column  label="值班结果">
+            <template scope="scope">
+              <el-tag v-if="scope.row.work_type == '0'" type="success">正常</el-tag>
+              <el-tag v-if="scope.row.work_type == '1'" type="primary">迟到</el-tag>
+              <el-tag v-if="scope.row.work_type == '2'" type="warning">早退</el-tag>
+              <el-tag v-if="scope.row.work_type == '3'" type="danger">缺勤</el-tag>
+            </template>
+          </el-table-column>
+        </el-table>
+      </el-tab-pane>
+      <el-tab-pane label="临时调派" name="third">
+
+      </el-tab-pane>
+    </el-tabs>
     <!-- 分页 -->
     <!-- <div class="block pt20 pb20">
       <el-pagination
@@ -74,6 +123,7 @@ import store from '@/store'
 export default {
   data() {
     return {
+      activeName: 'first',
       pageobj: {
         start_index: 0,
         length: 10,
@@ -87,6 +137,9 @@ export default {
       listLoading: false,
       tableKey: 0,
       userArr: [],
+      leaveArr: [],
+      workArr: [],
+      dispatchArr: [],
       monthdanceArr: [],
       start_time: new Date().getTime() - 3600 * 1000 * 24 * 7,
       end_time: new Date().getTime()
@@ -94,6 +147,7 @@ export default {
   },
   created() {
     this.loadArr()
+    this.handleQuery()
   },
   methods: {
     loadArr() { // 获取用户集合和事件类型集合
@@ -124,10 +178,15 @@ export default {
       this.getMonthdance()
     },
     getMonthdance() {
+      this.listLoading = true
       getMonthdance(this.pageobj).then(res => {
-        this.monthdanceArr = res.info
+        this.listLoading = false
+        this.leaveArr = res.info.leave
+        this.workArr = res.info.work
+        this.dispatchArr = res.info.dispatch
         // this.pageobj.totalPages = res.info.count
       }).catch(() => {
+        this.listLoading = false
         this.$message({
           message: '查询信息失败，请稍后再试',
           type: 'error',
