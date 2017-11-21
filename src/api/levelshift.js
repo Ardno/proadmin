@@ -65,3 +65,11 @@ export function getWorksArr(data) { // 获取工作集合
     data: data
   })
 }
+
+export function getMonthdance(data) { // 获取考勤集合
+  return fetch({
+    url: 'people/month_dance',
+    method: 'post',
+    data: data
+  })
+}

@@ -79,6 +79,7 @@ export const asyncRouterMap = [
     icon: 'wanggeyuan',
     children: [
       { path: 'event', component: _import('gridbusiness/event/event'), name: '事件列表', meta: { role: ['90'] }},
+      { path: 'attendance', component: _import('schedule/attendance'), name: '考勤配置', meta: { role: ['40'] }},
       { path: 'laws', component: _import('gridbusiness/laws'), name: '法律法规', meta: { role: ['140'] }}
       // { path: 'treatment', component: _import('gridbusiness/treatment'), name: '业务处理' }
     ]
@@ -103,7 +104,7 @@ export const asyncRouterMap = [
     icon: 'chart',
     children: [
       { path: 'index', component: _import('schedule/index'), name: '工作记录' },
-      { path: 'attendance', component: _import('schedule/attendance'), name: '考勤配置', meta: { role: ['40'] }},
+      { path: 'attendancelist', component: _import('schedule/attendancelist'), name: '考勤记录' },
       { path: 'leave', component: _import('schedule/leave'), name: '请假', meta: { role: ['70'] }},
       { path: 'shift', component: _import('schedule/shift'), name: '换班', meta: { role: ['60'] }}
     ]
