@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import 'babel-polyfill'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-default/index.css'
 import App from './App'
@@ -12,7 +11,6 @@ import './errorLog'// error log
 import './permission' // 权限
 Vue.use(VueAMap)
 Vue.use(ElementUI)
-
 // register global utility filters.
 Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key])

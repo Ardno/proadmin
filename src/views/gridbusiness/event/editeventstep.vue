@@ -53,7 +53,7 @@
                 </el-select>
                 <el-button v-if="index === 0" @click="addRole">新增</el-button>
                 <el-button v-show="index !== 0" @click.prevent="removeRole(role)">删除</el-button>
-                <el-button @click.prevent="insertContent(role._id)">插入</el-button>
+                <el-button @click.prevent="insertRole(role._id)">插入</el-button>
               </el-form-item>
             </el-col>
           </el-row>
@@ -118,9 +118,9 @@ export default {
     // 计算属性的 getter
     reversedMessage() {
       // `this` 指向 vm 实例
-      const str = 'para'
-      const reg = new RegExp('<span style="color: red;" data-mce-style="color: red;">{{' + str + '}}</span>', 'g')
-      return this.content.replace(reg, 'jb51.net')
+      // const str = 'para'
+      // const reg = new RegExp('<span style="color: red;" data-mce-style="color: red;">{{' + str + '}}</span>', 'g')
+      // return this.content.replace(reg, 'jb51.net')
     }
   },
   created() {
@@ -135,6 +135,10 @@ export default {
     }
   },
   methods: {
+    insertRole(id) {
+      const strHtml = `{{${id}}}`
+      window.tinymce.get('tinymce').insertContent(strHtml)
+    },
     insertContent(para) {
       const str = para.para_name
       if (!str) {

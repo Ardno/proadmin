@@ -23,10 +23,9 @@ export const constantRouterMap = [
   {
     path: '/',
     component: Layout,
-    redirect: '/map/index',
+    redirect: '/idx/index',
     name: '首页',
-    hidden: true,
-    children: [{ path: 'dashboard', component: _import('map/index') }]
+    hidden: true
   },
   // {
   //   path: '/introduction',
@@ -36,6 +35,14 @@ export const constantRouterMap = [
   //   noDropdown: true,
   //   children: [{ path: 'index', component: _import('introduction/index'), name: '个人信息' }]
   // },
+  {
+    path: '/idx',
+    component: Layout,
+    redirect: '/idx/index',
+    icon: '',
+    hidden: true,
+    children: [{ path: 'index', component: _import('idx/index'), name: '首页' }]
+  },
   {
     path: '/map',
     component: Layout,

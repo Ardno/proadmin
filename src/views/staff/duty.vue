@@ -55,6 +55,7 @@
           <span class="f12 g9">级别越高数字越大</span>
         </el-form-item>
         <el-form-item label="平台权限">
+          <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox><br>
           <el-checkbox-group v-model="duty.accessarr" @change="handleCheckedCitiesChange">
             <el-checkbox class="ml15" v-for="obj in accessArr" :label="obj.value+''" :key="obj.value">{{obj.name}}</el-checkbox>
           </el-checkbox-group>
@@ -76,6 +77,8 @@ import { isAccess } from '@/utils/auth'
 export default {
   data() {
     return {
+      checkAll: true,
+      isIndeterminate: true,
       accessArr: [],
       levelArr: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       tableKey: 0,
@@ -144,12 +147,16 @@ export default {
         access: '',
         level: '1'
       }
+      const checkedCount = this.duty.accessarr.length
+      this.checkAll = checkedCount === this.accessArr.length
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.accessArr.length
     },
     handleUpdate(item) { // 修改职务
       this.titlea = '修改职务'
       const obj = deepClone(item)
       obj.accessarr = obj.access.split(',')
       if (obj.access === '0') {
+        obj.accessarr = []
         this.accessArr.forEach(element => {
           obj.accessarr.push(element.value + '')
         })
@@ -157,6 +164,9 @@ export default {
       if (!obj.department_id) {
         obj.department_id = ''
       }
+      const checkedCount = obj.accessarr.length
+      this.checkAll = checkedCount === this.accessArr.length
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.accessArr.length
       this.duty = obj
       this.dialogFormVisible = true
     },
@@ -169,9 +179,6 @@ export default {
         this.dataAccess = response.info
         this.listLoading = false
       }).catch(() => { this.listLoading = false })
-    },
-    handleCheckedCitiesChange(value) {
-      this.duty.access = value.join(',')
     },
     handleAddUpdate() {
       this.$refs.infoForm.validate(valid => {
@@ -251,6 +258,22 @@ export default {
           return !obj.status
         })
       })
+    },
+    handleCheckAllChange(event) {
+      if (event.target.checked) {
+        this.accessArr.forEach(function(element) {
+          this.duty.accessarr.push(element.value + '')
+        }, this)
+      } else {
+        this.duty.accessarr = []
+      }
+      this.isIndeterminate = false
+    },
+    handleCheckedCitiesChange(value) {
+      const checkedCount = value.length
+      this.checkAll = checkedCount === this.accessArr.length
+      this.isIndeterminate = checkedCount > 0 && checkedCount < this.accessArr.length
+      this.duty.access = value.join(',')
     }
   },
   created() {
