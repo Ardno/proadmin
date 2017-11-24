@@ -93,7 +93,7 @@
                 <icon-svg icon-class="icon-laba" />
                 <span v-if="totalCount" class="layui-anim layui-anim-loop layer-anim-05">{{totalCount}}</span>
               </li>
-              <li class="layui-icon layim-tool-find" title="查找">
+              <li class="layui-icon layim-tool-find" @click="creatGroup.dialogVisible = true" title="创建群">
                 <icon-svg icon-class="icon-jia1" />
               </li>
               <li class="layui-icon layim-tool-skin" title="更换背景">
@@ -127,6 +127,23 @@
     <transition name="el-fade-in-linear">
        <chatck :closechatck.sync="closechatck" :activeUser="activeUser" :newmsg="newmsg" ></chatck>
     </transition>
+    <el-dialog title="创建群成员" size="small" class="custom-dialog" :visible.sync="creatGroup.dialogVisible" :before-close="handleClose">
+      <div class="pl40">
+        <div class="mb10">
+          <span class="mb10 db">群名称</span>
+          <el-input class="w300" v-model="creatGroup.name" placeholder="请输入群名称"></el-input>
+        </div>
+        <span class="mb10 db">群成员</span>
+        <el-transfer filterable :filter-method="creatGroup.filterMethod" filter-placeholder="请输入用户名"  v-model="creatGroup.value" :data="creatGroup.data">
+        </el-transfer>
+        <span class="mb10 db mt20">是否创建部门<span class="g9 f12">(同时创建部门并添加成员）</span></span>
+        <el-switch v-model="creatGroup.createDep" on-text="" off-text=""></el-switch>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="creatGroup.dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="creatGroup.dialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -177,6 +194,16 @@ export default {
       userInfo: {
         username: '',
         signature: ''
+      },
+      creatGroup: {
+        dialogVisible: false,
+        name: '',
+        createDep: false,
+        data: [],
+        value: [],
+        filterMethod(query, item) {
+          return item.label.indexOf(query) > -1
+        }
       }
     }
   },
@@ -199,6 +226,19 @@ export default {
       }
     },
     handleClick(tab, event) {
+    },
+    getGropsUser(arr) { // 获取用户列表
+      const userArr = []
+      const data = []
+      userArr.push(...arr)
+      userArr.forEach((obj) => {
+        data.push({
+          // label: obj.nickname,
+          label: obj.username,
+          key: obj.username
+        })
+      })
+      this.creatGroup.data = data
     },
     imCkPanle(item) {
       this.closechatck = false
@@ -322,7 +362,7 @@ export default {
         this.onSyncMsgReceipt()
       }).onFail((error) => {
         errorApiTip(error)
-        this.JIMregister()
+        // this.JIMregister()
       })
     },
     JIMregister() {
@@ -401,6 +441,7 @@ export default {
             }
             arr.push(obj)
           })
+          this.getGropsUser(arr)
           const memo = {}
           arr.forEach(function(element) {
             if (element.memo_others) {
@@ -426,39 +467,40 @@ export default {
             this.friend_list.push(obj)
           }
         }))
-      this.JIM.getFriendList().onSuccess((data) => {
-        const friend_list = data.friend_list
-        for (const friend of friend_list) {
-          friend.avatarUrl = single_avatar
-          friend.type = 3
-        }
-        const memo = {}
-        friend_list.forEach(function(element) {
-          if (element.memo_others) {
-            if (memo[element.memo_others]) {
-              memo[element.memo_others].push(element)
-            } else {
-              memo[element.memo_others] = [element]
-            }
-          } else {
-            if (memo['我的好友']) {
-              memo['我的好友'].push(element)
-            } else {
-              memo['我的好友'] = [element]
-            }
-          }
-        }, this)
-        for (const key in memo) {
-          const obj = {
-            groupname: key,
-            len: memo[key].length,
-            list: memo[key]
-          }
-          this.friend_list.push(obj)
-        }
-      }).onFail((error) => {
-        errorApiTip(error)
-      })
+        // 获取好友，暂不支持添加好友
+      // this.JIM.getFriendList().onSuccess((data) => {
+      //   const friend_list = data.friend_list
+      //   for (const friend of friend_list) {
+      //     friend.avatarUrl = single_avatar
+      //     friend.type = 3
+      //   }
+      //   const memo = {}
+      //   friend_list.forEach(function(element) {
+      //     if (element.memo_others) {
+      //       if (memo[element.memo_others]) {
+      //         memo[element.memo_others].push(element)
+      //       } else {
+      //         memo[element.memo_others] = [element]
+      //       }
+      //     } else {
+      //       if (memo['我的好友']) {
+      //         memo['我的好友'].push(element)
+      //       } else {
+      //         memo['我的好友'] = [element]
+      //       }
+      //     }
+      //   }, this)
+      //   for (const key in memo) {
+      //     const obj = {
+      //       groupname: key,
+      //       len: memo[key].length,
+      //       list: memo[key]
+      //     }
+      //     this.friend_list.push(obj)
+      //   }
+      // }).onFail((error) => {
+      //   errorApiTip(error)
+      // })
     },
     JIMgetGroups() { // 获取群组列表
       this.JIM.getGroups().onSuccess((data) => {
@@ -1000,5 +1042,11 @@ export default {
     font-weight: 400;
   }
 }
+.custom-dialog{
+  .el-dialog{
+    width: 600px
+  }
+}
+
 </style>
 
