@@ -127,21 +127,25 @@
     <transition name="el-fade-in-linear">
        <chatck :closechatck.sync="closechatck" :activeUser="activeUser" :newmsg="newmsg" ></chatck>
     </transition>
-    <el-dialog title="创建群成员" size="small" class="custom-dialog" :visible.sync="creatGroup.dialogVisible" :before-close="handleClose">
+    <el-dialog title="创建群成员" size="small" class="custom-dialog" :visible.sync="creatGroup.dialogVisible">
       <div class="pl40">
         <div class="mb10">
           <span class="mb10 db">群名称</span>
           <el-input class="w300" v-model="creatGroup.name" placeholder="请输入群名称"></el-input>
         </div>
+        <div class="mb10">
+          <span class="mb10 db">群描述</span>
+          <el-input class="w300" v-model="creatGroup.info" placeholder="请输入群描述"></el-input>
+        </div>
         <span class="mb10 db">群成员</span>
         <el-transfer filterable :filter-method="creatGroup.filterMethod" filter-placeholder="请输入用户名"  v-model="creatGroup.value" :data="creatGroup.data">
         </el-transfer>
-        <span class="mb10 db mt20">是否创建部门<span class="g9 f12">(同时创建部门并添加成员）</span></span>
+        <span class="mb10 db mt20">是否创建部门<span class="g9 f12">(在创建群同时创建部门并添加成员）</span></span>
         <el-switch v-model="creatGroup.createDep" on-text="" off-text=""></el-switch>
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="creatGroup.dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="creatGroup.dialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="hanldeCreatGroup">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -198,6 +202,7 @@ export default {
       creatGroup: {
         dialogVisible: false,
         name: '',
+        info: '',
         createDep: false,
         data: [],
         value: [],
@@ -224,6 +229,33 @@ export default {
       } else {
         this.overflow = 'hidden'
       }
+    },
+    hanldeCreatGroup() { // 创建群组
+      if (!this.creatGroup.name) {
+        this.$message({ message: '请填写群名称', type: 'warning' })
+        return false
+      }
+      if (!this.creatGroup.value.length) {
+        this.$message({ message: '请选择群成员', type: 'warning' })
+        return false
+      }
+      const data = {
+        group_name: this.creatGroup.name,
+        group_description: this.creatGroup.info,
+        usernames: this.creatGroup.value
+      }
+      this.JIMcreateGroup(data)
+      if (this.creatGroup.createDep) { // 创建部门
+
+      }
+      this.creatGroup = Object.assign(this.creatGroup, {
+        dialogVisible: false,
+        name: '',
+        info: '',
+        createDep: false,
+        data: [],
+        value: []
+      })
     },
     handleClick(tab, event) {
     },
@@ -541,6 +573,38 @@ export default {
         if (!flg) {
           this.initConverMsg()
         }
+      }).onFail((error) => {
+        errorApiTip(error)
+      })
+    },
+    JIMcreateGroup(data) {  // 创建群组
+      this.JIM.createGroup(data).onSuccess((res) => {
+        const member_usernames = []
+        data.usernames.forEach(element => {
+          const obj = {
+            username: element,
+            appkey: authPayload.appKey
+          }
+          member_usernames.push(obj)
+        })
+        // member_usernames.push(
+        //   {
+        //     username: this.userInfo.username,
+        //     appkey: authPayload.appKey
+        //   }
+        // )
+        const reqest = {
+          gid: res.gid,
+          member_usernames: member_usernames
+        }
+        this.JIMaddGroupMembers(reqest)
+      }).onFail((error) => {
+        errorApiTip(error)
+      })
+    },
+    JIMaddGroupMembers(data) { // 添加群成员
+      this.JIM.addGroupMembers(data).onSuccess((res) => {
+        this.JIMgetGroups()
       }).onFail((error) => {
         errorApiTip(error)
       })
@@ -1044,7 +1108,7 @@ export default {
 }
 .custom-dialog{
   .el-dialog{
-    width: 600px
+    width: 700px
   }
 }
 
