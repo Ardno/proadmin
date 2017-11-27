@@ -1,7 +1,7 @@
 <template>
   <div>
     <transition name="el-fade-in-linear">
-      <div v-show="!minchatck && !closechatck" class="layui-layim-chat">
+      <div v-show="!minchatck && !closechatck" class="layui-layim-chat ovh">
         <!-- 当前聊天列表 -->
         <!-- <ul class="layim-chat-list">
           <li class="tabChat" v-for="(item,index) in tabList" @click="selectTargetEmit(item,index)" :class="{active:index===activeItem.activeIndex}" @mouseenter="colseim=index" @mouseleave="colseim=-1" :key="index">
@@ -29,6 +29,9 @@
               <!-- <span>
                 <icon-svg icon-class="fullscreen" />
               </span> -->
+              <span v-if="activeItem.type === 4">
+                <icon-svg  icon-class="qunzu" />
+              </span>
               <span @click="togglechatck">
                 <icon-svg  icon-class="close" />
               </span>
@@ -99,6 +102,34 @@
               </div>
             </div>
           </div>
+        </div>
+        <!-- 群信息 -->
+        <div class="group-setting-container in">
+          <div class="group-setting-header pl15 pr15">
+            <div class="group-setting-title">
+              群信息
+              <span class="r poi">
+                <icon-svg  icon-class="close" />
+              </span>
+            </div>
+            <div class="group-setting-info fix">
+              <img class="l" :src="activeItem.avatar" :onerror="defaultImg(activeItem.avatarUrl)">
+              <div class="ml60 ovh">
+                <p class="ell pl10 pt5">{{activeItem.name}}</p>
+                <p class="g9 f12 pl10 pt5">群描述:未填写</p>
+              </div>
+            </div>
+          </div>
+          <div class="group-setting-list">
+            <div class="group-setting-add">
+              <span>群人数</span>
+              <span>3</span>
+              <span class="r blue">添加群成员</span>
+            </div>
+          </div>
+          <ul class="group-setting-scroll">
+
+          </ul>
         </div>
       </div>
     </transition>
@@ -1090,5 +1121,55 @@ export default {
 @keyframes spin {
   0%   { transform: rotate(360deg); }
   100% { transform: rotate(0deg); }
+}
+.group-setting-container{
+  width: 260px;
+  height: 100%;
+  background: #fff;
+  position: absolute;
+  top: 80px;
+  right: 0;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
+  border-bottom-right-radius: 3px;
+  z-index: 4;
+  transform: translateX(101%);
+  &.in{
+    transform: translateX(0);
+    transition: all 0.5s;
+  }
+  .group-setting-title{
+    height: 40px;
+    border-bottom: 1px solid #E3E6EB;
+    line-height: 40px;
+    font-size: 14px;
+    color: #2C2C2C;
+    margin-bottom: 10px;
+  }
+  .group-setting-info{
+    img{
+      display: block;
+      width: 60px;
+      height: 60px;
+    }
+    margin-bottom: 10px;
+  }
+  .group-setting-add{
+    line-height: 34px;
+    height: 34px;
+    font-size: 12px;
+    color: #2C2C2C;
+    border-top: 1px solid #E3E6EB;
+  }
+  .group-setting-list{
+    padding: 0 15px;
+    .group-setting-scroll{
+      width: 100%;
+      height: 300px;
+      overflow: auto;
+    }
+  }
+}
+.ml60{
+  margin-left: 60px;
 }
 </style>

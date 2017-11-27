@@ -49,10 +49,12 @@
       </el-table-column>
       <el-table-column  label="值班结果">
         <template scope="scope">
-          <el-tag v-if="scope.row.work_type == '0'" type="success">正常</el-tag>
-          <el-tag v-if="scope.row.work_type == '1'" type="primary">迟到</el-tag>
-          <el-tag v-if="scope.row.work_type == '2'" type="warning">早退</el-tag>
-          <el-tag v-if="scope.row.work_type == '3'" type="danger">缺勤</el-tag>
+          <el-tag v-if="scope.row.work_state == '0'" type="primary">待处理</el-tag>
+          <el-tag v-if="scope.row.work_state == '1'" type="success">正常</el-tag>
+          <el-tag v-if="scope.row.work_state == '2'" type="warning">迟到</el-tag>
+          <el-tag v-if="scope.row.work_state == '3'" type="danger">早退</el-tag>
+          <el-tag v-if="scope.row.work_state == '4'" type="warning">缺勤</el-tag>
+          <el-tag v-if="scope.row.work_state == '5'" type="warning">调派</el-tag>
         </template>
       </el-table-column>
     </el-table>
