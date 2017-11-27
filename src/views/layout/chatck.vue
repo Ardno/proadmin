@@ -17,7 +17,7 @@
           <!-- 头部 -->
           <div class="chat-title">
             <div class="layim-chat-other">
-              <img :src="activeItem.avatar" :onerror="defaultImg(activeItem.avatarUrl)">
+              <img :src="activeItem.avatar || activeItem.avatarUrl">
               <span class="layim-chat-username ell" v-if="activeItem.type === 3">{{activeItem.username}}</span>
               <span class="layim-chat-username ell" v-if="activeItem.type === 4">{{activeItem.name}}</span>
               <!-- <p class="layim-chat-status ell">暂无签名</p> -->
@@ -29,7 +29,7 @@
               <!-- <span>
                 <icon-svg icon-class="fullscreen" />
               </span> -->
-              <span v-if="activeItem.type === 4">
+              <span v-if="activeItem.type === 4" @click="groupFlg=true" >
                 <icon-svg  icon-class="qunzu" />
               </span>
               <span @click="togglechatck">
@@ -42,7 +42,7 @@
             <div class="layim-chat-main"  ref="layscoll">
               <ul>
                 <li v-for="(list,index) in activeItem.msgs" :key="index"  :class="{'layim-chat-mine':userInfo.username == list.content.from_id }">
-                  <div class="layim-chat-user"><img :src="activeItem.avatar" :onerror="defaultImg(activeItem.avatarUrl)">
+                  <div class="layim-chat-user"><img :src="activeItem.avatar" :onerror="defaultImg()">
                     <cite >
                       {{ userInfo.username == list.content.from_id ? '':list.content.from_name}}
                     <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
@@ -104,11 +104,11 @@
           </div>
         </div>
         <!-- 群信息 -->
-        <div class="group-setting-container in">
-          <div class="group-setting-header pl15 pr15">
+        <div class="group-setting-container" :class="{'in':groupFlg}">
+          <div class="group-setting-header pl20 pr20">
             <div class="group-setting-title">
               群信息
-              <span class="r poi">
+              <span class="r poi" @click="groupFlg=false">
                 <icon-svg  icon-class="close" />
               </span>
             </div>
@@ -123,12 +123,19 @@
           <div class="group-setting-list">
             <div class="group-setting-add">
               <span>群人数</span>
-              <span>3</span>
+              <span>{{member_list.length}}</span>
               <span class="r blue">添加群成员</span>
             </div>
           </div>
           <ul class="group-setting-scroll">
-
+            <li v-for="(obj,index) in member_list" :key="index">
+              <img class="avatar l" :src="obj.avatar" :onerror="defaultImg(activeItem.avatarUrl)" alt="">
+              <div class="ml40 ovh" style="line-height:50px;height:50px">
+                <span class="dib w150 ell">{{ obj.nickname||obj.username}}</span>
+                <span v-if="obj.flag" class="r blue mr10" title="群主"><icon-svg  icon-class="qunzhuhuangguan" /></span>
+              </div>
+              <span v-if="isqunzhu" v-show="!obj.flag" class="poi close"><icon-svg  icon-class="close" /></span>
+            </li>
           </ul>
         </div>
       </div>
@@ -155,11 +162,12 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { getJMessage, authPayload } from '@/utils/IM'
+import { getJMessage, authPayload, errorApiTip } from '@/utils/IM'
 import { imgReader, getFileFormData, getExt } from '@/utils/utils'
 import { imgUpLoad } from '@/api/upload'
 import { setHistoryIm } from '@/api/message'
 import drag from '@/directive/drag/index.js'
+import single_avatar from '@/assets/images/single-avatar.svg'
 export default {
   name: 'chatck',
   props: {
@@ -182,6 +190,8 @@ export default {
       JIM: null,
       minchatck: false,
       colseim: false,
+      groupFlg: false,
+      isqunzhu: false,
       imgshow: {
         flg: false,
         src: ''
@@ -201,6 +211,7 @@ export default {
         atList: '',
         isAtAll: ''
       },
+      member_list: [],
       msgKey: 0,
       msgs: [],
       tabList: [] // 当前tab列表
@@ -209,6 +220,7 @@ export default {
   watch: {
     activeUser(val, oldVal) {
       this.minchatck = false
+      this.groupFlg = false
       this.selectTargetEmit()
     },
     msgs(val, oldVal) {
@@ -232,6 +244,9 @@ export default {
   methods: {
     defaultImg(ads) {
       // return 'this.onerror=null;this.src="' + ads + '"'
+      if (!ads) {
+        ads = single_avatar
+      }
       return 'this.src="' + ads + '"'
     },
     showImg(src) { //  放大图片
@@ -296,8 +311,10 @@ export default {
       }
       activeItem.id = a.username || a.gid
       this.activeItem = Object.assign(activeItem, a)
-      console.log(this.activeItem)
       this.getActiveMsg()
+      if (this.activeItem.type === 4) {
+        this.JIMgetGroupMembers(activeItem.id)
+      }
     },
     repeatSendMsg(msg) { // 重发消息
       msg.success = 1
@@ -682,6 +699,38 @@ export default {
         requst.message_content = msgs.content.msg_body.fname
       }
       setHistoryIm(requst)
+    },
+    JIMgetGroupMembers(gid) { // 获取群组成员
+      this.member_list = []
+      this.JIM.getGroupMembers({
+        gid: gid
+      }).onSuccess((data) => {
+        // data.code 返回码
+        // data.message 描述
+        // data.member_list[] 成员列表，如下示例
+        // data.member_list[0].username 用户名
+        // data.member_list[0].appkey 用户所属 appkey
+        // data.member_list[0].nickname 用户昵称
+        // data.member_list[0].avatar 用户头像 id
+        // data.member_list[0].flag  0：普通成员 1：群主
+        if (data.member_list.length) {
+          this.member_list.push(...data.member_list)
+          for (let i = 0; i < data.member_list.length; i++) {
+            if (this.member_list[i].flag) {
+              if (this.member_list[i].username === this.userInfo.username) {
+                this.isqunzhu = true
+              }
+              const arr = this.member_list.splice(i, 1) // 把群主提到第一位
+              this.member_list.unshift(arr[0])
+              break
+            }
+          }
+        }
+      }).onFail((data) => {
+        // data.code 返回码
+        // data.message 描述
+        errorApiTip(data)
+      })
     }
   }
 }
@@ -701,7 +750,7 @@ export default {
   top: 50%;
   z-index: 1999;
   display: block;
-  min-width: 600px;
+  min-width: 650px;
   height: 662px;
   transform: translate(-50%, -50%);
   border: 1px solid #D9D9D9;
@@ -761,7 +810,7 @@ export default {
     }
   }
   .chat-ct {
-    width: 600px;
+    width: 650px;
     height: 100%;
     // margin-left: 200px;
     background: url(~assets/images/chatbg1.jpg) no-repeat center center;
@@ -1132,10 +1181,10 @@ export default {
   box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
   border-bottom-right-radius: 3px;
   z-index: 4;
+  transition: all 0.5s;
   transform: translateX(101%);
   &.in{
     transform: translateX(0);
-    transition: all 0.5s;
   }
   .group-setting-title{
     height: 40px;
@@ -1161,11 +1210,41 @@ export default {
     border-top: 1px solid #E3E6EB;
   }
   .group-setting-list{
-    padding: 0 15px;
-    .group-setting-scroll{
-      width: 100%;
-      height: 300px;
-      overflow: auto;
+    padding: 0 20px;
+  }
+  .group-setting-scroll{
+    width: 100%;
+    height: 300px;
+    overflow: auto;
+    li{
+      padding-left: 20px;
+      font-size: 14px;
+      color: #2C2C2C;
+      position: relative;
+      list-style-type: none;
+      .avatar{
+        display: block;
+        width: 30px;
+        height: 30px;
+        margin: 10px 10px 0 0;
+      }
+      &:hover{
+        background-color: #F2F6FB;
+        .close{
+          display: inline-block;
+        }
+      }
+      .close{
+        position: absolute;
+        display: none;
+        width: 20px;
+        height: 20px;
+        top: 50%;
+        left: 2px;
+        font-size: 12px;
+        margin-top: -6px;
+        color: red;
+      }
     }
   }
 }

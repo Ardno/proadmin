@@ -25,7 +25,7 @@
                   <li>
                     <ul class="layui-layim-list layui-show layim-list-history">
                       <li @click="imCkPanle(list)" v-for="(list, index) in conversations" :key="index" >
-                        <img :src="list.avatar" :onerror="defaultImg(list.avatarUrl)">
+                        <img :src="list.avatar || list.avatarUrl">
                         <span v-if="list.type === 3">{{list.username}}</span>
                         <time class="r g9 time">{{list.mtime | reducerDate}}</time>
                         <span v-if="list.type === 4">{{list.name}}</span>
@@ -627,6 +627,7 @@ export default {
     },
     onMsgReceive() { // 聊天消息实时监听
       this.JIM.onMsgReceive((data) => {
+        console.log(data)
         let alert = '你有新的消息'
         data.messages.forEach(function(element) {
           const obj = data.messages[0].content

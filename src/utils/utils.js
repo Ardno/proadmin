@@ -1,6 +1,6 @@
 import { md5 } from '@/utils/md5'
 import { authPayload } from '@/utils/IM'
-import { Notifications } from 'element-ui'
+import { Notification } from 'element-ui'
 import avteinfo from '@/assets/images/notis.png'
 /**
  * 生成JIM初始化的签名
@@ -16,6 +16,7 @@ export function createSignature(timestamp) {
  * @param obj消息对象
  */
 export function imNotification(obj) {
+  debugger
   const titleInit = document.title
   let timer = null
   let isShine = true
@@ -47,9 +48,9 @@ export function imNotification(obj) {
   document.onfocusout = function() {
     isShine = true
   }
-  if (window.Notification && Notification.permission === 'granted') {
+  if (window.Notification && window.Notification.permission === 'granted') {
     // 弹出一个通知
-    const n = new Notification(obj.title, {
+    const n = new window.Notification(obj.title, {
       body: obj.alert,
       icon: avteinfo
     })
@@ -58,7 +59,7 @@ export function imNotification(obj) {
       n.close()
     }, 4000)
   } else {
-    Notifications({
+    Notification({
       title: obj.title,
       message: obj.alert
     })
