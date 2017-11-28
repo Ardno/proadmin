@@ -81,7 +81,8 @@ const paraTypeArr = [
   { _id: '3', name: '图片控件（多图上传）' },
   { _id: '4', name: '文件控件（视频，语音均是文件，只做上传）' },
   { _id: '5', name: '人员选择控件（当前人员所在部门下）' },
-  { _id: '6', name: '法律法规选择控件' }
+  { _id: '6', name: '法律法规选择控件' },
+  { _id: '7', name: '地图选择控件' }
 ]
 export default {
   components: { Tinymce, Sticky, MDinput },

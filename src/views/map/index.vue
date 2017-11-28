@@ -19,14 +19,17 @@
     <!-- 区域信息 -->
     <el-dialog title="区域信息" size="tiny" :visible.sync="regionobj.dialogFormVisible"  >
       <el-form class="small-space"  label-position="top">
+        <el-form-item label="所属部门" >
+          <span  class="ml20">{{regionobj.department_name}}</span>
+        </el-form-item>
         <el-form-item label="区域名称" >
           <span v-if="!regionobj.update" class="ml20">{{regionobj.name}}</span>
           <el-input v-else v-model="regionobj.name"></el-input>
         </el-form-item>
         <el-form-item label="区域人员">
-          <span v-if="!regionobj.update" class="ml20">{{regionobj.username}}</span>
-          <el-select v-else v-model="regionobj.user_id" filterable placeholder="请选择">
-            <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
+          <span v-if="!regionobj.update" class="ml20">{{regionobj.username || '无'}}</span>
+          <el-select class="pct100" v-else v-model="regionobj.userArr" multiple filterable placeholder="请选择">
+            <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id+''">
             </el-option>
           </el-select>
         </el-form-item>
@@ -47,7 +50,7 @@ import SideBar from './sidebar'
 import { mapGetters } from 'vuex'
 import { getRegionArr, updateRegion, getLatlonArr } from '@/api/grid'
 import { parseTime } from '@/utils/index'
-import { fetchList } from '@/api/department'
+import { fetchList, fetchDepartments } from '@/api/department'
 import { getEventArr } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
 import personicon from '@/assets/icon/personicon.png'
@@ -119,16 +122,20 @@ export default {
         }
       ],
       userArr: [],
+      depArr: [],
       markerArr: [],
       personArr: [],
       eventArr: [],
       polygonsArr: [],
       regionobj: {
         name: '',
+        department_id: '',
+        department_name: '',
         username: '',
         status: '',
         _id: '',
-        user_id: '',
+        user_ids: '',
+        userArr: [],
         update: false,
         dialogFormVisible: false
       }
@@ -163,8 +170,13 @@ export default {
         }, 1000)
       }
     }
+    fetchDepartments().then(res => {
+      this.depArr = res.info.filter(obj => {
+        return !obj.status
+      })
+      this.loadInit()
+    })
     loadAMapUI()
-    this.loadInit()
   },
   mounted() {
     this.$nextTick(function() {
@@ -216,10 +228,14 @@ export default {
                   const obj = element
                   this.regionobj.dialogFormVisible = true
                   this.regionobj.name = obj.name
-                  this.regionobj.username = obj.username
+                  this.regionobj.department_id = obj.department_id
+                  this.regionobj.department_name = this.filterDepRose(obj.department_id)
                   this.regionobj.status = obj.status
                   this.regionobj._id = obj._id
-                  this.regionobj.user_id = obj.user_id
+                  this.regionobj.user_ids = obj.user_ids
+                  const str = obj.user_ids || ''
+                  this.regionobj.userArr = str ? str.split(',') : []
+                  this.regionobj.username = this.filterUser(this.regionobj.userArr)
                 }
               }
             }
@@ -317,6 +333,7 @@ export default {
       })
     },
     updateRegion() { // 修改区域用户
+      this.regionobj.user_ids = this.regionobj.userArr.join(',')
       updateRegion(this.regionobj).then(response => {
         this.regionobj.update = false
         this.regionobj.dialogFormVisible = false
@@ -353,6 +370,26 @@ export default {
           })
         })
       }).catch(() => { console.log('取消修改') })
+    },
+    filterDepRose(id) { // 转换部门和集合
+      let name = '无'
+      this.depArr.forEach(function(els) {
+        if (Number(id) === els._id) {
+          name = els.name
+        }
+      }, this)
+      return name
+    },
+    filterUser(arr) { // 转换用户
+      let name = '无'
+      arr.forEach(element => {
+        this.userArr.forEach(function(els) {
+          if (Number(element) === els._id) {
+            name += els.name + '，'
+          }
+        }, this)
+      })
+      return name
     }
   },
   computed: {

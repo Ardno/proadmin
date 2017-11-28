@@ -6,16 +6,21 @@
           <span class="oico"><icon-svg icon-class="refresh" /></span>
         </el-tooltip>
       </li>
+      <li @click="mouseToolPolygon">
+        <el-tooltip class="item" effect="dark" content="框选人员" placement="left">
+          <span class="oico"><icon-svg icon-class="addressbook" /></span>
+        </el-tooltip>
+      </li>
       <li>
         <el-tooltip class="item" effect="dark" content="历史轨迹" placement="left">
           <span class="oico"><icon-svg icon-class="time" /></span>
         </el-tooltip>
       </li>
-      <li>
+      <!-- <li>
         <el-tooltip class="item" effect="dark" content="地图人员状态" placement="left">
           <span class="oico"><icon-svg icon-class="addressbook" /></span>
         </el-tooltip>
-      </li>
+      </li> -->
       <li @click="seeting.dialogFormVisible=true">
         <el-tooltip class="item" effect="dark" content="地图显示设置" placement="left">
           <span class="oico"><icon-svg icon-class="setup" /></span>
@@ -35,9 +40,15 @@
     <!-- 新增区域 -->
     <el-dialog :title="regionobj.title" @close="closeCall" :visible.sync="regionobj.dialogFormVisible" :close-on-click-modal="false" >
       <el-form class="small-space" :model="requestAdd" :rules="regionobj.infoRules" ref="infoForm" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
-        <el-form-item label="区域负责人" prop="user_id">
-          <el-select v-model="requestAdd.user_id" filterable placeholder="请选择">
+        <el-form-item label="区域负责人">
+          <el-select v-model="requestAdd.userid" multiple  filterable placeholder="请选择">
             <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="区域所属部门" prop="department_id">
+          <el-select v-model="requestAdd.department_id" filterable placeholder="请选择">
+            <el-option v-for="item in depArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -70,7 +81,7 @@
 <script>
 import { addRegion } from '@/api/grid'
 import Cookies from 'js-cookie'
-import { fetchList } from '@/api/department'
+import { fetchList, fetchDepartments } from '@/api/department'
 import { isAccess } from '@/utils/auth'
 export default {
   name: 'SideBar',
@@ -83,17 +94,21 @@ export default {
     return {
       _polygonEditor: null,
       _polygon: null,
+      mouseTool: null,
       requestAdd: {
-        user_id: '',
+        userid: [],
+        userids: '',
+        department_id: '',
         name: '',
         list: []
       },
+      depArr: [],
       userArr: [],
       regionobj: {
         title: '添加网格区域',
         dialogFormVisible: false,
         infoRules: {
-          user_id: [{ type: 'number', required: true, message: '请区域负责人', trigger: 'blur' }],
+          department_id: [{ type: 'number', required: true, message: '请选择区域所属部门', trigger: 'change' }],
           name: [{ required: true, message: '请输入区域名称', trigger: 'blur' }]
         }
       },
@@ -132,6 +147,7 @@ export default {
     handleAdd() {
       this.$refs.infoForm.validate(valid => {
         if (valid) {
+          this.requestAdd.userids = this.requestAdd.userid.join(',')
           addRegion(this.requestAdd).then(response => {
             this.regionobj.dialogFormVisible = false
             this.$emit('addRegion', true)
@@ -191,6 +207,7 @@ export default {
       if (this._polygonEditor) {
         this._polygonEditor.close()
         this.regionobj.dialogFormVisible = true
+        this.regionobj.userid = []
         const path = this._polygon.getPath()
         const arr = []
         path.forEach(function(element) {
@@ -202,8 +219,26 @@ export default {
     loadUser() { // 获取用户集合
       fetchList({ start_index: 0, length: 10000 }).then(response => {
         if (response.info.list.length) {
-          this.userArr = response.info.list
+          this.userArr = response.info.list.filter(obj => { // 获取正常状态的用户
+            return !obj.status
+          })
         }
+      })
+      fetchDepartments().then(response => {
+        this.depArr = response.info.filter(obj => { // 获取正常状态的部门
+          return !obj.status
+        })
+      })
+    },
+    mouseToolPolygon() { // 框选人员
+      if (!this.mouseTool) {
+        this.mouseTool = new AMap.MouseTool(this.mapobj.$$getInstance())
+      }
+      this.mouseTool.polygon()
+      //  alert('点是否在多边形内：' + polygon.contains(myMarker.getPosition()));
+      AMap.event.addListener(this.mouseTool, 'draw', (e) => { // 添加事件
+        console.log(e.obj.getPath()) // 获取路径/范围
+        // this.mouseTool.close(false) //关闭框选
       })
     }
   }

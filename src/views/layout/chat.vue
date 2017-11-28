@@ -587,12 +587,6 @@ export default {
           }
           member_usernames.push(obj)
         })
-        // member_usernames.push(
-        //   {
-        //     username: this.userInfo.username,
-        //     appkey: authPayload.appKey
-        //   }
-        // )
         const reqest = {
           gid: res.gid,
           member_usernames: member_usernames

@@ -16,7 +16,6 @@ export function createSignature(timestamp) {
  * @param obj消息对象
  */
 export function imNotification(obj) {
-  debugger
   const titleInit = document.title
   let timer = null
   let isShine = true

@@ -18,7 +18,7 @@ Object.keys(filters).forEach(key => {
 VueAMap.initAMapApiLoader({
   key: '94b913821c7541316bbcc7653a96c19e',
   plugin: ['AMap.Scale', 'AMap.OverView', 'AMap.ToolBar', 'AMap.MapType',
-    'AMap.CustomLayer', 'AMap.DistrictSearch', 'AMap.Geolocation',
+    'AMap.CustomLayer', 'AMap.DistrictSearch', 'AMap.Geolocation', 'AMap.MouseTool',
     'AMap.AdvancedInfoWindow', 'AMap.PolyEditor', 'AMap.CircleEditor', 'AMap.Geocoder'],
   uiVersion: '1.0' // 版本号
 })

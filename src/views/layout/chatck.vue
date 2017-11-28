@@ -17,7 +17,7 @@
           <!-- 头部 -->
           <div class="chat-title">
             <div class="layim-chat-other">
-              <img :src="activeItem.avatar || activeItem.avatarUrl">
+              <img :src="activeItem.avatar || activeItem.avatarUrl" :onerror="defaultImg()">
               <span class="layim-chat-username ell" v-if="activeItem.type === 3">{{activeItem.username}}</span>
               <span class="layim-chat-username ell" v-if="activeItem.type === 4">{{activeItem.name}}</span>
               <!-- <p class="layim-chat-status ell">暂无签名</p> -->
@@ -42,7 +42,9 @@
             <div class="layim-chat-main"  ref="layscoll">
               <ul>
                 <li v-for="(list,index) in activeItem.msgs" :key="index"  :class="{'layim-chat-mine':userInfo.username == list.content.from_id }">
-                  <div class="layim-chat-user"><img :src="activeItem.avatar" :onerror="defaultImg()">
+                  <div class="layim-chat-user">
+                    <img v-if="userInfo.username == list.content.from_id" :src="userInfo.avatar" :onerror="defaultImg()">
+                    <img v-else :src="activeItem.avatar" :onerror="defaultImg()">
                     <cite >
                       {{ userInfo.username == list.content.from_id ? '':list.content.from_name}}
                     <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
@@ -124,7 +126,7 @@
             <div class="group-setting-add">
               <span>群人数</span>
               <span>{{member_list.length}}</span>
-              <span class="r blue">添加群成员</span>
+              <span class="r blue poi" @click="addpersonGroup.dialogVisible=true;addpersonGroup.value=[]">添加群成员</span>
             </div>
           </div>
           <ul class="group-setting-scroll">
@@ -134,7 +136,7 @@
                 <span class="dib w150 ell">{{ obj.nickname||obj.username}}</span>
                 <span v-if="obj.flag" class="r blue mr10" title="群主"><icon-svg  icon-class="qunzhuhuangguan" /></span>
               </div>
-              <span v-if="isqunzhu" v-show="!obj.flag" class="poi close"><icon-svg  icon-class="close" /></span>
+              <span v-if="isqunzhu" v-show="!obj.flag" class="poi close" @click="JIMdelGroupMembers(obj,index)"><icon-svg  icon-class="close" /></span>
             </li>
           </ul>
         </div>
@@ -157,6 +159,18 @@
         </div>
       </div>
     </transition>
+    <!-- 添加群成员 -->
+    <el-dialog title="添加群成员" size="small" class="custom-dialog" :visible.sync="addpersonGroup.dialogVisible">
+      <div>
+        <span class="mb10 db">群成员</span>
+        <el-transfer filterable :filter-method="addpersonGroup.filterMethod" filter-placeholder="请输入用户名"  v-model="addpersonGroup.value" :data="addpersonGroup.data">
+        </el-transfer>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="addpersonGroup.dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="addCreatGroup">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -168,6 +182,7 @@ import { imgUpLoad } from '@/api/upload'
 import { setHistoryIm } from '@/api/message'
 import drag from '@/directive/drag/index.js'
 import single_avatar from '@/assets/images/single-avatar.svg'
+import { fetchList } from '@/api/department'
 export default {
   name: 'chatck',
   props: {
@@ -211,7 +226,16 @@ export default {
         atList: '',
         isAtAll: ''
       },
+      addpersonGroup: {
+        dialogVisible: false,
+        data: [],
+        value: [],
+        filterMethod(query, item) {
+          return item.label.indexOf(query) > -1
+        }
+      },
       member_list: [],
+      userList: [],
       msgKey: 0,
       msgs: [],
       tabList: [] // 当前tab列表
@@ -240,6 +264,12 @@ export default {
   },
   created() {
     this.JIM = getJMessage()
+    fetchList({ start_index: 0, length: 10000 }).then((data) => {
+      const userList = data.info.list.filter(obj => { // 获取正常状态的用户
+        return !obj.status
+      })
+      this.userList = userList
+    })
   },
   methods: {
     defaultImg(ads) {
@@ -705,14 +735,6 @@ export default {
       this.JIM.getGroupMembers({
         gid: gid
       }).onSuccess((data) => {
-        // data.code 返回码
-        // data.message 描述
-        // data.member_list[] 成员列表，如下示例
-        // data.member_list[0].username 用户名
-        // data.member_list[0].appkey 用户所属 appkey
-        // data.member_list[0].nickname 用户昵称
-        // data.member_list[0].avatar 用户头像 id
-        // data.member_list[0].flag  0：普通成员 1：群主
         if (data.member_list.length) {
           this.member_list.push(...data.member_list)
           for (let i = 0; i < data.member_list.length; i++) {
@@ -726,11 +748,78 @@ export default {
             }
           }
         }
+        this.getUserArr()
       }).onFail((data) => {
-        // data.code 返回码
-        // data.message 描述
         errorApiTip(data)
       })
+    },
+    getUserArr() { // 获取可添加的群成员
+      const userArr = []
+      this.userList.forEach((obj) => {
+        let flg = true
+        this.member_list.forEach(element => {
+          const username = 'yzwg_' + obj._id
+          if (username === element.username) {
+            flg = false
+          }
+        })
+        if (flg) {
+          userArr.push({
+            label: 'yzwg_' + obj._id,
+            key: 'yzwg_' + obj._id
+          })
+        }
+      })
+      this.addpersonGroup.data = userArr
+    },
+    addCreatGroup() { // 添加群成员
+      if (!this.addpersonGroup.value.length) {
+        return false
+      }
+      const member_usernames = []
+      this.addpersonGroup.value.forEach(element => {
+        const obj = {
+          username: element,
+          appkey: authPayload.appKey
+        }
+        member_usernames.push(obj)
+      })
+      const reqest = {
+        gid: this.activeItem.id,
+        member_usernames: member_usernames
+      }
+      this.JIM.addGroupMembers(reqest).onSuccess((res) => {
+        this.addpersonGroup.dialogVisible = false
+        this.$message({
+          message: '添加成功！',
+          type: 'success',
+          duration: 4 * 1000
+        })
+        this.JIMgetGroupMembers(this.activeItem.id)
+      }).onFail((error) => {
+        errorApiTip(error)
+      })
+    },
+    JIMdelGroupMembers(item, index) {
+      this.$confirm('确认删除这个用户？').then(() => {
+        this.JIM.delGroupMembers({
+          gid: this.activeItem.id,
+          member_usernames: [{ 'username': item.username, 'appkey': authPayload.appKey }]
+        }).onSuccess((data) => {
+          this.member_list.splice(index, 1)
+          this.$message({
+            message: '删除成功！',
+            type: 'success',
+            duration: 4 * 1000
+          })
+        }).onFail((data) => {
+            // 同上
+          this.$message({
+            message: '删除失败，请稍后再试',
+            type: 'error'
+          })
+        })
+      }).catch(() => { console.log('取消修改') })
     }
   }
 }
@@ -1250,5 +1339,10 @@ export default {
 }
 .ml60{
   margin-left: 60px;
+}
+.custom-dialog{
+  .el-dialog{
+    width: 600px
+  }
 }
 </style>
