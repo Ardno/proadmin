@@ -11,7 +11,7 @@
           <span class="oico"><icon-svg icon-class="addressbook" /></span>
         </el-tooltip>
       </li>
-      <li>
+      <li @click="trajectory.dialogFormVisible = true">
         <el-tooltip class="item" effect="dark" content="历史轨迹" placement="left">
           <span class="oico"><icon-svg icon-class="time" /></span>
         </el-tooltip>
@@ -74,6 +74,28 @@
         </p>
       </div>
     </el-dialog>
+    <!-- 人员估计查询 -->
+    <el-dialog title="人员轨迹" size="tiny"  :visible.sync="trajectory.dialogFormVisible"  >
+      <el-form class="small-space" :model="trajectory" ref="trajectoryForm" label-position="right" label-width="120px">
+        <el-form-item label="人员姓名">
+          <el-select v-model="trajectory.userid"  filterable placeholder="请选择">
+            <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="日期范围">
+          <el-date-picker
+            v-model="trajectory.daterange"
+            type="daterange"
+            placeholder="选择日期范围">
+          </el-date-picker>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="trajectory.dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="showHistoryguij">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -88,6 +110,9 @@ export default {
   props: {
     mapobj: {
       type: Object
+    },
+    PathSimplifier: {
+      type: null
     }
   },
   data() {
@@ -118,6 +143,11 @@ export default {
         raido: true,
         region: true,
         event: true
+      },
+      trajectory: {
+        dialogFormVisible: false,
+        userid: '',
+        daterange: ''
       }
     }
   },
@@ -240,6 +270,55 @@ export default {
         console.log(e.obj.getPath()) // 获取路径/范围
         // this.mouseTool.close(false) //关闭框选
       })
+    },
+    showHistoryguij() {
+      if (this.PathSimplifier) {
+        const PathSimplifier = this.PathSimplifier
+         // 创建组件实例
+        const pathSimplifierIns = new PathSimplifier({
+          zIndex: 100,
+          map: this.mapobj.$$getInstance(), // 所属的地图实例
+          getPath: function(pathData, pathIndex) {
+            return pathData.path
+          },
+          getHoverTitle: function(pathData, pathIndex, pointIndex) {
+            // 返回鼠标悬停时显示的信息
+            if (pointIndex >= 0) {
+              // 鼠标悬停在某个轨迹节点上
+              return pathData.name + '，点:' + pointIndex + '/' + pathData.path.length
+            }
+            // 鼠标悬停在节点之间的连线上
+            return pathData.name + '，点数量' + pathData.path.length
+          },
+          renderOptions: {
+            // 轨迹线的样式
+            pathLineStyle: {
+              strokeStyle: 'blue',
+              lineWidth: 3,
+              dirArrowStyle: true
+            }
+          }
+        })
+        // 这里构建两条简单的轨迹，仅作示例
+        pathSimplifierIns.setData([{
+          name: '轨迹0',
+          path: [
+              [114.085947, 22.54702],
+              [114.085003, 22.5492],
+              [114.081999, 22.550389],
+              [114.085604, 22.556175],
+              [114.09129, 22.566816]
+          ]
+        }])
+        // 创建一个巡航器
+        const navg0 = pathSimplifierIns.createPathNavigator(0, // 关联第1条轨迹
+          {
+            loop: false, // 循环播放
+            speed: 1000
+          })
+        navg0.start()
+        this.trajectory.dialogFormVisible = false
+      }
     }
   }
 }

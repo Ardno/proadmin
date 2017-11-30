@@ -15,7 +15,7 @@
         <!-- 经纬度: [{{ lng }}, {{ lat }}]  -->
         地址: {{ address }}
     </div>
-    <side-bar :mapobj="mapobj" @seeting="getSetting"  @reloadMap="loadInit" @addRegion="getRegion"></side-bar>
+    <side-bar :mapobj="mapobj" :PathSimplifier='PathSimplifier' @seeting="getSetting"  @reloadMap="loadInit" @addRegion="getRegion"></side-bar>
     <!-- 区域信息 -->
     <el-dialog title="区域信息" size="tiny" :visible.sync="regionobj.dialogFormVisible"  >
       <el-form class="small-space"  label-position="top">
@@ -64,12 +64,13 @@ export default {
   data() {
     return {
       zoom: 13,
-      center: [121.59996, 31.197646],
+      center: [114.085947, 22.54702],
       amapManager,
       lng: 0,
       lat: 0,
       address: '',
       locMark: '',
+      PathSimplifier: '',
       geocoder: '',
       mapobj: null,
       events: {
@@ -163,6 +164,13 @@ export default {
             map: map,
             position: map.getCenter()
           })
+        })
+        AMapUI.load(['ui/misc/PathSimplifier'], (PathSimplifier) => {
+          if (!PathSimplifier.supportCanvas) {
+            alert('当前环境不支持 Canvas！')
+            return
+          }
+          this.PathSimplifier = PathSimplifier
         })
       } else {
         setTimeout(() => {
