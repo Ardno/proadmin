@@ -10,7 +10,7 @@
         </el-option>
       </el-select>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
-      <el-button class="filter-item" type="primary" @click="createReuns" >创建临时任务</el-button>
+      <el-button class="filter-item" type="primary" @click="deployment.dialogFormVisible = true" >创建临时任务</el-button>
       
     </div>
     <el-table :key='tableKey' :data="workArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
@@ -71,10 +71,10 @@
       </el-pagination>
     </div>
     <!-- 分页 -->
-    <el-dialog title="临时调派" :visible.sync="deployment.dialogFormVisiblee" width="600px" >
-      <el-form class="small-space" :model="deployment" :rules="infoRulese" ref="infoForme" label-position="right" label-width="100px">
+    <el-dialog title="临时调派" :visible.sync="deployment.dialogFormVisible" width="600px" >
+      <el-form class="small-space" :model="deployment" :rules="infoRules" ref="infoForm" label-position="right" label-width="100px">
         <el-form-item label="区域" prop="region_id">
-          <el-select class="filter-item" v-model="deployment.region_id" placeholder="请选择">
+          <el-select class="filter-item" v-model="deployment.region_id" placeholder="请选择区域">
             <el-option v-for="item in  polygons" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
@@ -85,19 +85,20 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="设为主部门" >
-          <el-radio class="radio" v-model="depInfodep.department.is_enable"  :label="1">是</el-radio>
-          <el-radio class="radio" v-model="depInfodep.department.is_enable" :label="0">否</el-radio>
+        <el-form-item label="开始时间" prop="r_start_time">
+          <el-date-picker :editable="false" :clearable="false"  v-model="deployment.r_start_time" type="datetime" placeholder="选择日期时间" :picker-options="pickerOptions"> </el-date-picker>
+        </el-form-item>
+        <el-form-item label="结束时间" prop="r_end_time">
+          <el-date-picker :editable="false" :clearable="false" v-model="deployment.r_end_time" type="datetime" placeholder="选择日期时间" :picker-options="pickerOptions"> </el-date-picker>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisiblee = false">取 消</el-button>
-        <el-button type="primary" @click="handleUpdatePeInfo('3')">确 定</el-button>
+        <el-button @click="deployment.dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="createDeploy">确定</el-button>
       </div>
     </el-dialog>
   </div>
 </template>
-
 <script>
 import { fetchList } from '@/api/department'
 import { getWorksArr, addWorks } from '@/api/levelshift'
@@ -135,11 +136,22 @@ export default {
         }
       ],
       deployment: {
-        dialogFormVisiblee: false,
+        dialogFormVisible: false,
         region_id: '',
         user_id: '',
         r_start_time: '',
         r_end_time: ''
+      },
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() < Date.now() - 8.64e7
+        }
+      },
+      infoRules: {
+        region_id: [{ type: 'number', required: true, message: '请选择区域', trigger: 'change' }],
+        user_id: [{ type: 'number', required: true, message: '请选择人员', trigger: 'change' }],
+        r_start_time: [{ required: true, message: '请选择开始时间', trigger: 'blur' }],
+        r_end_time: [{ required: true, message: '请选择结束时间', trigger: 'blur' }]
       }
     }
   },
@@ -180,11 +192,27 @@ export default {
         this.listLoading = false
       })
     },
-    createReuns() {
-      this.$message({
-        message: '开发中...',
-        type: 'info',
-        duration: 4 * 1000
+    createDeploy() {
+      this.$refs.infoForm.validate(valid => {
+        if (valid) {
+          this.deployment.r_start_time = Math.round(new Date(this.deployment.r_start_time).getTime() / 1000)
+          this.deployment.r_end_time = Math.round(new Date(this.deployment.r_end_time).getTime() / 1000)
+          addWorks(this.deployment).then(response => {
+            this.deployment.dialogFormVisible = false
+            this.$message({
+              message: '操作成功！',
+              type: 'success',
+              duration: 4 * 1000
+            })
+            this.loadWorkArr()
+          }).catch(() => {
+            this.$message({
+              message: '操作失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
+          })
+        }
       })
     }
   },
