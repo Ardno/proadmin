@@ -36,3 +36,11 @@ export function getLatlonArr(data) { // 查询部门附近人员
     data: data
   })
 }
+
+export function getLocationsArr(data) { // 查询最近坐标
+  return fetch({
+    url: 'locations/list',
+    method: 'post',
+    data: data
+  })
+}

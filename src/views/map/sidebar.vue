@@ -74,26 +74,28 @@
         </p>
       </div>
     </el-dialog>
-    <!-- 人员估计查询 -->
+    <!-- 人员轨迹查询 -->
     <el-dialog title="人员轨迹" width="600px"   :visible.sync="trajectory.dialogFormVisible"  >
-      <el-form class="small-space" :model="trajectory" ref="trajectoryForm" label-position="right" label-width="120px">
-        <el-form-item label="人员姓名">
-          <el-select v-model="trajectory.userid"  filterable placeholder="请选择">
+      <el-form class="small-space" :model="trajectory" ref="trajectoryForm" :rules="trajectory.infoRules" label-position="right" label-width="120px">
+        <el-form-item label="人员姓名" prop="bind_id">
+          <el-select v-model="trajectory.bind_id"  filterable placeholder="请选择">
             <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="日期范围">
+        <el-form-item label="日期范围" prop="daterange">
           <el-date-picker
             v-model="trajectory.daterange"
-            type="daterange"
-            placeholder="选择日期范围">
+            type="daterange" 
+            start-placeholder="开始日期"
+            :picker-options="pickerOptions1"
+            end-placeholder="结束日期" @change="formatDaterange">
           </el-date-picker>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="trajectory.dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="showHistoryguij">确 定</el-button>
+        <el-button type="primary" @click="handelQuerloc">确 定</el-button>
       </div>
     </el-dialog>
   </div>
@@ -101,7 +103,7 @@
 
 
 <script>
-import { addRegion } from '@/api/grid'
+import { addRegion, getLocationsArr } from '@/api/grid'
 import Cookies from 'js-cookie'
 import { fetchList, fetchDepartments } from '@/api/department'
 import { isAccess } from '@/utils/auth'
@@ -120,9 +122,14 @@ export default {
       _polygonEditor: null,
       _polygon: null,
       mouseTool: null,
+      pickerOptions1: {
+        disabledDate(time) {
+          return time.getTime() > Date.now()
+        }
+      },
       requestAdd: {
         userid: [],
-        userids: '',
+        user_ids: '',
         department_id: '',
         name: '',
         list: []
@@ -146,8 +153,16 @@ export default {
       },
       trajectory: {
         dialogFormVisible: false,
-        userid: '',
-        daterange: ''
+        bind_id: '',
+        daterange: '',
+        bind_type: '0',
+        start_time: '',
+        end_time: '',
+        num: '',
+        infoRules: {
+          bind_id: [{ type: 'number', required: true, message: '请选择用户', trigger: 'blur' }],
+          daterange: [{ required: true, message: '请选择时间范围', trigger: 'change' }]
+        }
       }
     }
   },
@@ -177,7 +192,7 @@ export default {
     handleAdd() {
       this.$refs.infoForm.validate(valid => {
         if (valid) {
-          this.requestAdd.userids = this.requestAdd.userid.join(',')
+          this.requestAdd.user_ids = this.requestAdd.userid.join(',')
           addRegion(this.requestAdd).then(response => {
             this.regionobj.dialogFormVisible = false
             this.$emit('addRegion', true)
@@ -271,7 +286,7 @@ export default {
         // this.mouseTool.close(false) //关闭框选
       })
     },
-    showHistoryguij() {
+    showHistoryguij(path) {
       if (this.PathSimplifier) {
         const PathSimplifier = this.PathSimplifier
         // 创建组件实例
@@ -302,13 +317,14 @@ export default {
         // 这里构建两条简单的轨迹，仅作示例
         pathSimplifierIns.setData([{
           name: '轨迹0',
-          path: [
-            [114.085947, 22.54702],
-            [114.085003, 22.5492],
-            [114.081999, 22.550389],
-            [114.085604, 22.556175],
-            [114.09129, 22.566816]
-          ]
+          path: path
+          // path: [
+          //   [114.085947, 22.54702],
+          //   [114.085003, 22.5492],
+          //   [114.081999, 22.550389],
+          //   [114.085604, 22.556175],
+          //   [114.09129, 22.566816]
+          // ]
         }])
         // 创建一个巡航器
         const navg0 = pathSimplifierIns.createPathNavigator(0, // 关联第1条轨迹
@@ -319,6 +335,33 @@ export default {
         navg0.start()
         this.trajectory.dialogFormVisible = false
       }
+    },
+    handelQuerloc() {
+      this.$refs.trajectoryForm.validate(valid => {
+        if (valid) {
+          getLocationsArr(this.trajectory).then(response => {
+            if (!response.info.length) {
+              this.$message({
+                message: '当前时间段没有轨迹',
+                type: 'info',
+                duration: 4 * 1000
+              })
+            } else {
+              const path = []
+              response.info.forEach(element => {
+                const arr = [element.lat, element.lon]
+                path.push(arr)
+              })
+              this.showHistoryguij(path)
+            }
+          })
+        }
+      })
+    },
+    formatDaterange(val) {
+      this.trajectory.start_time = new Date(val[0]).getTime() / 1000
+      this.trajectory.end_time = new Date(val[1]).getTime() / 1000
+      console.log(this.trajectory)
     }
   }
 }

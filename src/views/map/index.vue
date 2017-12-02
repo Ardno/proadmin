@@ -234,6 +234,7 @@ export default {
               events: {
                 click: () => {
                   const obj = element
+                  this.regionobj.update = false
                   this.regionobj.dialogFormVisible = true
                   this.regionobj.name = obj.name
                   this.regionobj.department_id = obj.department_id
