@@ -57,7 +57,13 @@ export function getShiftsArr(data) { // 获取换班集合
     data: data
   })
 }
-
+export function addWorks(data) { // 临时调派
+  return fetch({
+    url: 'works/add',
+    method: 'post',
+    data: data
+  })
+}
 export function getWorksArr(data) { // 获取工作集合
   return fetch({
     url: 'works/list',

@@ -71,12 +71,37 @@
       </el-pagination>
     </div>
     <!-- 分页 -->
+    <el-dialog title="临时调派" :visible.sync="deployment.dialogFormVisiblee" width="600px" >
+      <el-form class="small-space" :model="deployment" :rules="infoRulese" ref="infoForme" label-position="right" label-width="100px">
+        <el-form-item label="区域" prop="region_id">
+          <el-select class="filter-item" v-model="deployment.region_id" placeholder="请选择">
+            <el-option v-for="item in  polygons" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="人员" prop="user_id">
+          <el-select class="filter-item" v-model="deployment.user_id" placeholder="请选择人员">
+            <el-option v-for="item in  userArr" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="设为主部门" >
+          <el-radio class="radio" v-model="depInfodep.department.is_enable"  :label="1">是</el-radio>
+          <el-radio class="radio" v-model="depInfodep.department.is_enable" :label="0">否</el-radio>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisiblee = false">取 消</el-button>
+        <el-button type="primary" @click="handleUpdatePeInfo('3')">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { fetchList } from '@/api/department'
-import { getWorksArr } from '@/api/levelshift'
+import { getWorksArr, addWorks } from '@/api/levelshift'
+import { getRegionArr } from '@/api/grid'
 import { isAccess, isUser } from '@/utils/auth'
 import store from '@/store'
 
@@ -96,6 +121,7 @@ export default {
       listLoading: false,
       workArr: [],
       userArr: [],
+      polygons: [],
       stateArr: [
         {
           id: 0,
@@ -107,7 +133,14 @@ export default {
           id: 2,
           name: '执行完毕'
         }
-      ]
+      ],
+      deployment: {
+        dialogFormVisiblee: false,
+        region_id: '',
+        user_id: '',
+        r_start_time: '',
+        r_end_time: ''
+      }
     }
   },
   methods: {
@@ -158,6 +191,11 @@ export default {
   created() {
     fetchList({ start_index: 0, length: 10000 }).then(response => {
       this.userArr = response.info.list.filter(obj => {
+        return !obj.status
+      })
+    })
+    getRegionArr({ start_index: 0, length: 10000 }).then(response => {
+      this.polygons = response.info.list.filter(obj => {
         return !obj.status
       })
     })
