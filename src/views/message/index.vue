@@ -51,7 +51,7 @@ import { getSmsList, readSms } from '@/api/message'
 export default {
   data() {
     return {
-      defaultImg: 'this.onerror=null;this.src="' + require('../../assets/login_images/avatar.png') + '"',
+      defaultImg: 'this.onerror=null;this.src="' + avatar + '"',
       avatar: avatar,
       zuijingArr: [],
       lishiArr: [],

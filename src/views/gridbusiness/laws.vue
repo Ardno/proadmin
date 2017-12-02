@@ -14,38 +14,38 @@
       </div>
       <el-table :key='tableKey' :data="dataList" :default-sort = "{prop: '_id', order: 'ascending'}" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
         <el-table-column  prop="_id" align="center" label="序号" sortable width="100px">
-          <template scope="scope">
+          <template slot-scope="scope">
             <span>{{scope.row._id}}</span>
           </template>
         </el-table-column>
         <el-table-column width="180px" align="center" label="添加时间">
-          <template scope="scope">
+          <template slot-scope="scope">
             <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
           </template>
         </el-table-column>
         <el-table-column align="center" width="120px" label="名称">
-          <template scope="scope">
+          <template slot-scope="scope">
             <span>{{scope.row.name}}</span>
           </template>
         </el-table-column>
         <el-table-column align="center" width="120px" label="所属部门">
-          <template scope="scope">
+          <template slot-scope="scope">
             <span>{{filterDepRegu(scope.row.department_id,true)}}</span>
           </template>
         </el-table-column>
         <el-table-column align="center" width="120px" label="上级法规">
-          <template scope="scope">
+          <template slot-scope="scope">
             <span>{{filterDepRegu(scope.row.regu_id,false)}}</span>
           </template>
         </el-table-column>
         <el-table-column align="center"  label="内容">
-          <template scope="scope">
+          <template slot-scope="scope">
             <div class="cts">{{scope.row.content}}</div>
           </template>
         </el-table-column>
         <el-table-column align="center" label="操作" width="100" v-if="isAccess('142')">
-          <template scope="scope">
-            <el-button size="small" type="success" @click="updateRegu(scope.row)">修改
+          <template slot-scope="scope">
+            <el-button size="small" type="primary" @click="updateRegu(scope.row)">修改
             </el-button>
           </template>
         </el-table-column>
@@ -63,7 +63,7 @@
         </el-pagination>
       </div>
       <!-- 分页 -->
-      <el-dialog :title="titlea" size="tiny" @close="closeCall" :visible.sync="dialogFormVisible">
+      <el-dialog :title="titlea" width="600px"  @close="closeCall" :visible.sync="dialogFormVisible">
         <el-form label-position="right" label-width="80px" :rules="infoRules" ref="infoForm" :model="duty">
           <el-form-item label="上级法规" >
             <el-select class="filter-item" filterable style="width: 130px" v-model="duty.regu_id" placeholder="请选择">

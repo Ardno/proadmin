@@ -8,7 +8,7 @@
             <img src="//tva1.sinaimg.cn/crop.0.0.512.512.180/6a4acad5jw8eqi6yaholjj20e80e8t9f.jpg">
             <span>{{item.name}}</span>
             <i v-if="colseim === index" class="layui-icon">
-              <icon-svg icon-class="icon-shanchu" />
+              <svg-icon icon-class="icon-shanchu" />
             </i>
           </li>
         </ul> -->
@@ -24,16 +24,16 @@
             </div>
             <span class="layui-layer-setwin">
               <!-- <span @click="minchatck=true">
-                <icon-svg icon-class="icon-iconmianxingshujujian" />
+                <svg-icon icon-class="icon-iconmianxingshujujian" />
               </span> -->
               <!-- <span>
-                <icon-svg icon-class="fullscreen" />
+                <svg-icon icon-class="fullscreen" />
               </span> -->
               <span v-if="activeItem.type === 4" @click="groupFlg=true" >
-                <icon-svg  icon-class="qunzu" />
+                <svg-icon  icon-class="qunzu" />
               </span>
               <span @click="togglechatck">
-                <icon-svg  icon-class="close" />
+                <svg-icon  icon-class="close" />
               </span>
             </span>
           </div>
@@ -50,7 +50,7 @@
                     <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
                   </div>   
                   <span v-if="list.success == 1" class="spinrose mr10 activespin"></span>
-                  <span v-if="list.success == 3" title="重新发送" @click="repeatSendMsg(list)" class="dib f24 g9 mt30 poi mr10"><icon-svg icon-class="refresh" /></span>
+                  <span v-if="list.success == 3" title="重新发送" @click="repeatSendMsg(list)" class="dib f24 g9 mt30 poi mr10"><svg-icon icon-class="refresh" /></span>
                   <div class="layim-chat-text" v-if="list.content.msg_type=='text'" v-html="list.content.msg_body.text">
                   </div>
                   <div class="layim-chat-img" v-else-if="list.content.msg_type=='image'" ><img :style="{width:cpount(list.content.msg_body.width, list.content.msg_body.height, true),height:cpount(list.content.msg_body.width, list.content.msg_body.height, false)}" @click="showImg(list.content.msg_body.media_url)" :src="list.content.msg_body.media_url" alt=""></div>
@@ -77,19 +77,19 @@
             <!-- 工具栏 -->
             <div class="layim-chat-tool">
               <span class="layui-icon layim-tool-image g9" title="上传图片" layim-event="image">
-                <icon-svg icon-class="picture" />
+                <svg-icon icon-class="picture" />
                 <input type="file" name="file" @change="sendPicEmit" id="sendPic"></span>
               <span class="layui-icon layim-tool-image g9" style="font-size:19px" title="发送文件" layim-event="image" data-type="file">
-                <icon-svg icon-class="icon-wenjian" />
+                <svg-icon icon-class="icon-wenjian" />
                 <input type="file" name="file" @change="sendFileEmit" id="sendFile"></span>
               <!-- <span class="layui-icon layim-tool-audio g9" style="font-size:21px" title="发送网络音频" layim-event="media" data-type="audio">
-                <icon-svg icon-class="icon-erji" />
+                <svg-icon icon-class="icon-erji" />
               </span>
               <span class="layui-icon layim-tool-video g9" title="发送网络视频" layim-event="media" data-type="video">
-                <icon-svg icon-class="video" />
+                <svg-icon icon-class="video" />
               </span> -->
               <span class="layim-tool-log" layim-event="chatLog">
-                <icon-svg class="f20 g9" icon-class="time" />
+                <svg-icon class="f20 g9" icon-class="time" />
                 <i>聊天记录</i>
               </span>
             </div>
@@ -111,7 +111,7 @@
             <div class="group-setting-title">
               群信息
               <span class="r poi" @click="groupFlg=false">
-                <icon-svg  icon-class="close" />
+                <svg-icon  icon-class="close" />
               </span>
             </div>
             <div class="group-setting-info fix">
@@ -134,9 +134,9 @@
               <img class="avatar l" :src="obj.avatar" :onerror="defaultImg(activeItem.avatarUrl)" alt="">
               <div class="ml40 ovh" style="line-height:50px;height:50px">
                 <span class="dib w150 ell">{{ obj.nickname||obj.username}}</span>
-                <span v-if="obj.flag" class="r blue mr10" title="群主"><icon-svg  icon-class="qunzhuhuangguan" /></span>
+                <span v-if="obj.flag" class="r blue mr10" title="群主"><svg-icon  icon-class="qunzhuhuangguan" /></span>
               </div>
-              <span v-if="isqunzhu" v-show="!obj.flag" class="poi close" @click="JIMdelGroupMembers(obj,index)"><icon-svg  icon-class="close" /></span>
+              <span v-if="isqunzhu" v-show="!obj.flag" class="poi close" @click="JIMdelGroupMembers(obj,index)"><svg-icon  icon-class="close" /></span>
             </li>
           </ul>
         </div>
@@ -160,7 +160,7 @@
       </div>
     </transition>
     <!-- 添加群成员 -->
-    <el-dialog title="添加群成员" size="small" class="custom-dialog" :visible.sync="addpersonGroup.dialogVisible">
+    <el-dialog title="添加群成员" class="custom-dialog" :visible.sync="addpersonGroup.dialogVisible">
       <div>
         <span class="mb10 db">群成员</span>
         <el-transfer filterable :filter-method="addpersonGroup.filterMethod" filter-placeholder="请输入用户名"  v-model="addpersonGroup.value" :data="addpersonGroup.data">
@@ -318,13 +318,13 @@ export default {
           const element = this.msgs[index]
           if (element.content.msg_type === 'image' || element.content.msg_type === 'file') {
             this.JIM.getResource({ media_id: element.content.msg_body.media_id })
-            .onSuccess((urlInfo) => {
-              this.$set(this.msgs[index].content.msg_body, 'media_url', urlInfo.url)
-            }).onFail((errr) => {
-              if (!this.msgs[index].content.msg_body.media_url) {
-                this.$set(this.msgs[index].content.msg_body, 'media_url', '')
-              }
-            })
+              .onSuccess((urlInfo) => {
+                this.$set(this.msgs[index].content.msg_body, 'media_url', urlInfo.url)
+              }).onFail((errr) => {
+                if (!this.msgs[index].content.msg_body.media_url) {
+                  this.$set(this.msgs[index].content.msg_body, 'media_url', '')
+                }
+              })
           }
         }
       } else {
@@ -391,7 +391,7 @@ export default {
         },
         ctime_ms: new Date().getTime(),
         success: 1,
-        msgKey: resl.msgKey || this.msgKey ++
+        msgKey: resl.msgKey || this.msgKey++
       }
       if (activePerson.type === 3) {
         const singleMsg = {
@@ -477,7 +477,7 @@ export default {
           },
           ctime_ms: new Date().getTime(),
           success: 1,
-          msgKey: this.msgKey ++,
+          msgKey: this.msgKey++,
           unread_count: 0
         }
         // 发送单聊图片
@@ -557,7 +557,7 @@ export default {
           },
           ctime_ms: (new Date()).getTime(),
           success: 1,
-          msgKey: this.msgKey ++,
+          msgKey: this.msgKey++,
           unread_count: 0
         }
         // 发送单聊文件
@@ -619,47 +619,46 @@ export default {
     },
     JIMsendSingleMsg(singleMsg, msgs) { // 发送单人文本消息
       this.JIM.sendSingleMsg(singleMsg)
-      .onSuccess((data, msg) => {
-        this.sendMsgComplete(true, msg, msgs)
-      }).onFail((erros) => {
-        this.sendMsgComplete(false, '', msgs)
-      }).onTimeout((data) => {
-        this.sendMsgComplete(false, '', msgs)
-      })
+        .onSuccess((data, msg) => {
+          this.sendMsgComplete(true, msg, msgs)
+        }).onFail((erros) => {
+          this.sendMsgComplete(false, '', msgs)
+        }).onTimeout((data) => {
+          this.sendMsgComplete(false, '', msgs)
+        })
     },
     sendGroupMsg(groupMsg, msgs) { // 发送群组文本消息
       this.JIM.sendGroupMsg(groupMsg)
-      .onSuccess((data, msg) => {
-        this.sendMsgComplete(true, msg, msgs)
-      }).onFail((erros) => {
-        this.sendMsgComplete(false, '', msgs)
-      }).onTimeout((data) => {
-        this.sendMsgComplete(false, '', msgs)
-      })
+        .onSuccess((data, msg) => {
+          this.sendMsgComplete(true, msg, msgs)
+        }).onFail((erros) => {
+          this.sendMsgComplete(false, '', msgs)
+        }).onTimeout((data) => {
+          this.sendMsgComplete(false, '', msgs)
+        })
     },
     JIMsendSinglePic(singlePicFormData, msgs) { // 发送单人图片消息
       this.JIM.sendSinglePic(singlePicFormData)
-      .onSuccess((data, msg) => {
-        this.sendMsgComplete(true, msg, msgs)
-      }).onFail((erros) => {
-        this.sendMsgComplete(false, '', msgs)
-      }).onTimeout((data) => {
-        this.sendMsgComplete(false, '', msgs)
-      })
+        .onSuccess((data, msg) => {
+          this.sendMsgComplete(true, msg, msgs)
+        }).onFail((erros) => {
+          this.sendMsgComplete(false, '', msgs)
+        }).onTimeout((data) => {
+          this.sendMsgComplete(false, '', msgs)
+        })
     },
     JIMsendGroupPic(groupPicFormData, msgs) { // 发送群组图片消息
       this.JIM.sendGroupPic(groupPicFormData)
-      .onSuccess((data, msg) => {
-        this.sendMsgComplete(true, msg, msgs)
-      }).onFail((erros) => {
-        this.sendMsgComplete(false, '', msgs)
-      }).onTimeout((data) => {
-        this.sendMsgComplete(false, '', msgs)
-      })
+        .onSuccess((data, msg) => {
+          this.sendMsgComplete(true, msg, msgs)
+        }).onFail((erros) => {
+          this.sendMsgComplete(false, '', msgs)
+        }).onTimeout((data) => {
+          this.sendMsgComplete(false, '', msgs)
+        })
     },
     JIMsendSingleFile(singleFileData, msgs) { // 发送单人文件消息
-      this.JIM.sendSingleFile(singleFileData)
-      .onSuccess((data, msg) => {
+      this.JIM.sendSingleFile(singleFileData).onSuccess((data, msg) => {
         this.sendMsgComplete(true, msg, msgs)
       }).onFail((erros) => {
         this.sendMsgComplete(false, '', msgs)
@@ -669,13 +668,13 @@ export default {
     },
     JIMsendGroupFile(groupFileData, msgs) { // 发送群组文件消息
       this.JIM.sendGroupFile(groupFileData)
-      .onSuccess((data, msg) => {
-        this.sendMsgComplete(true, msg, msgs)
-      }).onFail((erros) => {
-        this.sendMsgComplete(false, '', msgs)
-      }).onTimeout((data) => {
-        this.sendMsgComplete(false, '', msgs)
-      })
+        .onSuccess((data, msg) => {
+          this.sendMsgComplete(true, msg, msgs)
+        }).onFail((erros) => {
+          this.sendMsgComplete(false, '', msgs)
+        }).onTimeout((data) => {
+          this.sendMsgComplete(false, '', msgs)
+        })
     },
     sendMsgComplete(flg, msg, msgs) { // 发送消息完成
       if (this.messageList[this.activeItem.id]) {
@@ -686,17 +685,17 @@ export default {
               this.setHistoryIm(msgs)
               if (msg.content.msg_type === 'image' || msg.content.msg_type === 'file') {
                 this.JIM.getResource({ media_id: msg.content.msg_body.media_id })
-                .onSuccess((urlInfo) => {
-                  arr[index].success = 2
-                  msg.content.msg_body.media_url = urlInfo.url
-                  arr[index] = msg
-                  // this.$set(this.msgs[index].content.msg_body, 'media_url', urlInfo.url)
-                }).onFail((errr) => {
-                  // this.$set(this.msgs[index].content.msg_body, 'media_url', '')
-                  arr[index].success = 2
-                  msg.content.msg_body.media_url = ''
-                  arr[index] = msg
-                })
+                  .onSuccess((urlInfo) => {
+                    arr[index].success = 2
+                    msg.content.msg_body.media_url = urlInfo.url
+                    arr[index] = msg
+                    // this.$set(this.msgs[index].content.msg_body, 'media_url', urlInfo.url)
+                  }).onFail((errr) => {
+                    // this.$set(this.msgs[index].content.msg_body, 'media_url', '')
+                    arr[index].success = 2
+                    msg.content.msg_body.media_url = ''
+                    arr[index] = msg
+                  })
               } else {
                 arr[index].success = 2
                 arr[index] = msg
@@ -813,7 +812,7 @@ export default {
             duration: 4 * 1000
           })
         }).onFail((data) => {
-            // 同上
+          // 同上
           this.$message({
             message: '删除失败，请稍后再试',
             type: 'error'
@@ -1072,7 +1071,7 @@ export default {
           width: 50px;
           height: 50px;
           margin-right: 18px;
-          background: url(../../assets/icon/file-logo.svg) center center no-repeat;
+          background: url(~assets/icon/file-logo.svg) center center no-repeat;
           background-size: 50px;
         }
         .text{
@@ -1229,7 +1228,7 @@ export default {
   width: 24px;
   height: 24px;
   margin-top: 32px;
-  background: url(../../assets/icon/icon-spin-s.png) no-repeat center;
+  background: url(~assets/icon/icon-spin-s.png) no-repeat center;
   background-size: cover;
 }
 .activespin{

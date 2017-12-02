@@ -4,7 +4,7 @@
       <el-col :span="6" class="pl15 pr15">
         <div class="panel fix">
           <div class="symbol terques">
-            <i class="fa fa-user"><icon-svg icon-class="inx-02" /></i>
+            <i class="fa fa-user"><svg-icon icon-class="inx-02" /></i>
           </div>
           <div class="value">
             <h1 class="count">2</h1>
@@ -15,7 +15,7 @@
       <el-col :span="6">
         <div class="panel fix">
           <div class="symbol red">
-            <i class="fa fa-user"><icon-svg icon-class="inx-04" /></i>
+            <i class="fa fa-user"><svg-icon icon-class="inx-04" /></i>
           </div>
           <div class="value">
             <h1 class="count">12</h1>
@@ -26,7 +26,7 @@
       <el-col :span="6">
         <div class="panel fix">
           <div class="symbol yellow">
-            <i class="fa fa-user"><icon-svg icon-class="addressbook" /></i>
+            <i class="fa fa-user"><svg-icon icon-class="addressbook" /></i>
           </div>
           <div class="value">
             <h1 class="count">11</h1>
@@ -37,7 +37,7 @@
       <el-col :span="6">
         <div class="panel fix">
           <div class="symbol blue">
-            <i class="fa fa-user"><icon-svg icon-class="inx-03" /></i>
+            <i class="fa fa-user"><svg-icon icon-class="inx-03" /></i>
           </div>
           <div class="value">
             <h1 class="count">123</h1>
@@ -58,7 +58,7 @@
         </div>
       </el-col>
     </el-row>
-    <el-row :gutter="20">
+    <el-row class="mt20" :gutter="20">
       <el-col :span="8">
         <div class='chart-container chat-pie pt30'>
           <div class="chat"  id="pie1" ></div>
@@ -359,6 +359,7 @@ export default {
     &.chat-pie{
       height: 350px;
     }
+    background-color: #fff;
   }
   .chat{
     width: 100%;
@@ -367,8 +368,8 @@ export default {
   .panel{
     margin-bottom: 20px;
     background-color: #fff;
-    border: 1px solid transparent;
     border-radius: 4px;
+    box-shadow: 4px 4px 40px rgba(0,0,0,.05);
   }
   .terques{
     background-color: #6ccac9;

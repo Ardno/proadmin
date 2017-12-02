@@ -4,18 +4,18 @@
       <h3 class="title">崖州网格系统</h3>
       <el-form-item prop="username">
         <span class="svg-container svg-container_login">
-          <icon-svg icon-class="user" />
+          <svg-icon icon-class="user" />
         </span>
         <el-input name="username" type="text" v-model="loginForm.username" autoComplete="on" placeholder="手机号" />
       </el-form-item>
 
       <el-form-item prop="password">
         <span class="svg-container">
-          <icon-svg icon-class="password" />
+          <svg-icon icon-class="password" />
         </span>
         <el-input name="password" :type="pwdType" @keyup.enter.native="handleLogin" v-model="loginForm.password" autoComplete="on" placeholder="密码" />
         <span class='show-pwd' @click='showPwd'>
-          <icon-svg icon-class="eye" />
+          <svg-icon icon-class="eye" />
         </span>
       </el-form-item>
 

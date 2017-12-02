@@ -11,63 +11,63 @@
 
     <el-table :key='tableKey' :data="list" :default-sort = "{prop: '_id', order: 'ascending'}" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column  prop="_id" align="center" label="序号" sortable width="100px">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row._id}}</span>
         </template>
       </el-table-column>
-      <el-table-column width="180px" align="center" label="加入时间">
-        <template scope="scope">
+      <el-table-column width="180" align="center" label="加入时间">
+        <template slot-scope="scope">
           <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" width="110px" label="姓名">
-        <template scope="scope">
+      <el-table-column align="center" width="110" label="姓名">
+        <template slot-scope="scope">
           <span>{{scope.row.name}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" width="80px" label="性别">
-        <template scope="scope">
+      <el-table-column align="center" width="80" label="性别">
+        <template slot-scope="scope">
           <span>{{scope.row.sex | sexFileter}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" width="80px" label="民族">
-        <template scope="scope">
+      <el-table-column align="center" width="80" label="民族">
+        <template slot-scope="scope">
           <span>{{scope.row.nation}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" width="180px" label="手机号码">
-        <template scope="scope">
+      <el-table-column align="center" width="180" label="手机号码">
+        <template slot-scope="scope">
           <span>{{scope.row.mobile}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" width="110px" label="生日">
-        <template scope="scope">
+      <el-table-column align="center" width="110" label="生日">
+        <template slot-scope="scope">
           <span>{{scope.row.birthday | parseTime('{y}-{m}-{d}')}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" width="110px" label="状态">
-        <template scope="scope">
-          <el-tag v-if="scope.row.status == '0'" type="success">正常</el-tag>
+      <el-table-column align="center" width="110" label="状态">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.status == '0'" type="primary">正常</el-tag>
           <el-tag v-if="scope.row.status == '1'" type="danger">离职</el-tag>
           <el-tag v-if="scope.row.status == '2'" type="warning">审核中</el-tag>
         </template>
       </el-table-column>
       <el-table-column align="center" label="部门">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{filterDepRose(scope.row.department_roles,true)}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="职位">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{filterDepRose(scope.row.department_roles,false)}}</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="250">
-        <template scope="scope">
-          <el-button size="small" v-if="isAccess('12')" type="success" @click="handleUpdateDa(scope.row)">修改
+      <el-table-column align="center" label="操作" width="300">
+        <template slot-scope="scope">
+          <el-button size="small" v-if="isAccess('12')" type="primary" @click="handleUpdateDa(scope.row)">修改
           </el-button>
-          <el-button :plain="true" v-if="isAccess('13')" size="small" type="success" @click="handlePwd(scope.row)">重置密码</el-button>
-          <el-button :plain="true" v-if="isAccess('14')" size="small" type="success" @click="handleKaoq(scope.row)">设置考勤</el-button>
+          <el-button :plain="true" v-if="isAccess('13')" size="small" type="primary" @click="handlePwd(scope.row)">重置密码</el-button>
+          <el-button :plain="true" v-if="isAccess('14')" size="small" type="primary" @click="handleKaoq(scope.row)">设置考勤</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -130,7 +130,7 @@
         <el-button type="primary" @click="handleUpdate">确 定</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="设置考勤规则" size="tiny" :visible.sync="dialogFormVisiblek" class="customxing">
+    <el-dialog title="设置考勤规则" width="600px"  :visible.sync="dialogFormVisiblek" class="customxing">
       <el-select  class="filter-item" v-model="reqkaoq.dance_config_id" placeholder="默认规则">
         <el-option v-for="item in  kaoqingArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>

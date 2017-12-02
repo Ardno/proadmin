@@ -19,7 +19,7 @@
             <el-tabs v-model="activeName" @tab-click="handleClick">
               <el-tab-pane name="first">
                 <span slot="label">
-                  <icon-svg icon-class="message_fill" />
+                  <svg-icon icon-class="message_fill" />
                 </span>
                 <ul @mouseenter="hoverflow('on')" @mouseleave="hoverflow('off')" class="layim-tab-content layui-show" :style="{overflow:overflow}">
                   <li>
@@ -47,7 +47,7 @@
               </el-tab-pane>
               <el-tab-pane name="second">
                 <span slot="label">
-                  <icon-svg icon-class="people_fill" />
+                  <svg-icon icon-class="people_fill" />
                 </span>
                 <el-collapse :style="{overflow:'auto'}" class="layim-tab-content">
                   <el-collapse-item v-for="(flist, index) in friend_list" :key="index" >
@@ -68,7 +68,7 @@
               </el-tab-pane>
               <el-tab-pane name="third">
                 <span slot="label">
-                  <icon-svg icon-class="group_fill" />
+                  <svg-icon icon-class="group_fill" />
                 </span>
                 <ul @mouseenter="hoverflow('on')" @mouseleave="hoverflow('off')" class="layim-tab-content" :style="{overflow:overflow}">
                   <li>
@@ -87,26 +87,26 @@
             <!-- 底部 -->
             <ul class="layui-unselect layui-layim-tool">
               <li class="layui-icon layim-tool-search" @click="searchflg=true" title="搜索">
-                <icon-svg icon-class="icon-fangdajing" />
+                <svg-icon icon-class="icon-fangdajing" />
               </li>
               <li class="layui-icon layim-tool-msgbox " title="消息盒子">
-                <icon-svg icon-class="icon-laba" />
+                <svg-icon icon-class="icon-laba" />
                 <span v-if="totalCount" class="layui-anim layui-anim-loop layer-anim-05">{{totalCount}}</span>
               </li>
               <li class="layui-icon layim-tool-find" @click="creatGroup.dialogVisible = true" title="创建群">
-                <icon-svg icon-class="icon-jia1" />
+                <svg-icon icon-class="icon-jia1" />
               </li>
               <li class="layui-icon layim-tool-skin" title="更换背景">
-                <icon-svg icon-class="icon-pifu" />
+                <svg-icon icon-class="icon-pifu" />
               </li>
               <li class="layui-icon layim-tool-about" title="关于">
-                <icon-svg icon-class="icon-guanyu" />
+                <svg-icon icon-class="icon-guanyu" />
               </li>
             </ul>
             <div class="layui-layim-search" v-if="searchflg" style="display: block;">
               <input>
               <label class="layui-icon" layim-event="closeSearch" @click="searchflg=false">
-                <icon-svg icon-class="close" />
+                <svg-icon icon-class="close" />
               </label>
             </div>
           </div>
@@ -114,7 +114,7 @@
         </div>
         <!-- 主体 -->
         <span class="layui-layer-setwin"  @click="colseIm=true">
-          <icon-svg class="layui-layer-ico layui-layer-close layui-layer-close1" icon-class="close" />
+          <svg-icon class="layui-layer-ico layui-layer-close layui-layer-close1" icon-class="close" />
         </span>
       </div>
     </transition>
@@ -127,7 +127,7 @@
     <transition name="el-fade-in-linear">
        <chatck :closechatck.sync="closechatck" :activeUser="activeUser" :newmsg="newmsg" ></chatck>
     </transition>
-    <el-dialog title="创建群成员" size="small" class="custom-dialog" :visible.sync="creatGroup.dialogVisible">
+    <el-dialog title="创建群成员"  class="custom-dialog" :visible.sync="creatGroup.dialogVisible">
       <div class="pl40">
         <div class="mb10">
           <span class="mb10 db">群名称</span>
@@ -310,7 +310,7 @@ export default {
             arr[0].unread_msg_count = 0
           } else {
             arr[0].unread_msg_count++ // 消息+1
-            this.totalCount ++
+            this.totalCount++
           }
           this.conversations.unshift(arr[0])
           break
@@ -577,7 +577,7 @@ export default {
         errorApiTip(error)
       })
     },
-    JIMcreateGroup(data) {  // 创建群组
+    JIMcreateGroup(data) { // 创建群组
       this.JIM.createGroup(data).onSuccess((res) => {
         const member_usernames = []
         data.usernames.forEach(element => {

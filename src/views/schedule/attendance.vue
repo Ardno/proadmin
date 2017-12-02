@@ -8,49 +8,49 @@
         </div>
         <el-table :key='tableKey' :data="adclist" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
           <!-- <el-table-column align="center" label="序号" width="65">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row._id}}</span>
             </template>
           </el-table-column> -->
           <el-table-column width="180px" align="center" label="创建时间">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
             </template>
           </el-table-column>
           <el-table-column align="center" label="考勤规则名称">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.name}}</span>
             </template>
           </el-table-column>
           <el-table-column align="center" label="区域名称">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.regionname}}</span>
             </template>
           </el-table-column>
           <el-table-column align="center" label="状态">
-            <template scope="scope">
-              <el-tag v-if="scope.row.status == '0'" type="success">正常</el-tag>
+            <template slot-scope="scope">
+              <el-tag v-if="scope.row.status == '0'" type="primary">正常</el-tag>
               <el-tag v-if="scope.row.status == '1'" type="danger">已失效</el-tag>
             </template>
           </el-table-column>
           <el-table-column align="center" label="执行日期">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.atte_type | statusFilter(scope.row.day_time)}}</span>
             </template>
           </el-table-column>
           <el-table-column align="center" label="开始时间">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.start_time}}</span>
             </template>
           </el-table-column>
           <el-table-column align="center" label="结束时间">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.end_time}}</span>
             </template>
           </el-table-column>
           <el-table-column align="center" label="操作" width="190">
-            <template scope="scope">
-              <el-button size="small" type="success" v-if="isAccess('42')"  @click="handleUpdateDa(scope.row)">修改
+            <template slot-scope="scope">
+              <el-button size="small" type="primary" v-if="isAccess('42')"  @click="handleUpdateDa(scope.row)">修改
               </el-button>
               <el-button size="small" type="danger" v-if="isAccess('43')" v-show="!scope.row.status && scope.row._id!==1" @click="updateStaus(scope.row)">停用
               </el-button>

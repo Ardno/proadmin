@@ -91,7 +91,7 @@ export function getQueryObject(url) {
 export function getByteLen(val) {
   let len = 0
   for (let i = 0; i < val.length; i++) {
-    if (val[i].match(/[^\x00-\xff]/ig) != null) {
+    if (val[i].match('/[^\x00-\xff]/ig') != null) {
       len += 1
     } else { len += 0.5 }
   }
@@ -307,8 +307,8 @@ export function TreeUtil(data, key, parentKey, map) {
   this.data = data
   this.key = key
   this.parentKey = parentKey
-  this.treeParentKey = parentKey   // parentKey要转换成什么属性名称
-  this.treeKey = key           // key要转换成什么属性名称
+  this.treeParentKey = parentKey // parentKey要转换成什么属性名称
+  this.treeKey = key // key要转换成什么属性名称
   this.map = map
   if (map) {
     if (map[key]) this.treeKey = map[key]
@@ -364,7 +364,7 @@ export function TreeUtil(data, key, parentKey, map) {
     return _temp
   }
 }
- /**
+/**
  * 数组根据数组对象中的某个属性值进行排序的方法
  * 使用例子：newArray.sort(sortBy('number',false)) //表示根据number属性降序排列;若第二个参数不传递，默认表示升序排序
  * @param attr 排序的属性 如number属性
@@ -442,4 +442,9 @@ export function reducerDate(msgTime) {
     showTime = ''
   }
   return showTime
+}
+// get dependencies verison from package.json
+export function getVersion(name) {
+  const p = require('../../package')
+  return p.dependencies[name]
 }

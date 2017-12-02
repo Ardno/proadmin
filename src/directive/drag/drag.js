@@ -1,10 +1,10 @@
 export default {
   bind(el, binding) {
     const oDiv = el
-   // const self = this  // 上下文
+    // const self = this  // 上下文
     oDiv.onmousedown = function(e) {
       // 鼠标按下，计算当前元素距离可视区的距离
-      const pDiv = el.parentNode   // 当前的父元素
+      const pDiv = el.parentNode // 当前的父元素
       oDiv.style.cursor = 'move'
       const disX = e.clientX - pDiv.offsetLeft
       const disY = e.clientY - pDiv.offsetTop

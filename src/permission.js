@@ -3,6 +3,8 @@ import store from './store'
 import NProgress from 'nprogress' // Progress 进度条
 import 'nprogress/nprogress.css'// Progress 进度条样式
 import { getToken, getUserid } from '@/utils/auth' // 验权
+import { Message } from 'element-ui'
+
 // permissiom judge
 function hasPermission(roles, permissionRoles) {
   if (roles.indexOf('admin') >= 0) return true // admin权限 直接通过
@@ -10,13 +12,14 @@ function hasPermission(roles, permissionRoles) {
   return roles.some(role => permissionRoles.indexOf(role) >= 0)
 }
 
-// register global progress.
 const whiteList = ['/login', '/authredirect']// 不重定向白名单
+
 router.beforeEach((to, from, next) => {
   NProgress.start() // 开启Progress
   if (getToken()) { // 判断是否有token
     if (to.path === '/login') {
       next({ path: '/' })
+      NProgress.done() // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
     } else {
       if (store.getters.roles.length === 0) { // 判断当前用户是否已拉取完user_info信息
         store.dispatch('GetUserInfo', getUserid()).then(res => { // 拉取user_info
@@ -31,6 +34,7 @@ router.beforeEach((to, from, next) => {
           })
         }).catch(() => {
           store.dispatch('FedLogOut').then(() => {
+            Message.error('验证失败,请重新登录')
             next({ path: '/login' })
           })
         })
@@ -40,6 +44,7 @@ router.beforeEach((to, from, next) => {
           next()//
         } else {
           next({ path: '/401', query: { noGoBack: true }})
+          NProgress.done() // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
         }
         // 可删 ↑
       }
@@ -49,7 +54,7 @@ router.beforeEach((to, from, next) => {
       next()
     } else {
       next('/login') // 否则全部重定向到登录页
-      NProgress.done() // 在hash模式下 改变手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
+      NProgress.done() // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
     }
   }
 })

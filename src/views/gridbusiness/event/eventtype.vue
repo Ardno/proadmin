@@ -10,39 +10,39 @@
     </div>
     <el-table :key='tableKey' :data="eventArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column align="center" label="序号" width="65">
-      <template scope="scope">
+      <template slot-scope="scope">
           <span>{{scope.row._id}}</span>
       </template>
       </el-table-column>
       <el-table-column align="center" width="180px" label="类型名称">
-      <template scope="scope">
+      <template slot-scope="scope">
           <span>{{scope.row.name}}</span>
       </template>
       </el-table-column>
       <el-table-column width="180px" align="center" label="创建时间">
-      <template scope="scope">
+      <template slot-scope="scope">
           <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
       </template>
       </el-table-column>
       <el-table-column width="80" label="状态">
-      <template scope="scope">
-          <el-tag v-if="scope.row.status == '0'" type="success">正常</el-tag>
+      <template slot-scope="scope">
+          <el-tag v-if="scope.row.status == '0'" type="primary">正常</el-tag>
           <el-tag v-if="scope.row.status == '1'" type="danger">已失效</el-tag>
       </template>
       </el-table-column>
       <el-table-column align="center" label="部门">
-      <template scope="scope">
+      <template slot-scope="scope">
           <span>{{scope.row.deptname}}</span>
       </template>
       </el-table-column>
       <el-table-column align="center" label="步骤">
-      <template scope="scope">
+      <template slot-scope="scope">
           <span>{{conversionSteps(scope.row.step_ids)}}</span>
       </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="190">
-      <template scope="scope">
-          <el-button size="small" type="success" v-if="isAccess('82')" @click="updateshow(scope.row)">修改
+      <template slot-scope="scope">
+          <el-button size="small" type="primary" v-if="isAccess('82')" @click="updateshow(scope.row)">修改
           </el-button>
           <el-button size="small" type="danger" v-if="isAccess('82')" v-show="!scope.row.status" @click="updateStaus(scope.row)">失效
           </el-button>
@@ -104,7 +104,7 @@ export default {
         name: [{ required: true, trigger: 'blur', message: '请输入名称' }],
         dept_id: [{ type: 'number', required: true, trigger: 'blur', message: '请输入名称' }]
       },
-    //   activeName: 'first',
+      // activeName: 'first',
       depArr: [],
       eventArr: [],
       listLoading: false,
@@ -246,16 +246,16 @@ export default {
       getStepsArr({
         start_index: 0,
         length: 10000 }).then(res => {
-          this.allStepsArr = res.info.list
-        })
+        this.allStepsArr = res.info.list
+      })
     },
     changeStep(id) { //  获取部门下面的步骤集合
       getStepsArr({
         start_index: 0,
         length: 10000,
         department_id: id }).then(res => {
-          this.StepsArr = res.info.list
-        })
+        this.StepsArr = res.info.list
+      })
     },
     changeSteptype(arr) {
       this.eventInfo.step_ids = arr.join(',')

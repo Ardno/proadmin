@@ -7,7 +7,7 @@
                 <el-button type="info">创建form</el-button>
               </router-link>
           </div>
-          <el-button v-loading="loading" style="margin-left: 10px;" type="success" @click="submitForm()">保存
+          <el-button v-loading="loading" style="margin-left: 10px;" type="primary" @click="submitForm()">保存
           </el-button>
       </sticky>
       <div class="createPost-main-container">

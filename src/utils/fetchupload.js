@@ -14,7 +14,7 @@ const service = axios.create({
     return data
   }],
   baseURL: process.env.upload_API, // api的base_url
-  timeout: 15000,                  // 请求超时时间
+  timeout: 15000, // 请求超时时间
   responseType: 'json'
 })
 

@@ -3,37 +3,37 @@
     <ul class="rightbar">
       <li @click="reloadMap">
         <el-tooltip class="item" effect="dark" content="刷新地图" placement="left">
-          <span class="oico"><icon-svg icon-class="refresh" /></span>
+          <span class="oico"><svg-icon icon-class="refresh" /></span>
         </el-tooltip>
       </li>
       <li @click="mouseToolPolygon">
         <el-tooltip class="item" effect="dark" content="框选人员" placement="left">
-          <span class="oico"><icon-svg icon-class="addressbook" /></span>
+          <span class="oico"><svg-icon icon-class="addressbook" /></span>
         </el-tooltip>
       </li>
       <li @click="trajectory.dialogFormVisible = true">
         <el-tooltip class="item" effect="dark" content="历史轨迹" placement="left">
-          <span class="oico"><icon-svg icon-class="time" /></span>
+          <span class="oico"><svg-icon icon-class="time" /></span>
         </el-tooltip>
       </li>
       <!-- <li>
         <el-tooltip class="item" effect="dark" content="地图人员状态" placement="left">
-          <span class="oico"><icon-svg icon-class="addressbook" /></span>
+          <span class="oico"><svg-icon icon-class="addressbook" /></span>
         </el-tooltip>
       </li> -->
       <li @click="seeting.dialogFormVisible=true">
         <el-tooltip class="item" effect="dark" content="地图显示设置" placement="left">
-          <span class="oico"><icon-svg icon-class="setup" /></span>
+          <span class="oico"><svg-icon icon-class="setup" /></span>
         </el-tooltip>
       </li>
       <li v-if="isAccess('130')"  @click="addPolygon">
         <el-tooltip class="item" effect="dark" content="添加区域" placement="left">
-          <span class="oico"><icon-svg icon-class="editor" /></span>
+          <span class="oico"><svg-icon icon-class="editor" /></span>
         </el-tooltip>
       </li>
       <li v-if="isAccess('130')" @click="completePolygon">
         <el-tooltip class="item" effect="dark" content="完成区域编辑" placement="left">
-          <span class="oico"><icon-svg icon-class="success" /></span>
+          <span class="oico"><svg-icon icon-class="success" /></span>
         </el-tooltip>
       </li>
     </ul>
@@ -62,7 +62,7 @@
       </div>
     </el-dialog>
     <!-- 地图显示设置 -->
-    <el-dialog title="显示配置信息" size="tiny" @close="stcloseCall" :visible.sync="seeting.dialogFormVisible"  >
+    <el-dialog title="显示配置信息" width="600px"  @close="stcloseCall" :visible.sync="seeting.dialogFormVisible"  >
       <div>
         <p class="mb10">
           <span class="mr5">人员显示</span><el-switch on-text="" off-text="" v-model="seeting.person"></el-switch>
@@ -75,7 +75,7 @@
       </div>
     </el-dialog>
     <!-- 人员估计查询 -->
-    <el-dialog title="人员轨迹" size="tiny"  :visible.sync="trajectory.dialogFormVisible"  >
+    <el-dialog title="人员轨迹" width="600px"   :visible.sync="trajectory.dialogFormVisible"  >
       <el-form class="small-space" :model="trajectory" ref="trajectoryForm" label-position="right" label-width="120px">
         <el-form-item label="人员姓名">
           <el-select v-model="trajectory.userid"  filterable placeholder="请选择">
@@ -204,10 +204,10 @@ export default {
       const center = o.getCenter()
       const _polygon = function(lat, lon) {
         const arr = [ // 构建多边形经纬度坐标数组
-            [lat - 0.008, lon + 0.005],
-            [lat - 0.008, lon - 0.005],
-            [lat + 0.008, lon - 0.005],
-            [lat + 0.008, lon + 0.005]
+          [lat - 0.008, lon + 0.005],
+          [lat - 0.008, lon - 0.005],
+          [lat + 0.008, lon - 0.005],
+          [lat + 0.008, lon + 0.005]
         ]
         return new AMap.Polygon({
           map: o,
@@ -274,7 +274,7 @@ export default {
     showHistoryguij() {
       if (this.PathSimplifier) {
         const PathSimplifier = this.PathSimplifier
-         // 创建组件实例
+        // 创建组件实例
         const pathSimplifierIns = new PathSimplifier({
           zIndex: 100,
           map: this.mapobj.$$getInstance(), // 所属的地图实例
@@ -303,11 +303,11 @@ export default {
         pathSimplifierIns.setData([{
           name: '轨迹0',
           path: [
-              [114.085947, 22.54702],
-              [114.085003, 22.5492],
-              [114.081999, 22.550389],
-              [114.085604, 22.556175],
-              [114.09129, 22.566816]
+            [114.085947, 22.54702],
+            [114.085003, 22.5492],
+            [114.081999, 22.550389],
+            [114.085604, 22.556175],
+            [114.09129, 22.566816]
           ]
         }])
         // 创建一个巡航器

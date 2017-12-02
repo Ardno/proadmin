@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="lr-ct">
-      <div class="layui-elem-quote">
+      <div class="layui-elem-quote mb10">
         <span class="mr10 ">
           单位部门结构
         </span>
@@ -93,7 +93,7 @@
         </div>
       </div>
     </div>
-    <el-dialog title="添加部门" :visible.sync="dialogFormVisible" size="tiny">
+    <el-dialog title="添加部门" :visible.sync="dialogFormVisible" width="600px" >
       <el-form class="small-space" :model="depmentinfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="80px">
         <el-form-item label="上级部门">
           <el-select class="filter-item" v-model="depmentinfo.parent" placeholder="请选择">
@@ -122,7 +122,7 @@
         <el-button type="primary" @click="handleCreate">确 定</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="设置部门考勤规则" :visible.sync="dialogFormVisiblec" size="tiny">
+    <el-dialog title="设置部门考勤规则" :visible.sync="dialogFormVisiblec" width="600px" >
       <el-select class="filter-item" v-model="dementrule.dance_config_id" placeholder="请选择">
         <el-option v-for="item in  kaoqingArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
@@ -132,14 +132,14 @@
         <el-button type="primary" @click="handleUpdateKaq">确 定</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="查看部门人员结构" :visible.sync="dialogFormVisibled" size="tiny">
+    <el-dialog title="查看部门人员结构" :visible.sync="dialogFormVisibled" width="600px" >
       <el-tree :data="depPepoleList" :props="defaultProps" node-key="id" accordion :render-content="renderContentP">
       </el-tree>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="dialogFormVisibled = false">确 定</el-button>
       </div>
     </el-dialog>
-    <el-dialog title="用户部门" :visible.sync="dialogFormVisiblee" size="tiny">
+    <el-dialog title="用户部门" :visible.sync="dialogFormVisiblee" width="600px" >
       <el-form class="small-space" :model="depInfodep.department" :rules="infoRulese" ref="infoForme" label-position="right" label-width="100px">
         <el-form-item label="部门" prop="department_id">
           <el-select class="filter-item" v-model="depInfodep.department.department_id" placeholder="请选择" @visible-change="changeDepRule">
@@ -552,9 +552,9 @@ export default {
     renderContent(h, { node, data, store }) {
       if (data.cid) {
         return (
-          <span>
+          <span style='flex: 1; display: flex; align-items: center; justify-content: space-between; font-size: 14px; padding-right: 8px;'>
             <span>
-              <icon-svg class='g6 f14' icon-class='yonghuming' />
+              <svg-icon class='g6 f14' icon-class='yonghuming' />
               <span class='f12 maroon'>{node.label}</span>
             </span>
             <span style='float: right; margin-right: 20px'>
@@ -569,7 +569,7 @@ export default {
           flg = 'f12 ml5 vm'
         }
         return (
-          <span>
+          <span style='flex: 1; display: flex; align-items: center; justify-content: space-between; font-size: 14px; padding-right: 8px;'>
             <span class={cls}>
               <span>{node.label}</span>
               <el-tag class={flg} type='gray'>已删除</el-tag>
@@ -632,7 +632,7 @@ export default {
     },
     renderContentP(h, { node, data, store }) {
       return (
-        <span>
+        <span style='flex: 1; display: flex; align-items: center; justify-content: space-between; font-size: 14px; padding-right: 8px;'>
           <span>
             <span >{node.label}</span>
             <span class='f12 maroon ml10'>({data.role_name})</span>
@@ -641,34 +641,34 @@ export default {
     },
     getDepPepArr(id) {
       axios.all([fetchRoles(''), fetchList({ start_index: 0, length: 10000, department_id: id })])
-      .then(axios.spread((acct, perms) => {
-        var data = perms.info.list
-        acct.info.forEach(function(element) { // 赋值职位级别到对象
-          data.forEach(function(els) {
-            els.department_roles.forEach(function(asf) {
-              if (Number(asf.department_id) === id) {
-                if (element['_id'] === Number(asf.role_id)) {
-                  els['level'] = element['level']
+        .then(axios.spread((acct, perms) => {
+          var data = perms.info.list
+          acct.info.forEach(function(element) { // 赋值职位级别到对象
+            data.forEach(function(els) {
+              els.department_roles.forEach(function(asf) {
+                if (Number(asf.department_id) === id) {
+                  if (element['_id'] === Number(asf.role_id)) {
+                    els['level'] = element['level']
+                  }
                 }
-              }
+              }, this)
             }, this)
           }, this)
-        }, this)
-        data.sort(sortBy('level'))
-        const datacopy = deepClone(data)
-        for (let a = 0; a < datacopy.length; a++) {
-          datacopy[a]['parent'] = 0
-          for (let b = 0; b < data.length; b++) {
-            if (datacopy[a]['level'] < data[b]['level']) {
-              datacopy[a]['parent'] = data[b]['level']
-              break
+          data.sort(sortBy('level'))
+          const datacopy = deepClone(data)
+          for (let a = 0; a < datacopy.length; a++) {
+            datacopy[a]['parent'] = 0
+            for (let b = 0; b < data.length; b++) {
+              if (datacopy[a]['level'] < data[b]['level']) {
+                datacopy[a]['parent'] = data[b]['level']
+                break
+              }
             }
           }
-        }
-        const map = { name: 'label', level: 'id' }
-        var tree1 = new TreeUtil(datacopy, 'level', 'parent', map)
-        this.depPepoleList = tree1.toTree()
-      }))
+          const map = { name: 'label', level: 'id' }
+          var tree1 = new TreeUtil(datacopy, 'level', 'parent', map)
+          this.depPepoleList = tree1.toTree()
+        }))
       this.dialogFormVisibled = true
     },
     handleCreate() { // 创建部门
@@ -717,21 +717,6 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-// #app,
-// .main-container,
-// .app-container {
-//   height: 100%;
-//   overflow: hidden;
-// }
-
-// .app-container {
-//   overflow: auto;
-// }
-
-.app-main {
-  // min-height: auto !important;
-  // height: calc(100% - 50px);
-}
 
 .el-tree {
   border-color: transparent;
@@ -742,7 +727,7 @@ export default {
   min-height: 100%;
   .left-side {
     position: absolute;
-    top: 62px;
+    top: 72px;
     left: 0px;
     width: 400px;
     // border-right: 1px solid #dbdbdb;

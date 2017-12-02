@@ -21,47 +21,47 @@
     </div>
     <el-table :key='tableKey' :data="shiftArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="申请时间">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
       <el-table-column prop="username" label="申请用户" width="180">
       </el-table-column>
       <el-table-column width="120" label="申请结果">
-        <template scope="scope">
-          <el-tag v-if="scope.row.change_state == '1'" type="success">同意</el-tag>
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.change_state == '1'" type="primary">同意</el-tag>
           <el-tag v-if="scope.row.change_state == '0'" type="info">待确认</el-tag>
           <el-tag v-if="scope.row.change_state == '2'" type="warning">拒绝</el-tag>
         </template>
       </el-table-column>
       <el-table-column  label="换班用户" width="100">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.tousername || '无'}}</span>
         </template>
       </el-table-column>
       <el-table-column width="180" label="开始时间">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.start_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
         </template>
       </el-table-column>
       <el-table-column width="180" label="结束时间">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.end_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
         </template>
       </el-table-column>
       <el-table-column width="180" label="换班区域">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.regionname }}</span>
         </template>
       </el-table-column>
       <el-table-column  min-width="180" label="申请理由">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.change_content}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="180">
-        <template scope="scope">
-          <!-- <el-button size="small" type="success" v-if="scope.row.change_state == '0'"  @click="updateshift(scope.row)">修改
+        <template slot-scope="scope">
+          <!-- <el-button size="small" type="primary" v-if="scope.row.change_state == '0'"  @click="updateshift(scope.row)">修改
           </el-button> -->
           <el-button size="small" type="info" v-if="scope.row.change_state == '0' && isUser(scope.row.to_user_id)"  @click="updateStatus(scope.row,true)">同意
           </el-button>

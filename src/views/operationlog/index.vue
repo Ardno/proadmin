@@ -9,20 +9,20 @@
     </div>
     <el-table :key='tableKey' :data="logArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="操作时间">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
       <el-table-column width="180" prop="user_name" label="操作用户" >
       </el-table-column>
       <el-table-column label="操作内容" >
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.content | contFilter}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="120">
-        <template scope="scope">
-          <el-button size="small" type="success"  @click="handleSee(scope.row)">查看
+        <template slot-scope="scope">
+          <el-button size="small" type="primary"  @click="handleSee(scope.row)">查看
           </el-button>
         </template>
       </el-table-column>

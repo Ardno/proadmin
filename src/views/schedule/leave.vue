@@ -13,42 +13,42 @@
     </div>
     <el-table :key='tableKey' :data="leaveArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="申请时间">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
       <el-table-column prop="username" label="姓名" width="180">
       </el-table-column>
       <el-table-column width="120" label="审核结果">
-        <template scope="scope">
-          <el-tag v-if="scope.row.approval_state == '1'" type="success">同意</el-tag>
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.approval_state == '1'" type="primary">同意</el-tag>
           <el-tag v-if="scope.row.approval_state == '0'" type="info">待审核</el-tag>
           <el-tag v-if="scope.row.approval_state == '2'" type="warning">拒绝</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="审批人" width="100">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.approval_username || '无'}}</span>
         </template>
       </el-table-column>
       <el-table-column width="180" label="开始时间">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.start_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
         </template>
       </el-table-column>
       <el-table-column width="180" label="结束时间">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.end_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
         </template>
       </el-table-column>
       <el-table-column  label="请假理由">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.leavecontent}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="200">
-        <template scope="scope">
-          <el-button size="small" type="success" v-if="scope.row.approval_state == '0' && isUser(scope.row.user_id)"  @click="updateLeave(scope.row)">修改
+        <template slot-scope="scope">
+          <el-button size="small" type="primary" v-if="scope.row.approval_state == '0' && isUser(scope.row.user_id)"  @click="updateLeave(scope.row)">修改
           </el-button>
           <el-button size="small" type="info" v-if="scope.row.approval_state == '0' && !isUser(scope.row.user_id) && isAccess('71')"  @click="updateStatus(scope.row,true)">同意
           </el-button>
@@ -71,7 +71,7 @@
     </div>
     <!-- 分页 -->
     <!-- 新增请假 -->
-    <el-dialog :title="leaveobj.title" @close="closeCall" :visible.sync="leaveobj.dialogFormVisible">
+    <el-dialog :title="leaveobj.title" @close="closeCall" width="600px" :visible.sync="leaveobj.dialogFormVisible">
       <el-form class="small-space" :model="leaveobj.data" :rules="leaveobj.infoRules" ref="infoForm" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="开始时间" required>
           <el-date-picker :editable="false" :clearable="false"  v-model="leaveobj.data.start_time" type="datetime" placeholder="选择日期时间" :picker-options="pickerOptions"> </el-date-picker>

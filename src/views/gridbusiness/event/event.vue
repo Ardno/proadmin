@@ -16,7 +16,7 @@
     </div>
     <el-table :key='tableKey' :data="eventArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="创建时间">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
@@ -29,25 +29,25 @@
       <el-table-column prop="name" label="事件名称">
       </el-table-column>
       <el-table-column width="120" label="状态">
-        <template scope="scope">
+        <template slot-scope="scope">
           <el-tag v-if="scope.row.status == '0'" type="info">进行中</el-tag>
-          <el-tag v-if="scope.row.status == '1'" type="success">完成</el-tag>
+          <el-tag v-if="scope.row.status == '1'" type="primary">完成</el-tag>
           <el-tag v-if="scope.row.status == '2'" type="warning">已关闭</el-tag>
         </template>
       </el-table-column>
       <el-table-column width="180" label="发生时间">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.happen_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
       <el-table-column label="结束时间">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span v-if="scope.row.close_time">{{scope.row.close_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
           <span v-else>无</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="100">
-        <template scope="scope">
+        <template slot-scope="scope">
           <el-button size="small" type="danger" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" >直接关闭
           </el-button>
         </template>

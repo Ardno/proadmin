@@ -10,28 +10,28 @@
     </div>
     <el-table :key='tableKey' :data="dataAccess" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column align="center" label="序号" width="65">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row._id}}</span>
         </template>
       </el-table-column>
       <el-table-column width="180" align="center" label="部门">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{getDepName(scope.row.department_id)}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="职务名称">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.name}}</span>
         </template>
       </el-table-column>
       <!-- <el-table-column align="center" label="职务权限">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{statusFilter(scope.row.access)}}</span>
         </template>
       </el-table-column> -->
       <el-table-column align="center" label="操作" width="190">
-        <template scope="scope">
-          <el-button size="small" v-if="isAccess('122')" type="success" @click="handleUpdate(scope.row)">修改
+        <template slot-scope="scope">
+          <el-button size="small" v-if="isAccess('122')" type="primary" @click="handleUpdate(scope.row)">修改
           </el-button>
         </template>
       </el-table-column>
@@ -57,7 +57,7 @@
         <el-form-item label="平台权限">
           <el-checkbox :indeterminate="isIndeterminate" v-model="checkAll" @change="handleCheckAllChange">全选</el-checkbox><br>
           <el-checkbox-group v-model="duty.accessarr" @change="handleCheckedCitiesChange">
-            <el-checkbox class="ml15" v-for="obj in accessArr" :label="obj.value+''" :key="obj.value">{{obj.name}}</el-checkbox>
+            <el-checkbox class="ml30" v-for="obj in accessArr" :label="obj.value+''" :key="obj.value">{{obj.name}}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
       </el-form>
@@ -259,8 +259,8 @@ export default {
         })
       })
     },
-    handleCheckAllChange(event) {
-      if (event.target.checked) {
+    handleCheckAllChange(val) {
+      if (val) {
         this.accessArr.forEach(function(element) {
           this.duty.accessarr.push(element.value + '')
         }, this)

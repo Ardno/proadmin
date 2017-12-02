@@ -14,36 +14,36 @@
       <el-tab-pane label="请假" name="first">
         <el-table :key='tableKey' :data="leaveArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
           <el-table-column width="180" label="申请时间">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
             </template>
           </el-table-column>
           <el-table-column prop="username" label="姓名" width="180">
           </el-table-column>
           <el-table-column width="120" label="审核结果">
-            <template scope="scope">
-              <el-tag v-if="scope.row.approval_state == '1'" type="success">同意</el-tag>
+            <template slot-scope="scope">
+              <el-tag v-if="scope.row.approval_state == '1'" type="primary">同意</el-tag>
               <el-tag v-if="scope.row.approval_state == '0'" type="info">待审核</el-tag>
               <el-tag v-if="scope.row.approval_state == '2'" type="warning">拒绝</el-tag>
             </template>
           </el-table-column>
           <el-table-column label="审批人" width="100">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.approval_username || '无'}}</span>
             </template>
           </el-table-column>
           <el-table-column width="180" label="开始时间">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.start_time | parseTime('{y}-{m}-{d} {h}:{i}',true)}}</span>
             </template>
           </el-table-column>
           <el-table-column width="180" label="结束时间">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.end_time | parseTime('{y}-{m}-{d} {h}:{i}',true)}}</span>
             </template>
           </el-table-column>
           <el-table-column  label="请假理由">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.leavecontent}}</span>
             </template>
           </el-table-column>
@@ -52,41 +52,41 @@
       <el-tab-pane label="工作" name="second">
         <el-table :key='tableKey' :data="workArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
           <el-table-column width="180" label="创建时间">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
             </template>
           </el-table-column>
           <el-table-column width="180" label="所属区域">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{scope.row.regionname}}</span>
             </template>
           </el-table-column>
           <el-table-column label="执行用户" width="180">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span>{{filterName(scope.row.user_id)}}</span>
             </template>
           </el-table-column>
           <el-table-column width="300" label="计划完成时间">
-            <template scope="scope">
+            <template slot-scope="scope">
               {{scope.row.r_start_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}} - {{scope.row.r_end_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}
             </template>
           </el-table-column>
           <el-table-column width="300" label="实际完成时间">
-            <template scope="scope">
+            <template slot-scope="scope">
               <span v-if="scope.row.start_time">{{scope.row.start_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span> -
               <span v-if="scope.row.end_time">{{scope.row.end_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
             </template>
           </el-table-column>
           <el-table-column  label="工作类型" width="100">
-            <template scope="scope">
+            <template slot-scope="scope">
               <el-tag v-if="scope.row.work_type == '1'" type="warning">换班</el-tag>
-              <el-tag v-if="scope.row.work_type == '0'" type="success">正常</el-tag>
+              <el-tag v-if="scope.row.work_type == '0'" type="primary">正常</el-tag>
               <el-tag v-if="scope.row.work_type == '2'" type="warning">代班</el-tag>
             </template>
           </el-table-column>
           <el-table-column  label="值班结果">
-            <template scope="scope">
-              <el-tag v-if="scope.row.work_type == '0'" type="success">正常</el-tag>
+            <template slot-scope="scope">
+              <el-tag v-if="scope.row.work_type == '0'" type="primary">正常</el-tag>
               <el-tag v-if="scope.row.work_type == '1'" type="primary">迟到</el-tag>
               <el-tag v-if="scope.row.work_type == '2'" type="warning">早退</el-tag>
               <el-tag v-if="scope.row.work_type == '3'" type="danger">缺勤</el-tag>

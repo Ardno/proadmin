@@ -17,7 +17,7 @@
     </div>
     <side-bar :mapobj="mapobj" :PathSimplifier='PathSimplifier' @seeting="getSetting"  @reloadMap="loadInit" @addRegion="getRegion"></side-bar>
     <!-- 区域信息 -->
-    <el-dialog title="区域信息" size="tiny" :visible.sync="regionobj.dialogFormVisible"  >
+    <el-dialog title="区域信息" width="600px"  :visible.sync="regionobj.dialogFormVisible"  >
       <el-form class="small-space"  label-position="top">
         <el-form-item label="所属部门" >
           <span  class="ml20">{{regionobj.department_name}}</span>
@@ -410,7 +410,7 @@ export default {
 <style lang="scss">
 .pottoolbar{
   position: fixed;
-  top: 64px;
+  top: 96px;
   right: 102px;
   display: inline-block;
   color: #34495e;

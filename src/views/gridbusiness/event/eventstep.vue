@@ -10,7 +10,7 @@
     </div>
     <el-table :key='tableKey' :data="eventStepArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="创建时间">
-        <template scope="scope">
+        <template slot-scope="scope">
           <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
@@ -19,13 +19,13 @@
       <el-table-column prop="name" label="步骤名称" >
       </el-table-column>
       <el-table-column prop="name" width="180" label="审核职务" >
-        <template scope="scope">
+        <template slot-scope="scope">
             <span>{{filetUser(scope.row.role_id_access)}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="操作" width="190">
-        <template scope="scope">
-            <el-button size="small" type="success" v-if="isAccess('152')" icon="edit" @click="goOtherPage(scope.row._id)">编辑
+        <template slot-scope="scope">
+            <el-button size="small" type="primary" v-if="isAccess('152')" icon="edit" @click="goOtherPage(scope.row._id)">编辑
             </el-button>
         </template>
       </el-table-column>

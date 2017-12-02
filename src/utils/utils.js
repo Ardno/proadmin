@@ -125,12 +125,12 @@ export function sortByExt(ext) {
 export function doubleNumber(num) {
   return num < 10 ? '0' + num : num
 }
-  /**
-   * fileReader预览图片返回img url
-   * @param file: Object, input file 对象
-   * @param callback: function 回调函数
-   * @param callback2: function 回调函数
-   */
+/**
+ * fileReader预览图片返回img url
+ * @param file: Object, input file 对象
+ * @param callback: function 回调函数
+ * @param callback2: function 回调函数
+ */
 export function imgReader(file, callback, callback2) {
   const files = file.files[0]
   if (!/image\/\w+/.test(files.type)) {
