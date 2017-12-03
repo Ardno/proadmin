@@ -11,7 +11,6 @@
       </el-select>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
       <el-button class="filter-item" type="primary" @click="deployment.dialogFormVisible = true" >创建临时任务</el-button>
-      
     </div>
     <el-table :key='tableKey' :data="workArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="创建时间">

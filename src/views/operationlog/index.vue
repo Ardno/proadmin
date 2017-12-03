@@ -115,7 +115,8 @@ export default {
       })
     },
     handleSee(res) {
-      this.$alert(res.content, '操作详情', {
+      this.$alert('<span class="db" style="word-break: break-word;">' + res.content + '<span>', '操作详情', {
+        dangerouslyUseHTMLString: true,
         showConfirmButton: false,
         showCancelButton: false,
         callback: action => {
@@ -126,5 +127,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-
+  .el-message-box__message{
+    p{
+      word-break: break-word;
+    }
+  }
 </style>

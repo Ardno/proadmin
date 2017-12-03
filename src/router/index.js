@@ -48,7 +48,14 @@ export const constantRouterMap = [
     component: Layout,
     redirect: 'msg/index',
     noDropdown: true,
-    children: [{ path: 'index', component: _import('message/index'), name: '我的消息', meta: { title: '我的消息', icon: 'icon-laba', noCache: true }}]
+    children: [{ path: 'index', component: _import('message/index'), name: '我的消息', meta: { title: '我的消息', icon: 'icon-laba' }}]
+  },
+  {
+    path: '/myattendance',
+    component: Layout,
+    redirect: 'schedule/myattendance',
+    noDropdown: true,
+    children: [{ path: 'myattendance', component: _import('schedule/myattendance'), name: '我的考勤', meta: { title: '我的考勤', icon: 'documentation' }}]
   }
 ]
 

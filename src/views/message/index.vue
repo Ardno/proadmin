@@ -98,7 +98,7 @@ export default {
       if (arr.length) {
         return arr[0]['name']
       }
-      return '未知姓名'
+      return '系统消息'
     },
     moreMsg() {
       this.start_index += this.pageno

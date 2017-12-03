@@ -159,7 +159,6 @@ import { fetchDepartments } from '@/api/department'
 import { TreeUtil } from '@/utils/index'
 import { addLaws, updateLaws, getLawsArr } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
-let id = 1000
 export default {
   data() {
     const regutypeArr = [
