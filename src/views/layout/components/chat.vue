@@ -9,7 +9,7 @@
           <div class="layui-layim-main">
             <!-- 头部信息 -->
             <div class="layui-layim-info">
-              <div class="layui-layim-user">{{userInfo.username}}</div>
+              <div class="layui-layim-user">{{userInfo.nickname}}</div>
               <div class="layui-layim-status">
                 <span class="layim-status-online"></span>
               </div>
@@ -26,7 +26,7 @@
                     <ul class="layui-layim-list layui-show layim-list-history">
                       <li @click="imCkPanle(list)" v-for="(list, index) in conversations" :key="index" >
                         <img :src="list.avatar || list.avatarUrl">
-                        <span v-if="list.type === 3">{{list.username}}</span>
+                        <span v-if="list.type === 3">{{list.nickname}}</span>
                         <time class="r g9 time">{{list.mtime | reducerDate}}</time>
                         <span v-if="list.type === 4">{{list.name}}</span>
                         <p >{{list.content && list.content.msg_body && list.content.msg_body.text}}
@@ -59,7 +59,7 @@
                     <ul class="layui-layim-list">
                       <li @click="imCkPanle(clist)" v-for="(clist, index) in flist.list" :key="index">
                         <img :src="clist.avatar" :onerror="defaultImg(clist.avatarUrl)">
-                        <span>{{clist.username}}</span>
+                        <span>{{clist.nickname}}</span>
                         <p>{{clist.signature || '暂无签名'}}</p>
                       </li>
                     </ul>
@@ -125,7 +125,7 @@
       </div>
     </transition>
     <transition name="el-fade-in-linear">
-       <chatck :closechatck.sync="closechatck" :activeUser="activeUser" :newmsg="newmsg" ></chatck>
+       <chatck :closechatck.sync="closechatck" :activeUser="activeUser" :userArr="userArr" :newmsg="newmsg" ></chatck>
     </transition>
     <el-dialog title="创建群成员"  class="custom-dialog" :visible.sync="creatGroup.dialogVisible">
       <div class="pl40">
@@ -188,6 +188,7 @@ export default {
       activeName: 'first',
       JIM: null,
       overflow: 'hidden',
+      userArr: [],
       friend_list: [],
       group_list: [],
       conversations: [],
@@ -220,6 +221,16 @@ export default {
     this.JIMInit()
   },
   methods: {
+    filterName(strid) {
+      let name = ''
+      const id = strid.substring(5)
+      this.userArr.forEach(element => {
+        if (element._id === Number(id)) {
+          name = element.name
+        }
+      })
+      return name
+    },
     defaultImg(ads) {
       return 'this.onerror=null;this.src="' + ads + '"'
     },
@@ -266,7 +277,7 @@ export default {
       userArr.forEach((obj) => {
         data.push({
           // label: obj.nickname,
-          label: obj.username,
+          label: this.filterName(obj.username),
           key: obj.username
         })
       })
@@ -420,9 +431,8 @@ export default {
           avatar: user.avatar,
           mtime: user.mtime,
           name: user.username,
-          nickName: user.nickname,
+          nickname: store.getters.useinfo.name,
           username: user.username,
-          nickname: user.nickname,
           type: 3,
           signature: user.signature,
           gender: user.gender,
@@ -446,6 +456,9 @@ export default {
         .then(axios.spread((acct, perms) => {
           const userList = perms.info.list.filter(obj => { // 获取正常状态的用户
             return !obj.status && obj._id !== store.getters.useinfo._id
+          })
+          this.userArr = perms.info.list.filter(obj => { // 获取正常状态的用户
+            return !obj.status
           })
           const depList = acct.info // 获取用户部门
           const arr = []
@@ -564,6 +577,7 @@ export default {
         for (const conver of conversations) {
           if (conver.type === 3) {
             conver.avatarUrl = single_avatar
+            conver.nickname = this.filterName(conver.username)
           } else {
             conver.avatarUrl = group_avatar
           }
@@ -957,6 +971,7 @@ export default {
 
   .el-collapse-item__header {
     position: relative;
+    margin-left: 10px;
     margin-right: 15px;
     height: 28px;
     line-height: 28px;
@@ -984,8 +999,11 @@ export default {
   .el-collapse,
   .el-collapse-item__wrap {
     border: none;
+    background-color: rgba(255, 255, 255, 0.9);
   }
-
+  .el-collapse-item__arrow{
+    line-height: 28px;
+  }
   .el-collapse-item__content {
     padding: 0;
     line-height: 1.15;

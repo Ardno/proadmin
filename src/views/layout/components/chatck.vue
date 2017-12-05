@@ -18,7 +18,7 @@
           <div class="chat-title">
             <div class="layim-chat-other">
               <img :src="activeItem.avatar || activeItem.avatarUrl" :onerror="defaultImg()">
-              <span class="layim-chat-username ell" v-if="activeItem.type === 3">{{activeItem.username}}</span>
+              <span class="layim-chat-username ell" v-if="activeItem.type === 3">{{activeItem.nickname}}</span>
               <span class="layim-chat-username ell" v-if="activeItem.type === 4">{{activeItem.name}}</span>
               <!-- <p class="layim-chat-status ell">暂无签名</p> -->
             </div>
@@ -46,7 +46,7 @@
                     <img v-if="userInfo.username == list.content.from_id" :src="userInfo.avatar" :onerror="defaultImg()">
                     <img v-else :src="activeItem.avatar" :onerror="defaultImg()">
                     <cite >
-                      {{ userInfo.username == list.content.from_id ? '':list.content.from_name}}
+                      {{ userInfo.username == list.content.from_id ? '':filterName(list.content.from_name)}}
                     <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
                   </div>   
                   <span v-if="list.success == 1" class="spinrose mr10 activespin"></span>
@@ -195,6 +195,9 @@ export default {
     },
     newmsg: {
       type: Object
+    },
+    userArr: {
+      type: null
     }
   },
   directives: {
@@ -272,6 +275,16 @@ export default {
     })
   },
   methods: {
+    filterName(strid) {
+      let name = ''
+      const id = strid.substring(5)
+      this.userArr.forEach(element => {
+        if (element._id === Number(id)) {
+          name = element.name
+        }
+      })
+      return name
+    },
     defaultImg(ads) {
       // return 'this.onerror=null;this.src="' + ads + '"'
       if (!ads) {
@@ -737,13 +750,14 @@ export default {
         if (data.member_list.length) {
           this.member_list.push(...data.member_list)
           for (let i = 0; i < data.member_list.length; i++) {
+            this.member_list[i].nickname = this.filterName(this.member_list[i].username)
+            console.log(this.member_list[i].nickname)
             if (this.member_list[i].flag) {
               if (this.member_list[i].username === this.userInfo.username) {
                 this.isqunzhu = true
               }
               const arr = this.member_list.splice(i, 1) // 把群主提到第一位
               this.member_list.unshift(arr[0])
-              break
             }
           }
         }
@@ -764,7 +778,7 @@ export default {
         })
         if (flg) {
           userArr.push({
-            label: 'yzwg_' + obj._id,
+            label: this.filterName('yzwg_' + obj._id),
             key: 'yzwg_' + obj._id
           })
         }
