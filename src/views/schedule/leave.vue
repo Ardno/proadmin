@@ -74,10 +74,10 @@
     <el-dialog :title="leaveobj.title" @close="closeCall" width="600px" :visible.sync="leaveobj.dialogFormVisible">
       <el-form class="small-space" :model="leaveobj.data" :rules="leaveobj.infoRules" ref="infoForm" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="开始时间" required>
-          <el-date-picker :editable="false" :clearable="false"  v-model="leaveobj.data.start_time" type="datetime" placeholder="选择日期时间" :picker-options="pickerOptions"> </el-date-picker>
+          <el-date-picker :editable="false" :clearable="false"  v-model="leaveobj.data.start_time_t" type="datetime" placeholder="选择日期时间" :picker-options="pickerOptions"> </el-date-picker>
         </el-form-item>
         <el-form-item label="结束时间" required>
-          <el-date-picker :editable="false" :clearable="false" v-model="leaveobj.data.end_time" type="datetime" placeholder="选择日期时间" :picker-options="pickerOptions"> </el-date-picker>
+          <el-date-picker :editable="false" :clearable="false" v-model="leaveobj.data.end_time_t" type="datetime" placeholder="选择日期时间" :picker-options="pickerOptions"> </el-date-picker>
         </el-form-item>
         <el-form-item label="请假原因" prop="leavecontent">
           <el-input type="textarea" v-model="leaveobj.data.leavecontent"></el-input>
@@ -114,6 +114,8 @@ export default {
         data: {
           start_time: '',
           end_time: '',
+          start_time_t: '',
+          end_time_t: '',
           leavecontent: ''
         },
         infoRules: {
@@ -153,8 +155,10 @@ export default {
         title: '申请请假',
         dialogFormVisible: true,
         data: {
-          start_time: new Date(),
-          end_time: new Date(),
+          start_time: '',
+          end_time: '',
+          start_time_t: new Date(),
+          end_time_t: new Date(),
           leavecontent: ''
         }
       })
@@ -232,8 +236,8 @@ export default {
     handleAddUpdate() { // 请假修改删除
       this.$refs.infoForm.validate(valid => {
         if (valid) {
-          this.leaveobj.data.start_time = Math.round(new Date(this.leaveobj.data.start_time).getTime() / 1000)
-          this.leaveobj.data.end_time = Math.round(new Date(this.leaveobj.data.end_time).getTime() / 1000)
+          this.leaveobj.data.start_time = Math.round(new Date(this.leaveobj.data.start_time_t).getTime() / 1000)
+          this.leaveobj.data.end_time = Math.round(new Date(this.leaveobj.data.end_time_t).getTime() / 1000)
           if (this.leaveobj.title === '申请请假') {
             addLeaves(this.leaveobj.data).then(response => {
               this.leaveobj.dialogFormVisible = false

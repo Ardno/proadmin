@@ -13,7 +13,7 @@
               <div class="layui-layim-status">
                 <span class="layim-status-online"></span>
               </div>
-              <span class="layui-layim-remark">{{userInfo.signature || '暂无签名'}}</span>
+              <span class="layui-layim-remark">{{userInfo.mobile}}</span>
             </div>
             <!-- 面板 -->
             <el-tabs v-model="activeName" @tab-click="handleClick">
@@ -60,7 +60,7 @@
                       <li @click="imCkPanle(clist)" v-for="(clist, index) in flist.list" :key="index">
                         <img :src="clist.avatar" :onerror="defaultImg(clist.avatarUrl)">
                         <span>{{clist.nickname}}</span>
-                        <p>{{clist.signature || '暂无签名'}}</p>
+                        <p>{{clist.mobile}}</p>
                       </li>
                     </ul>
                   </el-collapse-item>
@@ -395,14 +395,18 @@ export default {
         password: store.getters.password,
         is_md5: true
       }).onSuccess((login) => {
-        this.JIMgetUserInfo(login.username)
-        this.JIMgetFriendList()
-        this.JIMgetGroups()
-        this.onMsgReceive()
-        this.onSyncConversation()
-        this.onMsgReceiptChange()
-        this.onMutiUnreadMsgUpdate()
-        this.onSyncMsgReceipt()
+        try {
+          this.JIMgetUserInfo(login.username)
+          this.JIMgetFriendList()
+          this.JIMgetGroups()
+          this.onMsgReceive()
+          this.onSyncConversation()
+          this.onMsgReceiptChange()
+          this.onMutiUnreadMsgUpdate()
+          this.onSyncMsgReceipt()
+        } catch (error) {
+          console.log(error)
+        }
       }).onFail((error) => {
         errorApiTip(error)
         // this.JIMregister()
@@ -432,6 +436,7 @@ export default {
           mtime: user.mtime,
           name: user.username,
           nickname: store.getters.useinfo.name,
+          mobile: store.getters.useinfo.mobile,
           username: user.username,
           type: 3,
           signature: user.signature,
@@ -479,6 +484,7 @@ export default {
               nickname: element.name,
               avatar: 'http://gridmap-file.xiaoketech.com/images/user/' + element._id + '.png',
               avatarUrl: single_avatar,
+              mobile: element.mobile,
               gender: element.sex + 1,
               type: 3,
               birthday: element.birthday * 1000,
@@ -563,10 +569,20 @@ export default {
       if (this.MsgList) {
         for (let i = 0; i < this.conversations.length; i++) {
           const c = this.conversations[i]
+          c.content = {
+            msg_type: 3,
+            msg_body: {
+              text: '暂无消息'
+            }
+          }
           if (c.type === 3) {
-            c.content = this.MsgList[c.username].msgs[this.MsgList[c.username].msgs.length - 1].content
+            if (this.MsgList[c.username]) {
+              c.content = this.MsgList[c.username].msgs[this.MsgList[c.username].msgs.length - 1].content
+            }
           } else {
-            c.content = this.MsgList[c.gid].msgs[this.MsgList[c.gid].msgs.length - 1].content
+            if (this.MsgList[c.gid]) {
+              c.content = this.MsgList[c.gid].msgs[this.MsgList[c.gid].msgs.length - 1].content
+            }
           }
         }
       }

@@ -9,7 +9,7 @@
           <template slot-scope="scope">
             <div class="p10">
               <p class="mb10 tr">{{scope.row.day0.time}}</p>
-              <el-tag v-if="scope.row.day0.time" type="success">正常</el-tag>
+              <el-tag v-if="scope.row.day0.time" :type="scope.row.day0.type">{{scope.row.day0.name}}</el-tag>
             </div>
           </template>
         </el-table-column>
@@ -17,7 +17,7 @@
           <template slot-scope="scope">
             <div class="p10">
               <p class="mb10 tr">{{scope.row.day1.time}}</p>
-              <el-tag v-if="scope.row.day1.time" type="success">正常</el-tag>
+              <el-tag v-if="scope.row.day1.time" :type="scope.row.day1.type">{{scope.row.day1.name}}</el-tag>
             </div>
           </template>
         </el-table-column>
@@ -25,7 +25,7 @@
           <template slot-scope="scope">
             <div class="p10">
               <p class="mb10 tr">{{scope.row.day2.time}}</p>
-              <el-tag v-if="scope.row.day2.time" type="success">正常</el-tag>
+              <el-tag v-if="scope.row.day2.time" :type="scope.row.day2.type">{{scope.row.day2.name}}</el-tag>
             </div>
           </template>
         </el-table-column>
@@ -33,7 +33,7 @@
           <template slot-scope="scope">
             <div class="p10">
               <p class="mb10 tr">{{scope.row.day3.time}}</p>
-              <el-tag v-if="scope.row.day3.time" type="warning">迟到</el-tag>
+              <el-tag v-if="scope.row.day3.time" :type="scope.row.day3.type">{{scope.row.day3.name}}</el-tag>
             </div>
           </template>
         </el-table-column>
@@ -41,7 +41,7 @@
           <template slot-scope="scope">
             <div class="p10">
               <p class="mb10 tr">{{scope.row.day4.time}}</p>
-              <el-tag v-if="scope.row.day4.time" type="danger">旷工</el-tag>
+              <el-tag v-if="scope.row.day4.time" :type="scope.row.day4.type">{{scope.row.day4.name}}</el-tag>
             </div>
           </template>
         </el-table-column>
@@ -49,7 +49,7 @@
           <template slot-scope="scope">
             <div class="p10">
               <p class="mb10 tr">{{scope.row.day5.time}}</p>
-              <el-tag v-if="scope.row.day5.time" type="success">正常</el-tag>
+              <el-tag v-if="scope.row.day5.time" :type="scope.row.day5.type">{{scope.row.day5.name}}</el-tag>
             </div>
           </template>
         </el-table-column>
@@ -57,7 +57,7 @@
           <template slot-scope="scope">
             <div class="p10">
               <p class="mb10 tr">{{scope.row.day6.time}}</p>
-              <el-tag v-if="scope.row.day6.time" type="success">正常</el-tag>
+              <el-tag v-if="scope.row.day6.time" :type="scope.row.day6.type">{{scope.row.day6.name}}</el-tag>
             </div>
           </template>
         </el-table-column>
@@ -67,11 +67,20 @@
 </template>
 
 <script>
+  import { getMonthdance } from '@/api/levelshift'
+  import store from '@/store'
   export default {
     data() {
       return {
         listLoading: false,
         tableData: [],
+        pageobj: {
+          start_index: 0,
+          length: 10000,
+          user_id: store.getters.useinfo._id,
+          start_time: '',
+          end_time: ''
+        },
         dataObj: {
           nstr: new Date(),
           ynow: new Date().getFullYear(),
@@ -82,9 +91,35 @@
     },
     created() {
       const d = this.dataObj
-      this.randerCalendar(d.nstr, d.ynow, d.mnow, d.dnow)
+      const m_days = [31, 28 + this.is_leap(d.ynow), 31, 30, 31, 31, 30, 31, 30, 31, 30, 31] // 每个月的天数
+      this.pageobj.start_time = new Date(d.ynow, d.mnow, 1)
+      this.pageobj.end_time = new Date(d.ynow, d.mnow, m_days[d.mnow])
+      getMonthdance(this.pageobj).then(res => {
+        const arr = {}
+        if (res.leave) { // 循环请假对象
+          res.leave.forEach(element => {
+            if (element.approval_state === 1) {
+              const idx = new Date(element.start_time * 1000).getDate() || 0
+              arr[idx] = '请假'
+            }
+          })
+        }
+        if (res.work) {
+          res.work.forEach(element => {
+            const text = this.filterARR(element.work_state)
+            const idx = new Date(element.r_start_time * 1000).getDate() || 0
+            arr[idx] = text
+          })
+        }
+        this.randerCalendar(arr)
+      }).catch((errs) => {
+      })
     },
     methods: {
+      filterARR(index) {
+        const arr = ['无记录', '正常', '迟到', '早退', '缺勤', '调派']
+        return arr[index]
+      },
       is_leap(year) { // 判断是否为闰年
         var cond1 = year % 4 === 0 // 条件1：年份必须要能被4整除
         var cond2 = year % 100 !== 0 // 条件2：年份不能是整百数
@@ -114,7 +149,10 @@
           this.dataObj.mnow++
         }
       },
-      randerCalendar(nstr, ynow, mnow, dnow) {
+      randerCalendar(data) {
+        const d = this.dataObj
+        const ynow = d.ynow
+        const mnow = d.mnow
         const nlstr = new Date(ynow, mnow, 1) // 当月第一天
         const firstday = nlstr.getDay() // 第一天星期几
         const m_days = [31, 28 + this.is_leap(ynow), 31, 30, 31, 31, 30, 31, 30, 31, 30, 31] // 每个月的天数
@@ -134,8 +172,17 @@
             if (index === 0 && fs === firstday && !tiem) { // 判断第一天为周几时开始记为1
               tiem = 1
             }
+            let type = 'success'
+            if (tiem && data[tiem] === '缺勤') {
+              type = 'danger'
+            }
+            if (tiem && (data[tiem] === '迟到' || data[tiem] === '早退')) {
+              type = 'warning'
+            }
             const cobj = {
-              time: tiem
+              time: tiem,
+              name: data[tiem] || '--',
+              type: type
             }
             obj['day' + fs] = cobj
           }

@@ -176,17 +176,17 @@ import axios from 'axios'
 export default {
   data() {
     const validateUsername = (rule, value, callback) => {
-      const arr = this.restaurants
+      // const arr = this.restaurants
       if (!value) {
         callback(new Error('请输入部门名称'))
         return
       }
-      arr.forEach(function(element) {
-        if (element.name === value) {
-          callback(new Error('部门名字已存在'))
-          return
-        }
-      }, this)
+      // arr.forEach(function(element) {
+      //   if (element.name === value) {
+      //     callback(new Error('部门名字已存在'))
+      //     return
+      //   }
+      // }, this)
       callback()
     }
     const validatedepname = (rule, value, callback) => {

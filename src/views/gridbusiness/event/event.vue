@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="layui-elem-quote">
       <p class="mb10">
-        <el-select clearable class="filter-item" style="width:453px" filterable multiple v-model="pageobj.department_ids" placeholder="所属部门">
+        <el-select clearable class="filter-item" style="width:453px" filterable multiple v-model="pageobj.department_ids" @change="filterArrDep" placeholder="所属部门">
           <el-option v-for="item in  commonInfo.depArr" :key="item._id" :label="item.name" :value="item._id">
           </el-option>
         </el-select>
@@ -44,7 +44,12 @@
       </el-table-column>
       <el-table-column width="120" label="状态">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.status == '0'" type="info">进行中</el-tag>
+          <el-tag v-if="scope.row.status == '0' && (scope.row.is_unaudited>0 || scope.row.is_unfilled > 0)" type="info">
+              待审核
+          </el-tag>
+          <el-tag v-if="scope.row.status == '0' && scope.row.is_unfilled > 0 && scope.row.is_unaudited <=0" type="info">
+              待填写
+          </el-tag>
           <el-tag v-if="scope.row.status == '1'" type="primary">完成</el-tag>
           <el-tag v-if="scope.row.status == '2'" type="warning">已关闭</el-tag>
         </template>
@@ -129,6 +134,9 @@ export default {
   },
   methods: {
     isAccess: isAccess,
+    filterArrDep(val) {
+      this.department_id = val.join(',')
+    },
     handleQuery() {
       this.pageobj.start_index = 0
       this.pageobj.length = 9

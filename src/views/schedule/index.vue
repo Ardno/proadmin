@@ -103,6 +103,7 @@ import { fetchList } from '@/api/department'
 import { getWorksArr, addWorks } from '@/api/levelshift'
 import { getRegionArr } from '@/api/grid'
 import { isAccess, isUser } from '@/utils/auth'
+import { deepClone } from '@/utils/index'
 import store from '@/store'
 
 export default {
@@ -194,9 +195,10 @@ export default {
     createDeploy() {
       this.$refs.infoForm.validate(valid => {
         if (valid) {
-          this.deployment.r_start_time = Math.round(new Date(this.deployment.r_start_time).getTime() / 1000)
-          this.deployment.r_end_time = Math.round(new Date(this.deployment.r_end_time).getTime() / 1000)
-          addWorks(this.deployment).then(response => {
+          const requst = deepClone(this.deployment)
+          requst.r_start_time = Math.round(new Date(requst.r_start_time).getTime() / 1000)
+          requst.r_end_time = Math.round(new Date(requst.r_end_time).getTime() / 1000)
+          addWorks(requst).then(response => {
             this.deployment.dialogFormVisible = false
             this.$message({
               message: '操作成功！',

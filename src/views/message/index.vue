@@ -7,7 +7,7 @@
         </div>
         <ul class="ibox-ct" v-if="zuijingArr.length">
           <li class="fix" v-for="(item, index) in zuijingArr" :key="index" >
-            <img class="avatar l" :src="'http://gridmap-file.xiaoketech.com/images/user/'+item.user_id+'.png'" :onerror="defaultImg" alt="">
+            <img class="avatar l" :src="avatar" :onerror="defaultImg" alt="">
             <div class="ovh tis">
               <h4 class="ell mt5">{{filterUser(item.user_id)}}
                 <span class="r f12 g9 n ">{{ item.create_time | parseTime('{y}.{m}.{d} {h}:{i}', true) }}</span>
@@ -22,7 +22,7 @@
         </div>
         <ul class="ibox-ct" v-if="lishiArr.length">
           <li class="fix" v-for="(item, index) in lishiArr" :key="index" >
-            <img class="avatar l" :src="'http://gridmap-file.xiaoketech.com/images/user/'+item.user_id+'.png'" :onerror="defaultImg" alt="">
+            <img class="avatar l" :src="avatar" :onerror="defaultImg" alt="">
             <div class="ovh tis">
               <h4 class="ell mt5">{{filterUser(item.user_id)}}
                 <span class="r f12 g9 n ">{{ item.create_time|parseTime('{y}.{m}.{d} {h}:{i}', true) }}</span>
@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import avatar from 'assets/login_images/avatar.png'
+import avatar from 'assets/images/xitongxiaoxi.png'
 import { fetchList } from '@/api/department'
 import { getSmsList, readSms } from '@/api/message'
 export default {
@@ -92,12 +92,12 @@ export default {
       })
     },
     filterUser(userid) {
-      const arr = this.userArr.filter(obj => {
-        return obj._id === userid
-      })
-      if (arr.length) {
-        return arr[0]['name']
-      }
+      // const arr = this.userArr.filter(obj => {
+      //   return obj._id === userid
+      // })
+      // if (arr.length) {
+      //   return arr[0]['name']
+      // }
       return '系统消息'
     },
     moreMsg() {
