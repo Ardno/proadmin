@@ -1,4 +1,5 @@
 import { loginByUsername, logout, getUserInfo, getQrcode } from '@/api/login'
+import { fetchList, fetchDepartments } from '@/api/department'
 import { getToken, setToken, removeToken, setUserid, setPwd, getPwd } from '@/utils/auth'
 const user = {
   state: {
@@ -15,6 +16,10 @@ const user = {
     msgcount: 0,
     setting: {
       articlePlatform: []
+    },
+    commonInfo: {
+      depArr: [],
+      userArr: []
     }
   },
 
@@ -51,6 +56,12 @@ const user = {
     },
     SET_COUNT: (state, msgcount) => {
       state.msgcount = msgcount
+    },
+    SET_USERARR: (state, userArr) => {
+      state.commonInfo.userArr = userArr
+    },
+    SET_DEPARR: (state, depArr) => {
+      state.commonInfo.depArr = depArr
     }
   },
 
@@ -161,6 +172,21 @@ const user = {
           commit('SET_INTRODUCTION', data.introduction)
           resolve()
         })
+      })
+    },
+    // 获取用户集合  获取部门集合
+    getAlldepPep({ commit }, data) {
+      fetchDepartments().then(res => {
+        const depArr = res.info.filter(obj => {
+          return !obj.status
+        })
+        commit('SET_DEPARR', depArr)
+      })
+      fetchList({ start_index: 0, length: 10000 }).then(response => {
+        const userArr = response.info.list.filter(obj => {
+          return !obj.status
+        })
+        commit('SET_USERARR', userArr)
       })
     }
   }

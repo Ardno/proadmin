@@ -84,7 +84,6 @@
 </template>
 
 <script>
-import { fetchDepartments } from '@/api/department'
 import { getEventTypeArr, addEventType, updateEventType, getStepsArr } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
 export default {
@@ -240,9 +239,7 @@ export default {
       })
     },
     getDepArr() { // 获取部门集合
-      fetchDepartments('').then(res => {
-        this.depArr = res.info
-      })
+      this.depArr = this.$store.getters.commonInfo.depArr
       getStepsArr({
         start_index: 0,
         length: 10000 }).then(res => {

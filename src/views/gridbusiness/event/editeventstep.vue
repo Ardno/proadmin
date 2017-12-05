@@ -72,7 +72,7 @@
 import Tinymce from '@/components/Tinymce'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import MDinput from '@/components/MDinput'
-import { fetchDepartments, fetchRoles } from '@/api/department'
+import { fetchRoles } from '@/api/department'
 import { getSteps, addSteps, updateSteps, getLawsArr } from '@/api/depevent'
 const paraTypeArr = [
   { _id: '0', name: '文本控件' },
@@ -128,9 +128,7 @@ export default {
     console.log(this.$route.params.id)
     if (this.$route.params.id !== ':id') {
       this.getSteps(this.$route.params.id)
-      fetchDepartments('').then(response => {
-        this.depArr = response.info
-      })
+      this.depArr = this.$store.getters.commonInfo.depArr
     } else {
       this.init()
     }
@@ -299,9 +297,7 @@ export default {
       }).catch(() => { console.log('取消修改') })
     },
     init() { // 初始化
-      fetchDepartments('').then(response => {
-        this.depArr = response.info
-      })
+      this.depArr = this.$store.getters.commonInfo.depArr
       getLawsArr().then(response => {
         this.lawArr = response.info
       })

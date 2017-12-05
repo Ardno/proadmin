@@ -127,11 +127,10 @@ export const asyncRouterMap = [
   {
     path: '/seal',
     component: Layout,
-    redirect: '/seal/index',
+    redirect: 'noredirect',
     name: '电子印章',
-    meta: { icon: 'people_fill', title: '电子印章' },
     children: [
-      { path: 'index', component: _import('seal/index'), name: '电子印章', meta: { title: '电子印章' }}
+      { path: 'index', component: _import('seal/index'), name: '电子印章', meta: { icon: 'peoplefill', title: '电子印章' }}
     ]
   },
 

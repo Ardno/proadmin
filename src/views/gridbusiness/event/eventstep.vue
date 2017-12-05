@@ -47,7 +47,7 @@
 </template>
 
 <script>
-import { fetchDepartments, fetchRoles } from '@/api/department'
+import { fetchRoles } from '@/api/department'
 import { getStepsArr } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
 export default {
@@ -95,9 +95,7 @@ export default {
       this.getEventsArr()
     },
     getDepArr() { // 获取部门集合
-      fetchDepartments('').then(res => {
-        this.depArr = res.info
-      })
+      this.depArr = this.$store.getters.commonInfo.depArr
       fetchRoles({ start_index: 0, length: 10000 }).then(res => {
         this.userArr = res.info
       })

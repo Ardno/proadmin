@@ -71,7 +71,7 @@
 </template>
 
 <script>
-import { getAccess, createRoles, fetchRoles, updateRoles, fetchDepartments } from '@/api/department'
+import { getAccess, createRoles, fetchRoles, updateRoles } from '@/api/department'
 import { deepClone } from '@/utils/index'
 import { isAccess } from '@/utils/auth'
 export default {
@@ -253,11 +253,7 @@ export default {
       }
     },
     loadDep() { // 获取用户部门和用户
-      fetchDepartments({ status: 0 }).then(response => {
-        this.depArr = response.info.filter(obj => {
-          return !obj.status
-        })
-      })
+      this.depArr = deepClone(this.$store.getters.commonInfo.depArr)
     },
     handleCheckAllChange(val) {
       if (val) {

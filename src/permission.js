@@ -21,6 +21,7 @@ router.beforeEach((to, from, next) => {
       next({ path: '/' })
       NProgress.done() // router在hash模式下 手动改变hash 重定向回来 不会触发afterEach 暂时hack方案 ps：history模式下无问题，可删除该行！
     } else {
+      store.dispatch('getAlldepPep', {})
       if (store.getters.roles.length === 0) { // 判断当前用户是否已拉取完user_info信息
         store.dispatch('GetUserInfo', getUserid()).then(res => { // 拉取user_info
           const rolesstr = res.info.access

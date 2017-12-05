@@ -1,18 +1,32 @@
 <template>
   <div class="app-container">
     <div class="layui-elem-quote">
-        <el-select clearable class="filter-item" style="width: 130px" filterable v-model="pageobj.user_id" placeholder="用户">
-          <el-option v-for="item in  userArr" :key="item._id" :label="item.name" :value="item._id">
+      <p class="mb10">
+        <el-select clearable class="filter-item" style="width:453px" filterable multiple v-model="pageobj.department_ids" placeholder="所属部门">
+          <el-option v-for="item in  commonInfo.depArr" :key="item._id" :label="item.name" :value="item._id">
           </el-option>
         </el-select>
-        <el-select clearable class="filter-item" style="width: 130px" filterable v-model="pageobj.type_id" placeholder="事件类型">
+      </p>
+      <p class="mb10">
+        <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.type_id" placeholder="事件类型">
           <el-option v-for="item in  typeArr" :key="item._id" :label="item.name" :value="item._id">
           </el-option>
         </el-select>
+        <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.step_status" placeholder="事件状态">
+          <el-option v-for="item in  statusArr" :key="item._id" :label="item.name" :value="item._id">
+          </el-option>
+        </el-select>
+        <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.user_id" placeholder="用户">
+          <el-option v-for="item in  commonInfo.userArr" :key="item._id" :label="item.name" :value="item._id">
+          </el-option>
+        </el-select>
+      </p>
+      <p>
         <el-date-picker  type="datetime" v-model="start_time" placeholder="选择开始时间"></el-date-picker>
         <span>-</span>
         <el-date-picker  type="datetime" v-model="end_time" placeholder="选择结束时间"></el-date-picker>
         <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
+      </p>  
     </div>
     <el-table :key='tableKey' :data="eventArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="创建时间">
@@ -70,7 +84,7 @@
 </template>
 
 <script>
-import { fetchList } from '@/api/department'
+import { mapGetters } from 'vuex'
 import { getEventArr, getEventTypeArr, updateEvent } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
 export default {
@@ -84,6 +98,9 @@ export default {
         currentPage: 1,
         user_id: '',
         type_id: '',
+        department_ids: '',
+        department_id: '',
+        step_status: '',
         start_time: '',
         end_time: ''
       },
@@ -93,8 +110,18 @@ export default {
       tableKey: 0,
       eventArr: [],
       userArr: [],
+      statusArr: [
+        { name: '待填写', _id: 0 },
+        { name: '待审核', _id: 1 },
+        { name: '已完成', _id: 2 }
+      ],
       typeArr: []
     }
+  },
+  computed: {
+    ...mapGetters({
+      commonInfo: 'commonInfo'
+    })
   },
   created() {
     this.loadArr()
@@ -158,11 +185,6 @@ export default {
       })
     },
     loadArr() { // 获取用户集合和事件类型集合
-      fetchList({ start_index: 0, length: 10000 }).then(res => {
-        this.userArr = res.info.list.filter(obj => {
-          return !obj.status
-        })
-      })
       getEventTypeArr('').then(res => {
         this.typeArr = res.info.filter(obj => {
           return !obj.status

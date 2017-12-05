@@ -155,7 +155,6 @@
 
 <script>
 // addLaws, updateLaws, getLaws,
-import { fetchDepartments } from '@/api/department'
 import { TreeUtil } from '@/utils/index'
 import { addLaws, updateLaws, getLawsArr } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
@@ -332,13 +331,7 @@ export default {
       })
     },
     loadDps() {
-      fetchDepartments('').then(response => {
-        const array = response.info
-        const arrs = array.filter(function(element) {
-          return element.status !== 1
-        }, this)
-        this.depArr = arrs
-      })
+      this.depArr = this.$store.getters.commonInfo.depArr
       this.getLawsArr()
     },
     filterDepRegu(id, flg) { // 转换部门和法律

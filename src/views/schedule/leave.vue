@@ -93,7 +93,6 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { fetchList, fetchDepartments } from '@/api/department'
 import { getLeavesArr, updateLeaves, addLeaves } from '@/api/levelshift'
 import { isAccess, isUser } from '@/utils/auth'
 export default {
@@ -198,21 +197,8 @@ export default {
       this.$refs.infoForm.resetFields()
     },
     loadDep() { // 获取用户部门和用户
-      fetchDepartments().then(response => {
-        this.depArr = response.info
-      })
-      fetchList({ start_index: 0, length: 10000 }).then(response => {
-        if (response.info.list.length) {
-          const array = response.info.list
-          const arrs = []
-          array.forEach(function(element) {
-            if (!element.status) {
-              arrs.push(element)
-            }
-          }, this)
-          this.userArr = arrs
-        }
-      })
+      this.depArr = this.$store.getters.commonInfo.depArr
+      this.userArr = this.$store.getters.commonInfo.userArr
     },
     handleQuery() {
       this.pageobj.start_index = 0

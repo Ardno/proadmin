@@ -105,7 +105,6 @@
 <script>
 import { addRegion, getLocationsArr } from '@/api/grid'
 import Cookies from 'js-cookie'
-import { fetchList, fetchDepartments } from '@/api/department'
 import { isAccess } from '@/utils/auth'
 export default {
   name: 'SideBar',
@@ -262,18 +261,8 @@ export default {
       }
     },
     loadUser() { // 获取用户集合
-      fetchList({ start_index: 0, length: 10000 }).then(response => {
-        if (response.info.list.length) {
-          this.userArr = response.info.list.filter(obj => { // 获取正常状态的用户
-            return !obj.status
-          })
-        }
-      })
-      fetchDepartments().then(response => {
-        this.depArr = response.info.filter(obj => { // 获取正常状态的部门
-          return !obj.status
-        })
-      })
+      this.userArr = this.$store.getters.commonInfo.depArr // 获取正常状态的用户
+      this.depArr = this.$store.getters.commonInfo.depArr // 获取正常状态的部门
     },
     mouseToolPolygon() { // 框选人员
       if (!this.mouseTool) {

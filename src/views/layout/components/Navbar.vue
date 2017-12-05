@@ -35,33 +35,39 @@
       </div>
 		</el-menu>
 		<!-- 修改个人信息 -->
-		<el-dialog title="修改信息"  @close="closeCall" :visible.sync="dialogInfo">
+		<el-dialog title="个人信息"  @close="closeCall" :visible.sync="dialogInfo">
 			<el-form class="small-space" :model="temp" :rules="infoRules" ref="infoForm" label-position="right"  label-width="80px" style='width: 400px; margin-left:50px;'>
 			<el-form-item label="姓名" prop="name">
-					<el-input v-model="temp.name"></el-input>
+        <span>{{temp.name}}</span>
+        <!-- <el-input v-model="temp.name"></el-input> -->
 			</el-form-item>
 			<el-form-item label="性别">
-					<el-radio class="radio" v-model="temp.sex" :label="0">男</el-radio>
-					<el-radio class="radio" v-model="temp.sex" :label="1">女</el-radio>
+        <span>{{temp.sex? '女':'男'}}</span>
+        <!-- <el-radio class="radio" v-model="temp.sex" :label="0">男</el-radio>
+        <el-radio class="radio" v-model="temp.sex" :label="1">女</el-radio> -->
 			</el-form-item>
 			<el-form-item label="民族" prop="nation">
-					<el-input v-model="temp.nation"></el-input>
+        <span>{{temp.nation}}</span>
+				<!-- <el-input v-model="temp.nation"></el-input> -->
 			</el-form-item>
 			<el-form-item label="出生日期">
-					<el-date-picker v-model="temp.birthday" type="date" :editable="false" :clearable="false"   placeholder="出生日期">
-					</el-date-picker>
+        <span>{{temp.birthday | parseTime('{y}-{m}-{d}')}}</span>
+        <!-- <el-date-picker v-model="temp.birthday" type="date" :editable="false" :clearable="false"   placeholder="出生日期">
+        </el-date-picker> -->
 			</el-form-item>
 			<el-form-item label="身份证号" prop="idNum">
-					<el-input v-model="temp.idNum"></el-input>
+        <span>{{temp.idNum}}</span>
+				<!-- <el-input v-model="temp.idNum"></el-input> -->
 			</el-form-item>
 			<el-form-item label="手机号码" prop="mobile">
-					<el-input v-model="temp.mobile"></el-input>
+        <span>{{temp.mobile}}</span>
+        <!-- <el-input v-model="temp.mobile"></el-input> -->
 			</el-form-item>
 			</el-form>
-			<div slot="footer" class="dialog-footer">
+			<!-- <div slot="footer" class="dialog-footer">
 			<el-button @click="dialogInfo = false">取 消</el-button>
 			<el-button type="primary" @click="handleUpdate">确 定</el-button>
-			</div>
+			</div> -->
     </el-dialog>
     <!-- 修改个人密码 -->
     <el-dialog title="修改密码" :visible.sync="dialogPwdInfo">

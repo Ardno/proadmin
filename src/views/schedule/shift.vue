@@ -111,7 +111,6 @@
 </template>
 
 <script>
-import { fetchList, fetchDepartments } from '@/api/department'
 import { getShiftsArr, updateShifts, addShifts, getWorksArr } from '@/api/levelshift'
 import { getRegionArr } from '@/api/grid'
 import { isAccess, isUser } from '@/utils/auth'
@@ -249,16 +248,8 @@ export default {
       this.$refs.infoForm.resetFields()
     },
     loadDep() { // 获取用户部门和用户 区域
-      fetchDepartments().then(response => {
-        this.depArr = response.info.filter(obj => {
-          return !obj.status
-        })
-      })
-      fetchList({ start_index: 0, length: 10000 }).then(response => {
-        this.userArr = response.info.list.filter(obj => {
-          return !obj.status
-        })
-      })
+      this.depArr = this.$store.getters.commonInfo.depArr
+      this.userArr = this.$store.getters.commonInfo.userArr
       getRegionArr(this.requesetUser).then(response => {
         this.regionArr = response.info.list.filter(obj => {
           return !obj.status
