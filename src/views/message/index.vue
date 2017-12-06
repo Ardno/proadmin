@@ -46,7 +46,6 @@
 
 <script>
 import avatar from 'assets/images/xitongxiaoxi.png'
-import { fetchList } from '@/api/department'
 import { getSmsList, readSms } from '@/api/message'
 export default {
   data() {
@@ -118,18 +117,7 @@ export default {
       })
     },
     loadDep() { // 获取用户
-      fetchList({ start_index: 0, length: 10000 }).then(response => {
-        if (response.info.list.length) {
-          const array = response.info.list
-          const arrs = []
-          array.forEach(function(element) {
-            if (!element.status) {
-              arrs.push(element)
-            }
-          }, this)
-          this.userArr = arrs
-        }
-      })
+      this.userArr = this.$store.getters.commonInfo.userArr
     }
   }
 }

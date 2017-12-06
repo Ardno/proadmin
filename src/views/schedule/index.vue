@@ -229,6 +229,7 @@ export default {
       })
     })
     this.pageobj.user_id = store.getters.useinfo._id
+    this.loadWorkArr()
   },
   computed: {
   }

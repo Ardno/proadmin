@@ -195,10 +195,14 @@ export default {
     isAccess: isAccess,
     loadInit() { // 初始化加载
       this.markerArr = []
-      this.getRegion()
-      this.getUserArr()
-      this.getLatlon()
-      this.getEventArr()
+      try {
+        this.getRegion()
+        this.getUserArr()
+        this.getLatlon()
+        this.getEventArr()
+      } catch (error) {
+        console.log(error)
+      }
     },
     getSetting(obj) {
       this.markerArr = []
@@ -252,6 +256,8 @@ export default {
             this.polygonsArr.push(obj)
           }
         }, this)
+      }).catch(errs => {
+        console.log('获取区域位置出错')
       })
     },
     getLatlon() { // 获取部门人员位置
@@ -295,6 +301,8 @@ export default {
           this.markerArr.push(obj)
           this.personArr.push(obj)
         })
+      }).catch(errs => {
+        console.log('获取部门人员位置出错')
       })
     },
     getEventArr() { // 获取事件位置
@@ -302,43 +310,47 @@ export default {
         return obj.is_enable
       })
       this.eventArr = []
-      getEventArr({ start_index: 0, length: 1000, department_id: dep[0].department_id }).then(res => {
+      getEventArr({ start_index: 0, length: 10000, department_id: dep[0].department_id }).then(res => {
         res.info.list.forEach((element, index) => {
-          const obj = {
-            position: [element.lat, element.lon],
-            icon: eventicon,
-            events: {
-              init: (marker) => {
-                marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
-                  offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
-                  content: element.name
-                })
+          if (element.lat) {
+            const obj = {
+              position: [element.lat, element.lon],
+              icon: eventicon,
+              events: {
+                init: (marker) => {
+                  marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
+                    offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
+                    content: element.name
+                  })
+                },
+                click: (e) => {
+                  const obj = element
+                  const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                  this.windows[0].position = [e.lnglat.lng, e.lnglat.lat]
+                  this.windows[0].visible = true
+                  const ctstr = `<div class="info">
+                  <div class="info-top">${obj.name}</div>
+                  <div class="info-middle" style="background-color: white;">
+                  时间：${happen_time}<br>
+                  地址：${obj.address}<br>
+                  <a href="#" style="color:blue">点击查看事件</a>
+                  </div></div>`
+                  this.windows[0].content = ctstr
+                },
+                dragend: (e) => {
+                  this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
+                }
               },
-              click: (e) => {
-                const obj = element
-                const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                this.windows[0].position = [e.lnglat.lng, e.lnglat.lat]
-                this.windows[0].visible = true
-                const ctstr = `<div class="info">
-                 <div class="info-top">${obj.name}</div>
-                 <div class="info-middle" style="background-color: white;">
-                 时间：${happen_time}<br>
-                 地址：${obj.address}<br>
-                 <a href="#" style="color:blue">点击查看事件</a>
-                 </div></div>`
-                this.windows[0].content = ctstr
-              },
-              dragend: (e) => {
-                this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
-              }
-            },
-            title: element.name,
-            visible: true,
-            draggable: false
+              title: element.name,
+              visible: true,
+              draggable: false
+            }
+            this.markerArr.push(obj)
+            this.eventArr.push(obj)
           }
-          this.markerArr.push(obj)
-          this.eventArr.push(obj)
         })
+      }).catch(errs => {
+        console.log('获取事件位置出错')
       })
     },
     updateRegion() { // 修改区域用户

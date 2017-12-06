@@ -261,7 +261,7 @@ export default {
       }
     },
     loadUser() { // 获取用户集合
-      this.userArr = this.$store.getters.commonInfo.depArr // 获取正常状态的用户
+      this.userArr = this.$store.getters.commonInfo.userArr // 获取正常状态的用户
       this.depArr = this.$store.getters.commonInfo.depArr // 获取正常状态的部门
     },
     mouseToolPolygon() { // 框选人员

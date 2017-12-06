@@ -115,7 +115,6 @@
 </template>
 
 <script>
-import { fetchList } from '@/api/department'
 import { getMonthdance } from '@/api/levelshift'
 // import { isAccess, isUser } from '@/utils/auth'
 import store from '@/store'
@@ -151,11 +150,7 @@ export default {
   },
   methods: {
     loadArr() { // 获取用户集合和事件类型集合
-      fetchList({ start_index: 0, length: 10000 }).then(res => {
-        this.userArr = res.info.list.filter(obj => {
-          return !obj.status
-        })
-      })
+      this.userArr = this.$store.getters.commonInfo.userArr
     },
     handleQuery() {
       // this.pageobj.start_index = 0

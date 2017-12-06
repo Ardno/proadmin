@@ -75,6 +75,14 @@ export const asyncRouterMap = [
     children: [{ path: 'index', component: _import('operationlog/index'), name: '操作记录', meta: { role: ['110'], icon: 'lock', title: '操作记录' }}]
   },
   {
+    path: '/reportcase',
+    component: Layout,
+    redirect: 'noredirect',
+    name: '上报案件',
+    meta: { icon: 'editor', title: '上报案件' },
+    children: [{ path: 'reportcase', component: _import('gridbusiness/event/reportcase'), name: '上报案件', meta: { title: '上报案件' }}]
+  },
+  {
     path: '/gridbusiness',
     component: Layout,
     redirect: 'noredirect',

@@ -44,7 +44,6 @@
 </template>
 
 <script>
-import { fetchList } from '@/api/department'
 import { getLogArr } from '@/api/platform'
 export default {
   data() {
@@ -80,9 +79,7 @@ export default {
       this.getLogArr()
     },
     getuserArr() { // 获取部门集合
-      fetchList({ start_index: 0, length: 10000 }).then(res => {
-        this.userArr = res.info.list
-      })
+      this.userArr = this.$store.getters.commonInfo.userArr
     },
     handleSizeChange(val) {
       this.pageobj.pagesize = val
