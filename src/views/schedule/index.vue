@@ -222,6 +222,7 @@ export default {
       this.userArr = response.info.list.filter(obj => {
         return !obj.status
       })
+      this.loadWorkArr()
     })
     getRegionArr({ start_index: 0, length: 10000 }).then(response => {
       this.polygons = response.info.list.filter(obj => {
@@ -229,7 +230,6 @@ export default {
       })
     })
     this.pageobj.user_id = store.getters.useinfo._id
-    this.loadWorkArr()
   },
   computed: {
   }

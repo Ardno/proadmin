@@ -40,7 +40,7 @@
       <el-form label-position="right" label-width="80px" :rules="infoRules" ref="infoForm" :model="duty">
         <el-form-item label="所属部门">
           <el-select clearable class="filter-item" filterable style="width: 130px" v-model="duty.department_id" placeholder="请选择">
-            <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
+            <el-option v-for="item in  depArrs" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -98,6 +98,7 @@ export default {
         access: '',
         level: '1'
       },
+      depArrs: [],
       depArr: [],
       listLoading: false,
       infoRules: {
@@ -254,6 +255,9 @@ export default {
     },
     loadDep() { // 获取用户部门和用户
       this.depArr = deepClone(this.$store.getters.commonInfo.depArr)
+      this.depArrs = this.depArr.filter(obj => {
+        return !obj.parent
+      })
     },
     handleCheckAllChange(val) {
       if (val) {

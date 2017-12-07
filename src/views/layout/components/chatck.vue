@@ -278,7 +278,7 @@ export default {
     filterName(strid) {
       let name = ''
       const id = strid.substring(5)
-      this.userArr.forEach(element => {
+      this.userList.forEach(element => {
         if (element._id === Number(id)) {
           name = element.name
         }

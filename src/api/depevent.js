@@ -50,7 +50,13 @@ export function getEvent(data) { // 获取事件
     data: data
   })
 }
-
+export function getEventStep(data) { // 获取事件当前进行中步骤
+  return fetch({
+    url: 'event/get_step',
+    method: 'post',
+    data: data
+  })
+}
 export function getEventArr(data) { // 获取事件集合
   return fetch({
     url: 'event/list',

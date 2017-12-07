@@ -159,7 +159,7 @@ import { fetchList, fetchDepartments } from '@/api/department'
 import { getJMessage, authPayload, errorApiTip } from '@/utils/IM'
 import { createSignature, imNotification } from '@/utils/utils'
 import { reducerDate } from '@/utils/index'
-// import { md5 } from '@/utils/md5'
+import { md5 } from '@/utils/md5'
 import group_avatar from '@/assets/images/group-avatar.svg'
 import single_avatar from '@/assets/images/single-avatar.svg'
 import avteinfo from '@/assets/images/avteinfo.svg'
@@ -390,17 +390,18 @@ export default {
       })
     },
     JIMLogin() {
+      console.log('im', store.getters.password)
       this.JIM.login({
         username: 'yzwg_' + store.getters.useinfo._id,
-        password: store.getters.password,
+        password: md5(store.getters.password),
         is_md5: true
       }).onSuccess((login) => {
         try {
           this.JIMgetUserInfo(login.username)
           this.JIMgetFriendList()
           this.JIMgetGroups()
-          this.onMsgReceive()
-          this.onSyncConversation()
+          this.onMsgReceive() // 消息监听
+          this.onSyncConversation() // 消息监听
           this.onMsgReceiptChange()
           this.onMutiUnreadMsgUpdate()
           this.onSyncMsgReceipt()
@@ -518,40 +519,6 @@ export default {
             this.friend_list.push(obj)
           }
         }))
-        // 获取好友，暂不支持添加好友
-      // this.JIM.getFriendList().onSuccess((data) => {
-      //   const friend_list = data.friend_list
-      //   for (const friend of friend_list) {
-      //     friend.avatarUrl = single_avatar
-      //     friend.type = 3
-      //   }
-      //   const memo = {}
-      //   friend_list.forEach(function(element) {
-      //     if (element.memo_others) {
-      //       if (memo[element.memo_others]) {
-      //         memo[element.memo_others].push(element)
-      //       } else {
-      //         memo[element.memo_others] = [element]
-      //       }
-      //     } else {
-      //       if (memo['我的好友']) {
-      //         memo['我的好友'].push(element)
-      //       } else {
-      //         memo['我的好友'] = [element]
-      //       }
-      //     }
-      //   }, this)
-      //   for (const key in memo) {
-      //     const obj = {
-      //       groupname: key,
-      //       len: memo[key].length,
-      //       list: memo[key]
-      //     }
-      //     this.friend_list.push(obj)
-      //   }
-      // }).onFail((error) => {
-      //   errorApiTip(error)
-      // })
     },
     JIMgetGroups() { // 获取群组列表
       this.JIM.getGroups().onSuccess((data) => {
@@ -606,6 +573,14 @@ export default {
       }).onFail((error) => {
         errorApiTip(error)
       })
+      setTimeout(() => {
+        const conversations = this.conversations
+        for (const conver of conversations) {
+          if (conver.type === 3) {
+            conver.nickname = this.filterName(conver.username)
+          }
+        }
+      }, 5000)
     },
     JIMcreateGroup(data) { // 创建群组
       this.JIM.createGroup(data).onSuccess((res) => {

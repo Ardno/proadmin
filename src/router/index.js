@@ -78,9 +78,13 @@ export const asyncRouterMap = [
     path: '/reportcase',
     component: Layout,
     redirect: 'noredirect',
-    name: '上报案件',
-    meta: { icon: 'editor', title: '上报案件' },
-    children: [{ path: 'reportcase', component: _import('gridbusiness/event/reportcase'), name: '上报案件', meta: { title: '上报案件' }}]
+    name: '案件处理',
+    meta: { icon: 'editor', title: '案件处理' },
+    children: [
+      { path: 'reportcase', component: _import('gridbusiness/event/reportcase'), name: '上报案件', meta: { title: '上报案件' }},
+      { path: 'mycase', component: _import('gridbusiness/event/mycase'), name: '我的案件', meta: { title: '我的案件' }},
+      { path: 'editcase/:id', hidden: true, component: _import('gridbusiness/event/editcase'), name: '编辑案件', meta: { title: '编辑案件' }}
+    ]
   },
   {
     path: '/gridbusiness',
@@ -103,8 +107,8 @@ export const asyncRouterMap = [
     children: [
       { path: 'event', component: _import('gridbusiness/event/event'), name: '事件列表', meta: { role: ['90'], title: '事件列表' }},
       { path: 'eventtype', component: _import('gridbusiness/event/eventtype'), name: '事件类型', meta: { role: ['80'], title: '事件类型' }},
-      { path: 'eventstep', component: _import('gridbusiness/event/eventstep'), name: '事件步骤', meta: { role: ['150'], title: '事件步骤' }},
-      { path: 'editeventstep/:id', component: _import('gridbusiness/event/editeventstep'), name: '编辑步骤', meta: { role: ['151', '152'], title: '编辑步骤' }}
+      { path: 'eventstep', component: _import('gridbusiness/event/eventstep'), name: '事件步骤', meta: { role: ['150'], title: '事件步骤', noCache: true }},
+      { path: 'editeventstep/:id', component: _import('gridbusiness/event/editeventstep'), name: '编辑步骤', meta: { role: ['151', '152'], title: '编辑步骤', noCache: true }}
     ]
   },
   {

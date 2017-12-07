@@ -9,15 +9,15 @@
           <el-input v-model="eventForm.name"></el-input>
         </el-form-item>
         <el-form-item label="事件类型" prop="type_id">
-          <el-select v-model="eventForm.type_id" filterable  placeholder="请选择事件类型">
+          <el-select v-model="eventForm.type_id" filterable  placeholder="请选择事件类型" @change="changType">
             <el-option v-for="(item, index) in eventTypeArr" :key="index" :label="item.name" :value="item._id"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="发生时间" prop="happen_time_t">
           <el-date-picker v-model="eventForm.happen_time_t" type="datetime" placeholder="请选择发生时间" @change="changetime"></el-date-picker>
         </el-form-item>
-        <el-form-item label="发生地点" prop="happen_time_t">
-          <span class=""></span>
+        <el-form-item label="发生地点">
+          <span class="mr10">{{eventForm.address}}</span>
           <span class="blue poi" @click="dialogVisible=true"><i class="el-icon-location"></i>选择地点</span>
         </el-form-item>
         <el-form-item>
@@ -25,16 +25,16 @@
         </el-form-item>
       </el-form>
     </div>
-    <el-dialog title="提示" :visible.sync="dialogVisible" width="50%">
-      <el-container>
-        <el-aside width="200px">Aside</el-aside>
-        <el-main>
-          <el-amap vid="amapDemo" ref="map" :center="center" :map-manager="amapManager" :zoom="zoom" :plugin="plugin" :events="events" class="amap-demo">
-          </el-amap>
-        </el-main>
-      </el-container>
+    <el-dialog title="选择地点" :visible.sync="dialogVisible" width="800px">
+      <div class="mb5">
+        <p class="mb5">经纬度: {{positionObj.lnglat}}</p> 
+        <p class="mb5">地址: {{positionObj.address}}</p>
+      </div>
+      <div class="bdf" style="height:400px;">
+        <el-amap vid="amapDemo" ref="map" :center="center" :map-manager="amapManager" :zoom="zoom" :plugin="plugin" :events="events" class="amap-demo">
+        </el-amap>
+      </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
       </span>
     </el-dialog>
@@ -43,7 +43,7 @@
 
 <script>
 import VueAMap from 'vue-amap'
-import { getEventTypeArr } from '@/api/depevent'
+import { getEventTypeArr, addEvent } from '@/api/depevent'
 const amapManager = new VueAMap.AMapManager()
 export default {
   data() {
@@ -53,8 +53,15 @@ export default {
       eventForm: {
         type_id: '',
         name: '',
+        lat: '',
+        lon: '',
+        step_ids: '',
         happen_time_t: '',
         happen_time: '',
+        address: ''
+      },
+      positionObj: {
+        lnglat: '',
         address: ''
       },
       rules: {
@@ -63,12 +70,10 @@ export default {
         happen_time_t: [{ type: 'date', required: true, message: '请选择发生时间', trigger: 'change' }]
       },
       amapManager,
-      mapobj: null,
       zoom: 13,
       center: [114.085947, 22.54702],
       events: {
         init: (map) => {
-          this.mapobj = this.$refs.map
           const geolocation = new AMap.Geolocation({
             enableHighAccuracy: true, // 是否使用高精度定位，默认:true
             timeout: 10000, // 超过10秒后停止定位，默认：无穷大
@@ -76,10 +81,32 @@ export default {
             zoomToAccuracy: true, // 定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
             buttonPosition: 'RB'
           })
-          this.mapobj.addControl(geolocation)
+          map.addControl(geolocation)
           geolocation.getCurrentPosition()
           AMap.event.addListener(geolocation, 'complete', (data) => { console.log(data) })
           AMap.event.addListener(geolocation, 'error', (data) => {})
+          AMapUI.loadUI(['misc/PositionPicker'], (PositionPicker) => {
+            const positionPicker = new PositionPicker({
+              mode: 'dragMap', // 设定为拖拽地图模式，可选'dragMap'、'dragMarker'，默认为'dragMap'
+              map: map // 依赖地图对象
+            })
+            positionPicker.start()
+            positionPicker.on('success', (positionResult) => {
+              this.positionObj = {
+                lnglat: [positionResult.position.lng, positionResult.position.lat],
+                address: positionResult.address
+              }
+              this.eventForm.address = positionResult.address
+              this.eventForm.lon = positionResult.position.lng
+              this.eventForm.lat = positionResult.position.lat
+            })
+            positionPicker.on('fail', (positionResult) => {
+              this.positionObj = {
+                lnglat: '',
+                address: ''
+              }
+            })
+          })
         },
         click: (e) => {
         }
@@ -96,6 +123,16 @@ export default {
   },
   created() {
     this.getEventTypeArr()
+    this.eventForm = {
+      type_id: '',
+      name: '',
+      lat: '',
+      lon: '',
+      step_ids: '',
+      happen_time_t: '',
+      happen_time: '',
+      address: ''
+    }
   },
   methods: {
     getEventTypeArr() { // 获取事件类型集合
@@ -103,13 +140,40 @@ export default {
         this.eventTypeArr = res.info
       })
     },
+    changType(val) {
+      const arr = this.eventTypeArr.filter((obj) => {
+        return obj._id === val
+      })
+      this.eventForm.step_ids = arr[0].step_ids
+    },
     changetime(val) {
       this.eventForm.happen_time = new Date(val).getTime() / 1000
     },
     submitForm(form) {
       this.$refs[form].validate(valid => {
         if (valid) {
-          console.log(123)
+          // if (this.eventForm.address) {
+          addEvent(this.eventForm).then(res => {
+            this.$message({
+              message: '操作成功',
+              type: 'success',
+              duration: 4 * 1000
+            })
+            this.$router.push({ path: '/reportcase/mycase' })
+          }).catch(() => {
+            this.$message({
+              message: '操作失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
+          })
+          // } else {
+          //   this.$message({
+          //     message: '请选择地址',
+          //     type: 'error',
+          //     duration: 4 * 1000
+          //   })
+          // }
         }
       })
     }

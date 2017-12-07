@@ -1,32 +1,18 @@
 <template>
   <div class="app-container">
     <div class="layui-elem-quote">
-      <p class="mb10">
-        <el-select clearable class="filter-item" style="width:453px" filterable multiple v-model="pageobj.department_ids" @change="filterArrDep" placeholder="所属部门">
-          <el-option v-for="item in  commonInfo.depArr" :key="item._id" :label="item.name" :value="item._id">
-          </el-option>
-        </el-select>
-      </p>
-      <p class="mb10">
-        <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.type_id" placeholder="事件类型">
-          <el-option v-for="item in  typeArr" :key="item._id" :label="item.name" :value="item._id">
-          </el-option>
-        </el-select>
-        <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.step_status" placeholder="事件状态">
-          <el-option v-for="item in  statusArr" :key="item._id" :label="item.name" :value="item._id">
-          </el-option>
-        </el-select>
-        <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.user_id" placeholder="用户">
-          <el-option v-for="item in  commonInfo.userArr" :key="item._id" :label="item.name" :value="item._id">
-          </el-option>
-        </el-select>
-      </p>
-      <p>
-        <el-date-picker  type="datetime" v-model="start_time" placeholder="选择开始时间"></el-date-picker>
-        <span>-</span>
-        <el-date-picker  type="datetime" v-model="end_time" placeholder="选择结束时间"></el-date-picker>
-        <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
-      </p>  
+      <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.type_id" placeholder="事件类型">
+        <el-option v-for="item in  typeArr" :key="item._id" :label="item.name" :value="item._id">
+        </el-option>
+      </el-select>
+      <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.step_status" placeholder="事件状态">
+        <el-option v-for="item in  statusArr" :key="item._id" :label="item.name" :value="item._id">
+        </el-option>
+      </el-select>
+      <el-date-picker  type="datetime" v-model="start_time" placeholder="选择开始时间"></el-date-picker>
+      <span>-</span>
+      <el-date-picker  type="datetime" v-model="end_time" placeholder="选择结束时间"></el-date-picker>
+      <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
     </div>
     <el-table :key='tableKey' :data="eventArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="创建时间">
@@ -70,8 +56,10 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="100">
         <template slot-scope="scope">
-          <el-button size="small" type="danger" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" >直接关闭
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' " @click="goOtherPage(scope.row._id)" >编辑
           </el-button>
+          <!-- <el-button size="small" type="danger" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" >直接关闭
+          </el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -95,6 +83,7 @@
 import { mapGetters } from 'vuex'
 import { getEventArr, getEventTypeArr, updateEvent } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
+import store from '@/store'
 export default {
   data() {
     return {
@@ -104,7 +93,7 @@ export default {
         pagesize: 10,
         totalPages: 0,
         currentPage: 1,
-        user_id: '',
+        user_id: store.getters.useinfo._id,
         type_id: '',
         department_ids: '',
         department_id: '',
@@ -201,6 +190,9 @@ export default {
           return !obj.status
         })
       })
+    },
+    goOtherPage(val) {
+      this.$router.push({ path: '/reportcase/editcase/' + val })
     }
   }
 }

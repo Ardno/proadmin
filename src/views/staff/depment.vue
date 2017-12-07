@@ -76,7 +76,7 @@
                 <span class="g6">{{depInfo.mobile}}</span>
               </el-form-item>
               <el-form-item label="生日">
-                <span class="g6">{{depInfo.birthday | parseTime('{y}-{m}-{d}')}}</span>
+                <span class="g6">{{depInfo.birthday | parseTime('{y}-{m}-{d}',true)}}</span>
               </el-form-item>
               <el-form-item  v-for="(pitem,index) in depInfodep.depArr" :label="'部门'+(index+1)" :key="pitem._id">
                 <span class="g6">{{pitem.deptname}}</span>

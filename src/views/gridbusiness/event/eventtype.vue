@@ -261,13 +261,15 @@ export default {
       const rets = []
       if (str.length) {
         const arr = str.split(',')
-        this.allStepsArr.forEach(function(element) {
-          arr.forEach(function(id) {
-            if (Number(id) === element._id) {
-              rets.push(element.name)
-            }
-          }, this)
+        arr.forEach(function(id) {
+          const saf = this.allStepsArr.filter(obj => {
+            return obj._id === Number(id)
+          })
+          if (saf.length) {
+            rets.push(saf[0].name)
+          }
         }, this)
+        console.log(rets)
         return rets.join(',')
       }
       return '暂无步骤'
