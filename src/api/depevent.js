@@ -43,6 +43,21 @@ export function updateEvent(data) { // 修改事件
     data: data
   })
 }
+export function updateCaseStep(data) { // 修改事件
+  return fetch({
+    url: 'event/update_step',
+    method: 'post',
+    data: data
+  })
+}
+export function getCaseStepinfo(data) { // 获取事件参数
+  return fetch({
+    url: 'event/get_event_step',
+    method: 'post',
+    data: data
+  })
+}
+
 export function getEvent(data) { // 获取事件
   return fetch({
     url: 'event/get',

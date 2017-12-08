@@ -74,12 +74,11 @@
           </el-button>
           <el-button size="small" type="danger" icon="el-icon-delete" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" title="删除" >
           </el-button>
-          <el-button size="small" type="primary"  @click="createPdf(scope.row)" >查看/打印
+          <el-button size="small" type="primary"  icon="el-icon-search"  @click="showStepInfo(scope.row)" title="查看/打印" >
           </el-button>
-          
           <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('94') && (scope.row.is_unfilled == 0 && scope.row.is_unaudited ==0)">标记完成</el-button>
           <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('91') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)">步骤填写</el-button> -->
-          <el-button size="small" type="primary"  @click="verifyEvent(scope.row)">步骤审核</el-button>
+          <el-button size="small" type="primary"  v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0" icon="el-icon-document"  @click="showVerifyEvent(scope.row)" title="步骤审核" ></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -100,10 +99,23 @@
       title="事件审核"
       :visible.sync="dialogVisible"
       width="400px">
-      <span>你确定要审核通过该事件吗</span>
+      <span>请填写理由</span>
+      <el-input type="textarea" autosize :rows="4" v-model="verifyitem.user_msg"></el-input>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">驳回</el-button>
-        <el-button type="primary" @click="dialogVisible = false">通过</el-button>
+        <el-button @click="verifyEvent(0)">驳回</el-button>
+        <el-button type="primary" @click="verifyEvent(2)">通过</el-button>
+      </span>
+    </el-dialog>
+    <el-dialog
+      title="步骤信息"
+      :visible.sync="caseStepInfo.dialogVisible"
+      width="800px">
+      <div class="infoct" v-html="caseStepInfo.content" v-loading="caseStepInfo.loading">
+      </div>
+      <!-- <iframe style="height:400px;width: 100%;" :srcdoc="caseStepInfo.content" frameborder="0"></iframe> -->
+      <span slot="footer" class="dialog-footer">
+        <el-button v-if="caseStepInfo.content" @click="createPdf(caseStepInfo.content)">打印</el-button>
+        <el-button type="primary" @click="caseStepInfo.dialogVisible = false">取消</el-button>
       </span>
     </el-dialog>
   </div>
@@ -112,7 +124,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { getEventStep } from '@/api/depevent'
-import { getEventArr, getEventTypeArr, updateEvent } from '@/api/depevent'
+import { getEventArr, getEventTypeArr, updateEvent, updateSteps, getSteps, getCaseStepinfo } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
 export default {
   data() {
@@ -143,12 +155,22 @@ export default {
         { name: '待审核', _id: 1 },
         { name: '已完成', _id: 2 }
       ],
-      typeArr: []
+      typeArr: [],
+      caseStepInfo: {
+        dialogVisible: false,
+        loading: false,
+        content: ''
+      },
+      verifyitem: {
+        user_msg: '',
+        id: ''
+      }
     }
   },
   computed: {
     ...mapGetters({
-      commonInfo: 'commonInfo'
+      commonInfo: 'commonInfo',
+      userInfo: 'useinfo'
     })
   },
   created() {
@@ -203,27 +225,107 @@ export default {
       }).catch(() => {
       })
     },
-    verifyEvent(item) { // 步骤审核
+    showVerifyEvent(item) {
       this.dialogVisible = true
-      getEventStep({ event_id: item._id }).then(res => {
-        this.requstParm.step_id = res.info.step_id
-        this.requstParm.event_id = res.info.event_id
-      })
-      console.log(item)
+      this.verifyitem.id = item._id
     },
-    createPdf(item) {
-      const newWindow = window.open('_blank') // 打开新窗口
-      const codestr = 'document.getElementById("pdf-wrap").innerHTML // 获取需要生成pdf页面的div代码'
-      newWindow.document.write(codestr) // 向文档写入HTML表达式或者JavaScript代码
-      newWindow.document.close() // 关闭document的输出流, 显示选定的数据
-      newWindow.print() // 打印当前窗口
+    verifyEvent(type) { // 步骤审核
+      if (!this.verifyitem.user_msg) {
+        this.$message({
+          message: '请填写理由',
+          type: 'info',
+          duration: 4 * 1000
+        })
+        return
+      }
+      getEventStep({ event_id: this.verifyitem.id }).then(res => {
+        const requst = {
+          step_id: res.info.step_id,
+          event_id: res.info.event_id,
+          user_id: this.userInfo._id,
+          status: type,
+          user_msg: this.verifyitem.user_msg
+        }
+        updateSteps(requst).then(res => {
+          this.dialogVisible = false
+          this.$message({
+            message: '关闭成功',
+            type: 'success',
+            duration: 4 * 1000
+          })
+        })
+      }).catch(errs => {
+        this.dialogVisible = false
+        this.$message({
+          message: '审核失败，请稍后再试',
+          type: 'error',
+          duration: 4 * 1000
+        })
+      })
+    },
+    showStepInfo(item) {
+      this.caseStepInfo.dialogVisible = true
+      this.caseStepInfo.loading = true
+      getEventStep({ event_id: item._id }).then(res => {
+        const resl = res.info
+        getSteps({ _id: resl.step_id }).then(data => {
+          this.caseStepInfo.loading = false
+          let content = data.info.content
+          getCaseStepinfo({ event_id: resl.event_id, step_id: resl.step_id }).then(lse => {
+            let reg = ''
+            lse.info.steps.forEach(element => { // 替换步骤文档中的参数
+              if (element.para_type === '6') {
+                reg = new RegExp(element.para_name, 'g')
+              } else {
+                reg = new RegExp('\\{\\{' + element.para_name + '\\}\\}', 'g')
+              }
+              const val = element.para_value || ''
+              content = content.replace(reg, val)
+            })
+            if (data.info.role_id_access !== '0') {
+              const arr = data.info.role_id_access.split(',')
+              arr.forEach(element => {
+                const reg1 = new RegExp('\\{\\{' + element + '\\}\\}', 'g')
+                content = content.replace(reg1, '')
+              })
+            }
+            this.caseStepInfo.content = content
+          })
+        })
+      }).catch(errs => {
+        console.log(errs)
+        this.caseStepInfo.loading = false
+        this.$message({
+          message: '查询信息失败',
+          type: 'error',
+          duration: 4 * 1000
+        })
+      })
+    },
+    createPdf(html) {
+      var iframe = document.createElement('IFRAME')
+      var doc = null
+      iframe.setAttribute('style', 'position:absolute;width:0px;height:0px;left:-500px;top:-500px;')
+      document.body.appendChild(iframe)
+      doc = iframe.contentWindow.document
+      // 引入打印的专有CSS样式，www.111Cn.net根据实际修改
+      doc.write(html)
+      doc.close()
+      iframe.contentWindow.focus()
+      iframe.contentWindow.print()
+      if (navigator.userAgent.indexOf('MSIE') > 0) {
+        document.body.removeChild(iframe)
+      }
       return true
     },
     getEventsArr() {
+      this.listLoading = true
       getEventArr(this.pageobj).then(res => {
         this.eventArr = res.info.list
         this.pageobj.totalPages = res.info.count
+        this.listLoading = false
       }).catch(() => {
+        this.listLoading = false
         this.$message({
           message: '查询信息失败，请稍后再试',
           type: 'error',
@@ -242,5 +344,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-
+  .infoct{
+    min-height:400px;
+  }
 </style>
