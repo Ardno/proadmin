@@ -70,15 +70,16 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="300">
         <template slot-scope="scope">
-          <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('92')" @click="goOtherPage(scope.row._id)" >编辑 -->
-          </el-button>
+          <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('92')" @click="goOtherPage(scope.row._id)" >编辑
+          </el-button> -->
           <el-button size="small" type="danger" icon="el-icon-delete" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" title="删除" >
           </el-button>
-          <el-button size="small" type="primary"  icon="el-icon-search"  @click="showStepInfo(scope.row)" title="查看/打印" >
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0"  icon="el-icon-search"  @click="showStepInfo(scope.row)" title="查看/打印" >
           </el-button>
-          <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('94') && (scope.row.is_unfilled == 0 && scope.row.is_unaudited ==0)">标记完成</el-button>
-          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('91') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)">步骤填写</el-button> -->
-          <el-button size="small" type="primary"  v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0" icon="el-icon-document"  @click="showVerifyEvent(scope.row)" title="步骤审核" ></el-button>
+          <!-- <el-button size="small" type="success"  @click="markComplete(scope.row)" v-if="scope.row.status == '0' && isAccess('94') && (scope.row.is_unfilled == 0 && scope.row.is_unaudited ==0)" >标记完成
+          </el-button> -->
+          <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('91') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)">步骤填写</el-button> -->
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0" icon="el-icon-document"  @click="showVerifyEvent(scope.row)" title="步骤审核" ></el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -263,7 +264,7 @@ export default {
         })
       })
     },
-    showStepInfo(item) {
+    showStepInfo(item) { //  显示步骤信息
       this.caseStepInfo.dialogVisible = true
       this.caseStepInfo.loading = true
       getEventStep({ event_id: item._id }).then(res => {
@@ -302,7 +303,7 @@ export default {
         })
       })
     },
-    createPdf(html) {
+    createPdf(html) { // 打印
       var iframe = document.createElement('IFRAME')
       var doc = null
       iframe.setAttribute('style', 'position:absolute;width:0px;height:0px;left:-500px;top:-500px;')
@@ -337,6 +338,28 @@ export default {
       getEventTypeArr('').then(res => {
         this.typeArr = res.info.filter(obj => {
           return !obj.status
+        })
+      })
+    },
+    markComplete(item) { // 标记完成
+      this.$confirm('你确定要标记事件已完成吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        updateEvent({ _id: item._id, status: 1 }).then(response => {
+          item.status = 1
+          this.$message({
+            message: '标记成功',
+            type: 'success',
+            duration: 4 * 1000
+          })
+        }).catch(() => {
+          this.$message({
+            message: '标记失败，请稍后再试',
+            type: 'error',
+            duration: 4 * 1000
+          })
         })
       })
     }
