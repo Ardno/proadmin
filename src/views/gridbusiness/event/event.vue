@@ -44,7 +44,7 @@
       </el-table-column>
       <el-table-column width="120" label="状态">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.status == '0' && (scope.row.is_unaudited>0)" type="info">
+          <el-tag v-if="scope.row.status == '0' && scope.row.is_unaudited>0" type="info">
               待审核
           </el-tag>
           <el-tag v-else-if="scope.row.status == '0' && scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0" type="info">
@@ -68,15 +68,18 @@
           <span v-else>无</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="100">
+      <el-table-column align="center" label="操作" width="300">
         <template slot-scope="scope">
-          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('92')" @click="goOtherPage(scope.row._id)" >编辑
+          <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('92')" @click="goOtherPage(scope.row._id)" >编辑 -->
           </el-button>
-          <el-button size="small" type="danger" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" >删除
+          <el-button size="small" type="danger" icon="el-icon-delete" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" title="删除" >
           </el-button>
-          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('94') && (scope.row.is_unfilled == 0 && scope.row.is_unaudited ==0)">标记完成</el-button>
-          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('91') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)">步骤填写</el-button>
-          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0">步骤审核</el-button>
+          <el-button size="small" type="primary"  @click="createPdf(scope.row)" >查看/打印
+          </el-button>
+          
+          <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('94') && (scope.row.is_unfilled == 0 && scope.row.is_unaudited ==0)">标记完成</el-button>
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('91') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)">步骤填写</el-button> -->
+          <el-button size="small" type="primary"  @click="verifyEvent(scope.row)">步骤审核</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -93,11 +96,22 @@
       </el-pagination>
     </div>
     <!-- 分页 -->
+    <el-dialog
+      title="事件审核"
+      :visible.sync="dialogVisible"
+      width="400px">
+      <span>你确定要审核通过该事件吗</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">驳回</el-button>
+        <el-button type="primary" @click="dialogVisible = false">通过</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
+import { getEventStep } from '@/api/depevent'
 import { getEventArr, getEventTypeArr, updateEvent } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
 export default {
@@ -117,6 +131,7 @@ export default {
         start_time: '',
         end_time: ''
       },
+      dialogVisible: false,
       start_time: '',
       end_time: '',
       listLoading: false,
@@ -187,6 +202,22 @@ export default {
         })
       }).catch(() => {
       })
+    },
+    verifyEvent(item) { // 步骤审核
+      this.dialogVisible = true
+      getEventStep({ event_id: item._id }).then(res => {
+        this.requstParm.step_id = res.info.step_id
+        this.requstParm.event_id = res.info.event_id
+      })
+      console.log(item)
+    },
+    createPdf(item) {
+      const newWindow = window.open('_blank') // 打开新窗口
+      const codestr = 'document.getElementById("pdf-wrap").innerHTML // 获取需要生成pdf页面的div代码'
+      newWindow.document.write(codestr) // 向文档写入HTML表达式或者JavaScript代码
+      newWindow.document.close() // 关闭document的输出流, 显示选定的数据
+      newWindow.print() // 打印当前窗口
+      return true
     },
     getEventsArr() {
       getEventArr(this.pageobj).then(res => {

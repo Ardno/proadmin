@@ -152,28 +152,28 @@ export default {
     submitForm(form) {
       this.$refs[form].validate(valid => {
         if (valid) {
-          // if (this.eventForm.address) {
-          addEvent(this.eventForm).then(res => {
-            this.$message({
-              message: '操作成功',
-              type: 'success',
-              duration: 4 * 1000
+          if (this.eventForm.address) {
+            addEvent(this.eventForm).then(res => {
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 4 * 1000
+              })
+              this.$router.push({ path: '/reportcase/mycase' })
+            }).catch(() => {
+              this.$message({
+                message: '操作失败，请稍后再试',
+                type: 'error',
+                duration: 4 * 1000
+              })
             })
-            this.$router.push({ path: '/reportcase/mycase' })
-          }).catch(() => {
+          } else {
             this.$message({
-              message: '操作失败，请稍后再试',
+              message: '请选择地址',
               type: 'error',
               duration: 4 * 1000
             })
-          })
-          // } else {
-          //   this.$message({
-          //     message: '请选择地址',
-          //     type: 'error',
-          //     duration: 4 * 1000
-          //   })
-          // }
+          }
         }
       })
     }

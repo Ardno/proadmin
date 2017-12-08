@@ -99,7 +99,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="换班原因" prop="change_content">
-          <el-input type="textarea" v-model="requset._id"></el-input>
+          <el-input type="textarea" v-model="requset.change_content"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -171,6 +171,7 @@ export default {
         isHandle: 0
       },
       shiftArr: [],
+      userInfo: [],
       depArr: [],
       userArr: [],
       workArr: [],
@@ -334,6 +335,7 @@ export default {
     }
   },
   created() {
+    this.userInfo = this.$store.getters.userInfo
     this.loadDep()
     this.loadshiftsArr()
   },

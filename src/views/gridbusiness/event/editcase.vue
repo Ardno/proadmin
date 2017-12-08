@@ -37,10 +37,10 @@
             <el-option v-for="item in  userArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
-          <el-select v-if="item.para_type == 6" clearable class="filter-item" filterable  v-model="item.para_value" placeholder="法律法规">
+          <!-- <el-select v-if="item.para_type == 6" clearable class="filter-item" filterable  v-model="item.para_value" placeholder="法律法规">
             <el-option v-for="item in  lawsArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
-          </el-select>
+          </el-select> -->
           <span v-if="item.para_type == 7" class="mr10">{{item.para_value}}</span>
           <span v-if="item.para_type == 7" class="blue poi" @click="selectLoc(item)"><i class="el-icon-location"></i>选择地点</span>
         </el-form-item>
@@ -199,6 +199,7 @@ export default {
           this.requstParm.list.push(element)
         }
       })
+      this.requstParm.list = JSON.stringify(this.requstParm.list)
       return flg
     },
     submitForm() {

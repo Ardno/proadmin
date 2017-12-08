@@ -264,6 +264,7 @@ export default {
         this.accessArr.forEach(function(element) {
           this.duty.accessarr.push(element.value + '')
         }, this)
+        this.duty.access = this.duty.accessarr.join(',')
       } else {
         this.duty.accessarr = []
       }
