@@ -118,7 +118,7 @@ export const asyncRouterMap = [
     name: '工作日程',
     meta: { icon: 'chart', title: '工作日程' },
     children: [
-      { path: 'index', component: _import('schedule/index'), name: '工作记录', meta: { role: ['150'], title: '工作记录' }},
+      { path: 'index', component: _import('schedule/index'), name: '工作记录', meta: { role: ['170'], title: '工作记录' }},
       { path: 'attendancelist', component: _import('schedule/attendancelist'), name: '考勤记录', meta: { role: ['161'], title: '考勤记录' }},
       { path: 'leave', component: _import('schedule/leave'), name: '请假', meta: { role: ['70'], title: '请假' }},
       { path: 'shift', component: _import('schedule/shift'), name: '换班', meta: { role: ['60'], title: '换班' }}
