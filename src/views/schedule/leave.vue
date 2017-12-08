@@ -4,7 +4,7 @@
       <span class="f16">请假记录</span>
       <el-button class="filter-item" type="primary"  @click="addLeave" >请假</el-button>
     </div>
-    <div class="mb10">
+    <div class="mb10" v-if="isAccess('71')">
       <el-select clearable class="filter-item" filterable style="width: 130px" v-model="pageobj.user_id" placeholder="申请用户">
         <el-option v-for="item in  userArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
@@ -210,6 +210,9 @@ export default {
       this.loadLeavesArr()
     },
     loadLeavesArr() { // 获取请假列表
+      if (!this.isAccess('71')) {
+        this.pageobj.user_id = this.userInfo._id
+      }
       getLeavesArr(this.pageobj).then(response => {
         const lsArr = response.info.list
         lsArr.forEach(function(element) {

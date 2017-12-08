@@ -30,16 +30,16 @@
       </el-table-column>
       <el-table-column width="120" label="状态">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.status == '0' && (scope.row.is_unaudited>0 || scope.row.is_unfilled > 0)" type="info">
+          <el-tag v-if="scope.row.status == '0' && (scope.row.is_unaudited>0)" type="info">
               待审核
           </el-tag>
-          <el-tag v-else-if="scope.row.status == '0' && scope.row.is_unfilled > 0 && scope.row.is_unaudited <=0" type="info">
+          <el-tag v-else-if="scope.row.status == '0' && scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0" type="info">
               待填写
           </el-tag>
           <el-tag v-else-if="scope.row.status == '1'" type="primary">完成</el-tag>
-          <el-tag v-else-if="scope.row.status == '2'" type="warning">已关闭</el-tag>
+          <el-tag v-else-if="scope.row.status == '2'" type="warning">已删除</el-tag>
           <el-tag v-else type="info">
-              进行中
+              待关闭
           </el-tag>
         </template>
       </el-table-column>
@@ -56,10 +56,11 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="100">
         <template slot-scope="scope">
-          <el-button size="small" type="primary" v-if="scope.row.status == '0' " @click="goOtherPage(scope.row._id)" >编辑
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('92')" @click="goOtherPage(scope.row._id)" >编辑
           </el-button>
-          <!-- <el-button size="small" type="danger" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" >直接关闭
-          </el-button> -->
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('94') && (scope.row.is_unfilled == 0 && scope.row.is_unaudited ==0)">标记完成</el-button>
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('91') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)">步骤填写</el-button>
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0">步骤审核</el-button>
         </template>
       </el-table-column>
     </el-table>
