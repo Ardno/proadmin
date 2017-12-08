@@ -192,7 +192,8 @@ export default {
       })
     },
     goOtherPage(val) {
-      this.$router.push({ path: '/reportcase/editcase/' + val })
+      this.$store.dispatch('setCaseId', val)
+      this.$router.push({ path: '/reportcase/editcase' })
     }
   }
 }

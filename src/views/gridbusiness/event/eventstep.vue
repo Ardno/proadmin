@@ -6,7 +6,7 @@
           </el-option>
         </el-select>
         <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
-        <el-button class="filter-item" v-if="isAccess('151')" type="primary" icon="plus" @click="goOtherPage(':id')">新建</el-button>
+        <el-button class="filter-item" v-if="isAccess('151')" type="primary" icon="plus" @click="goOtherPage('')">新建</el-button>
     </div>
     <el-table :key='tableKey' :data="eventStepArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="创建时间">
@@ -131,7 +131,8 @@ export default {
       })
     },
     goOtherPage(val) {
-      this.$router.push({ path: '/event/editeventstep/' + val })
+      this.$store.dispatch('setStepId', val)
+      this.$router.push({ path: '/event/editeventstep' })
     }
   }
 }

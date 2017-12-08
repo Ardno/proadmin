@@ -29,7 +29,7 @@
             action="https://jsonplaceholder.typicode.com/posts/"
             :on-preview="handlePreview" :on-remove="handleRemove"  multiple :limit="10" :on-exceed="handleExceed" :file-list="fileList">
             <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">只能上传jpg/png文件，且不超过500kb</div>
+            <div slot="tip" class="el-upload__tip">最多只能上传10条</div>
           </el-upload>
           <el-select v-if="item.para_type == 5" clearable class="filter-item" filterable  v-model="item.para_value" placeholder="人员">
             <el-option v-for="item in  userArr" :key="item._id" :label="item.name" :value="item._id">
@@ -40,7 +40,7 @@
             </el-option>
           </el-select>
           <span v-if="item.para_type == 7" class="mr10">{{item.para_value}}</span>
-          <span v-if="item.para_type == 7" class="blue poi" @click="dialogVisible1=true"><i class="el-icon-location"></i>选择地点</span>
+          <span v-if="item.para_type == 7" class="blue poi" @click="selectLoc(item)"><i class="el-icon-location"></i>选择地点</span>
         </el-form-item>
         <el-form-item>
           <!-- <el-button type="primary" @click="submitForm('eventForm')">立即创建</el-button> -->
@@ -57,7 +57,7 @@
         </el-amap>
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogVisible1 = false">确 定</el-button>
+        <el-button type="primary" @click="comfirmLoc">确 定</el-button>
       </span>
     </el-dialog>
     <!-- 图片放大 -->
@@ -89,7 +89,7 @@ export default {
       },
       lawsArr: [],
       userArr: [],
-      fileList: '',
+      fileList: [],
       dialogImageUrl: '',
       dialogVisible1: false,
       dialogVisible2: false,
@@ -146,13 +146,14 @@ export default {
           init(o) {
           }
         }
-      }]
+      }],
+      item: ''
     }
   },
   created() {
     this.userArr = this.$store.getters.commonInfo.userArr
-    if (this.$route.params.id) {
-      this.eventid = this.$route.params.id
+    this.eventid = this.$store.getters.caseid
+    if (this.eventid) {
       this.getEvent()
       this.getLawsArr()
     } else {
@@ -172,6 +173,14 @@ export default {
       getLawsArr().then(response => {
         this.lawsArr = response.info
       })
+    },
+    selectLoc(item) {
+      this.item = item
+      this.dialogVisible1 = true
+    },
+    comfirmLoc() {
+      this.dialogVisible1 = false
+      this.item.para_value = this.positionObj.address
     },
     handleRemove(file, fileList) {
       console.log(file, fileList)

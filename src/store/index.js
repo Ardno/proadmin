@@ -4,6 +4,7 @@ import app from './modules/app'
 import user from './modules/user'
 import permission from './modules/permission'
 import webim from './modules/webim'
+import event from './modules/event'
 import getters from './getters'
 
 Vue.use(Vuex)
@@ -13,7 +14,8 @@ const store = new Vuex.Store({
     app,
     user,
     permission,
-    webim
+    webim,
+    event
   },
   getters
 })

@@ -125,9 +125,9 @@ export default {
     }
   },
   created() {
-    console.log(this.$route.params.id)
-    if (this.$route.params.id !== ':id') {
-      this.getSteps(this.$route.params.id)
+    const stepid = this.$store.getters.stepid
+    if (stepid) {
+      this.getSteps(stepid)
       this.depArr = this.$store.getters.commonInfo.depArr
     } else {
       this.init()
