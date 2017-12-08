@@ -4,7 +4,7 @@
         <span class="f28">立案</span>
     </div>
     <div class="box">
-      <el-form :model="eventObj" ref="eventForm" label-width="100px" class="demo-eventForm">
+      <el-form :model="eventObj" ref="eventForm" label-width="150px" class="demo-eventForm">
         <el-form-item v-for="(item, index) in eventObj.steps" :key="index" :label="item.para_name">
           <!-- 0:文本控件 
           1:多行文本控件 
@@ -15,19 +15,21 @@
           6：法律法规选择控件 
           7：地图选择控件 -->
           <el-input v-if="item.para_type == 0" v-model="item.para_value"></el-input>
-          <el-input v-if="item.para_type == 1" type="textarea" autosize resize="none" :rows="2" v-model="item.para_value"></el-input>
+          <el-input v-if="item.para_type == 1" type="textarea" autosize :rows="2" v-model="item.para_value"></el-input>
           <el-input v-if="item.para_type == 2" type="datetime" v-model="item.para_value"></el-input>
           <el-upload v-if="item.para_type == 3"
+            class="upload-demo"
             action="https://jsonplaceholder.typicode.com/posts/"
-            list-type="picture-card"
-            :on-preview="handlePictureCardPreview"
-            :on-remove="handleRemove">
-            <i class="el-icon-plus"></i>
+            :on-preview="handlePreview"
+            :on-remove="handleRemove"
+            :file-list="item.fileList"
+            list-type="picture">
+            <el-button size="small" type="primary">点击上传</el-button>
           </el-upload>
           <el-upload v-if="item.para_type == 4"
             class="upload-demo"
             action="https://jsonplaceholder.typicode.com/posts/"
-            :on-preview="handlePreview" :on-remove="handleRemove"  multiple :limit="10" :on-exceed="handleExceed" :file-list="fileList">
+            :on-preview="handlePreview" :on-remove="handleRemove"  multiple :limit="10" :on-exceed="handleExceed" :file-list="item.fileList">
             <el-button size="small" type="primary">点击上传</el-button>
             <div slot="tip" class="el-upload__tip">最多只能上传10条</div>
           </el-upload>
@@ -43,7 +45,7 @@
           <span v-if="item.para_type == 7" class="blue poi" @click="selectLoc(item)"><i class="el-icon-location"></i>选择地点</span>
         </el-form-item>
         <el-form-item>
-          <!-- <el-button type="primary" @click="submitForm('eventForm')">立即创建</el-button> -->
+          <el-button type="primary" @click="submitForm('eventForm')">保存</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -60,36 +62,29 @@
         <el-button type="primary" @click="comfirmLoc">确 定</el-button>
       </span>
     </el-dialog>
-    <!-- 图片放大 -->
-    <el-dialog :visible.sync="dialogVisible2" width="960px">
-      <img width="100%" :src="dialogImageUrl" alt="">
-    </el-dialog>
   </div>
 </template>
 
 <script>
 import VueAMap from 'vue-amap'
-import { getEvent, getEventStep, getLawsArr } from '@/api/depevent'
+import { getEventStep, getLawsArr, updateSteps } from '@/api/depevent'
 const amapManager = new VueAMap.AMapManager()
 export default {
   data() {
     return {
       eventid: 0,
       eventObj: {
-        steps: [
-          { para_type: 1, para_value: '' },
-          { para_type: 2, para_value: '' },
-          { para_type: 3, para_value: '' },
-          { para_type: 4, para_value: '' },
-          { para_type: 5, para_value: '' },
-          { para_type: 6, para_value: '' },
-          { para_type: 7, para_value: '' },
-          { para_type: 1, para_value: '' }
-        ]
+        steps: []
+      },
+      requstParm: {
+        step_id: '',
+        event_id: '',
+        user_id: 0,
+        status: 2,
+        list: []
       },
       lawsArr: [],
       userArr: [],
-      fileList: [],
       dialogImageUrl: '',
       dialogVisible1: false,
       dialogVisible2: false,
@@ -162,11 +157,18 @@ export default {
   },
   methods: {
     getEvent() {
-      getEvent({ _id: this.eventid }).then(res => {
-        console.log(res)
-      })
+      // getEvent({ _id: this.eventid }).then(res => {
+      //   console.log(res)
+      // })
       getEventStep({ event_id: this.eventid }).then(res => {
-        console.log(res)
+        this.requstParm.step_id = res.info.step_id
+        this.requstParm.event_id = res.info.event_id
+        this.eventObj.steps = res.info.steps
+        this.eventObj.steps.forEach(element => {
+          if (element.para_type === 3 || element.para_type === 4) { // 图片，文件
+            element.fileList = []
+          }
+        })
       })
     },
     getLawsArr() {
@@ -182,6 +184,48 @@ export default {
       this.dialogVisible1 = false
       this.item.para_value = this.positionObj.address
     },
+    checkForm() {
+      let flg = true
+      this.requstParm.list = []
+      this.eventObj.steps.forEach(element => {
+        if (!element.para_value) {
+          flg = false
+          if (element.para_type === 3 || element.para_type === 4) { // 图片，文件
+            if (element.fileList.length) {
+              flg = true
+            }
+          }
+        } else {
+          this.requstParm.list.push(element)
+        }
+      })
+      return flg
+    },
+    submitForm() {
+      if (this.checkForm()) {
+        console.log(this.requstParm)
+        updateSteps(this.requstParm).then(response => {
+          this.$router.push({ path: '/reportcase/mycase' })
+          this.$message({
+            message: '保存信息成功！',
+            type: 'success',
+            duration: 4 * 1000
+          })
+        }).catch(() => {
+          this.$message({
+            message: '保存失败，请稍后再试',
+            type: 'error',
+            duration: 4 * 1000
+          })
+        })
+      } else {
+        this.$message({
+          message: '请填写完整信息~',
+          type: 'warning',
+          duration: 4 * 1000
+        })
+      }
+    },
     handleRemove(file, fileList) {
       console.log(file, fileList)
     },
@@ -189,11 +233,7 @@ export default {
       console.log(file)
     },
     handleExceed(files, fileList) {
-      this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
-    },
-    handlePictureCardPreview(file) {
-      this.dialogImageUrl = file.url
-      this.dialogVisible = true
+      this.$message.warning(`当前限制选择 10 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
     }
   },
   computed: {

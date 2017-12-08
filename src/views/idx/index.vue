@@ -94,11 +94,13 @@ export default {
     this.$nextTick(() => {
       this.initChart()
       window.onresize = () => {
-        this.chart1.resize()
-        this.chart2.resize()
-        this.chart3.resize()
-        this.chart4.resize()
-        this.chart5.resize()
+        if (this.chart1) {
+          this.chart1.resize()
+          this.chart2.resize()
+          this.chart3.resize()
+          this.chart4.resize()
+          this.chart5.resize()
+        }
       }
     })
   },

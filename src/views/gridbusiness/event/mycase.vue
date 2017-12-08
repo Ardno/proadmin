@@ -173,10 +173,13 @@ export default {
       })
     },
     getEventsArr() {
+      this.listLoading = true
       getEventArr(this.pageobj).then(res => {
+        this.listLoading = false
         this.eventArr = res.info.list
         this.pageobj.totalPages = res.info.count
       }).catch(() => {
+        this.listLoading = false
         this.$message({
           message: '查询信息失败，请稍后再试',
           type: 'error',
