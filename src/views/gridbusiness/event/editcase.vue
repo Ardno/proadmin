@@ -5,7 +5,7 @@
     </div>
     <div class="box">
       <el-form :model="eventObj" ref="eventForm" label-width="150px" class="demo-eventForm">
-        <el-form-item v-for="(item, index) in eventObj.steps" :key="index" :label="item.para_name">
+        <el-form-item v-for="(item, index) in eventObj.steps" :key="index" :label="item.para_name" v-if="item.para_type != 6">
           <!-- 0:文本控件 
           1:多行文本控件 
           2:时间控件 
@@ -45,7 +45,7 @@
           <span v-if="item.para_type == 7" class="blue poi" @click="selectLoc(item)"><i class="el-icon-location"></i>选择地点</span>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submitForm('eventForm')">保存</el-button>
+          <el-button type="primary" @click="submitForm('eventForm')">提交审核</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -67,7 +67,7 @@
 
 <script>
 import VueAMap from 'vue-amap'
-import { getEventStep, getLawsArr, updateSteps } from '@/api/depevent'
+import { getEventStep, getLawsArr, updateCaseStep } from '@/api/depevent'
 const amapManager = new VueAMap.AMapManager()
 export default {
   data() {
@@ -79,8 +79,7 @@ export default {
       requstParm: {
         step_id: '',
         event_id: '',
-        user_id: 0,
-        status: 2,
+        status: 1,
         list: []
       },
       lawsArr: [],
@@ -195,6 +194,9 @@ export default {
               flg = true
             }
           }
+          if (element.para_type === 6) {
+            flg = true
+          }
         } else {
           this.requstParm.list.push(element)
         }
@@ -205,16 +207,16 @@ export default {
     submitForm() {
       if (this.checkForm()) {
         console.log(this.requstParm)
-        updateSteps(this.requstParm).then(response => {
-          this.$router.push({ path: '/reportcase/mycase' })
+        updateCaseStep(this.requstParm).then(response => {
           this.$message({
-            message: '保存信息成功！',
+            message: '提交成功！',
             type: 'success',
             duration: 4 * 1000
           })
+          this.$router.push({ path: '/reportcase/mycase' })
         }).catch(() => {
           this.$message({
-            message: '保存失败，请稍后再试',
+            message: '提交失败，请稍后再试',
             type: 'error',
             duration: 4 * 1000
           })
