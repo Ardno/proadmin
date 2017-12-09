@@ -69,6 +69,7 @@
 <script>
 import VueAMap from 'vue-amap'
 import { getEventStep, getLawsArr, updateCaseStep } from '@/api/depevent'
+import { getDepCld } from '@/utils/auth'
 const amapManager = new VueAMap.AMapManager()
 export default {
   data() {
@@ -174,7 +175,7 @@ export default {
       })
     },
     getLawsArr() {
-      getLawsArr().then(response => {
+      getLawsArr({ department_id: getDepCld() }).then(response => {
         this.lawsArr = response.info
       })
     },
@@ -209,6 +210,7 @@ export default {
     },
     submitForm(type) {
       this.requstParm.auto = type
+      this.checkForm()
       if (type) {
         this.$confirm('你确定要提交审核吗?', '提示', {
           confirmButtonText: '确定',

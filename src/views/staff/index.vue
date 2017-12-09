@@ -1,11 +1,10 @@
 <template>
   <div class="app-container calendar-list-container">
     <div class="layui-elem-quote">
-      <el-autocomplete class="inline-input vt" v-model="listQuery.department" :fetch-suggestions="querySearch" placeholder="请输入部门" :trigger-on-focus="false" @select="handleSelect"></el-autocomplete>
-      <!-- <el-select clearable class="filter-item" style="width: 130px" v-model="listQuery.role_id" placeholder="职位">
-        <el-option v-for="item in  solerr" :key="item._id" :label="item.name" :value="item._id">
+      <el-select  class="filter-item" filterable style="width: 130px" v-model="listQuery.department" placeholder="请输入部门">
+        <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
-      </el-select> -->
+      </el-select>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
     </div>
 
@@ -88,7 +87,7 @@
       <el-form class="small-space" :model="temp" :rules="infoRules" ref="infoForm" label-position="left"  label-width="80px" style='width: 400px; margin-left:50px;'>
         <!-- <el-form-item label="部门">
           <el-select class="filter-item" v-model="temp.department_id" placeholder="请选择">
-            <el-option v-for="item in  restaurants" :key="item._id" :label="item.value" :value="item._id">
+            <el-option v-for="item in  depArr" :key="item._id" :label="item.value" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item> -->
@@ -146,9 +145,10 @@
 <script>
 import { getadcArr } from '@/api/schedule'
 import { mapGetters } from 'vuex'
-import { fetchList, fetchDepartments, fetchRoles, updatePeInfo } from '@/api/department'
+import { fetchList, fetchRoles, updatePeInfo } from '@/api/department'
 import { validateMblNo, validateIdNum } from '@/utils/validate'
 import { isAccess } from '@/utils/auth'
+import { deepClone } from '@/utils/index'
 export default {
   data() {
     const validateUserIdNum = (rule, value, callback) => {
@@ -166,7 +166,7 @@ export default {
       }
     }
     return {
-      restaurants: [],
+      depArr: [],
       statusArr: [
         { id: 0, text: '正常' },
         { id: 1, text: '离职' },
@@ -233,23 +233,17 @@ export default {
     this.listQuery.department = this.useinfo.dept_name
     this.listQuery.department_id = this.useinfo.department_id
     this.loadRls('')
-    this.loadDps()
+    this.depArr = deepClone(this.$store.getters.commonInfo.depArr)
     this.getList(true)
   },
   methods: {
     isAccess: isAccess,
-    querySearch(queryString, cb) {
-      var restaurants = this.restaurants
-      var results = queryString ? restaurants.filter(this.createFilter(queryString)) : restaurants
-      // 调用 callback 返回建议列表的数据
-      cb(results)
-    },
     filterDepRose(arr, flg) { // 转换部门和集合
       let name = ''
       arr.forEach(function(element) {
         if (element.is_enable) {
           if (flg) {
-            this.restaurants.forEach(function(els) {
+            this.depArr.forEach(function(els) {
               if (Number(element.department_id) === els._id) {
                 name = els.value
               }
@@ -279,27 +273,6 @@ export default {
           return !obj.status
         })
       })
-    },
-    loadDps() {
-      fetchDepartments('').then(response => {
-        if (response.info.length) {
-          const array = response.info
-          const arrs = []
-          array.forEach(function(element) {
-            if (!element.status) {
-              const obj = {
-                value: element.name,
-                _id: element._id
-              }
-              arrs.push(obj)
-            }
-          }, this)
-          this.restaurants = arrs
-        }
-      })
-    },
-    handleSelect(item) {
-      console.log(item)
     },
     handleQuery() {
       this.getList()
@@ -395,7 +368,7 @@ export default {
     },
     getList(flg) {
       this.listLoading = true
-      const array = this.restaurants
+      const array = this.depArr
       if (!flg) {
         this.listQuery.department_id = this.listQuery.department
         array.forEach(function(element) { // 在已有部门查找是否存在该部门，

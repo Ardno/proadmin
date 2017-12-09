@@ -448,3 +448,34 @@ export function getVersion(name) {
   const p = require('../../package')
   return p.dependencies[name]
 }
+// 获取上一个月
+export function lastMonthDate() {
+  var Nowdate = new Date()
+  var vYear = Nowdate.getFullYear()
+  var vMon = Nowdate.getMonth() + 1
+  var vDay = Nowdate.getDate()
+  // 每个月的最后一天日期（为了使用月份便于查找，数组第一位设为0）
+  var daysInMonth = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  if (vMon === 1) {
+    vYear = Nowdate.getFullYear() - 1
+    vMon = 12
+  } else {
+    vMon = vMon - 1
+  }
+  // 若是闰年，二月最后一天是29号
+  if (vYear % 4 === 0 && vYear % 100 !== 0 || vYear % 400 === 0) {
+    daysInMonth[2] = 29
+  }
+  if (daysInMonth[vMon] < vDay) {
+    vDay = daysInMonth[vMon]
+  }
+  if (vDay < 10) {
+    vDay = '0' + vDay
+  }
+  if (vMon < 10) {
+    vMon = '0' + vMon
+  }
+  var date = vYear + '-' + vMon + '-' + vDay
+  console.log(date)
+  return date
+}

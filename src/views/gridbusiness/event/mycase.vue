@@ -80,7 +80,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { getEventArr, getEventTypeArr, updateEvent } from '@/api/depevent'
-import { isAccess } from '@/utils/auth'
+import { isAccess, getDepCld } from '@/utils/auth'
 import store from '@/store'
 export default {
   data() {
@@ -94,7 +94,7 @@ export default {
         user_id: store.getters.useinfo._id,
         type_id: '',
         department_ids: '',
-        department_id: '',
+        department_id: getDepCld(),
         step_status: '',
         start_time: '',
         end_time: ''
@@ -186,7 +186,7 @@ export default {
       })
     },
     loadArr() { // 获取用户集合和事件类型集合
-      getEventTypeArr('').then(res => {
+      getEventTypeArr({ dept_id: getDepCld() }).then(res => {
         this.typeArr = res.info.filter(obj => {
           return !obj.status
         })

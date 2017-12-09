@@ -6,11 +6,11 @@
           <span class="oico"><svg-icon icon-class="refresh" /></span>
         </el-tooltip>
       </li>
-      <li @click="mouseToolPolygon">
+      <!-- <li @click="mouseToolPolygon">
         <el-tooltip class="item" effect="dark" content="框选人员" placement="left">
           <span class="oico"><svg-icon icon-class="addressbook" /></span>
         </el-tooltip>
-      </li>
+      </li> -->
       <li @click="trajectory.dialogFormVisible = true">
         <el-tooltip class="item" effect="dark" content="历史轨迹" placement="left">
           <span class="oico"><svg-icon icon-class="time" /></span>
@@ -176,6 +176,11 @@ export default {
     isAccess: isAccess,
     reloadMap() {
       this.$emit('reloadMap', true)
+      this.$message({
+        message: '刷新成功~',
+        type: 'success',
+        duration: 4 * 1000
+      })
     },
     stcloseCall() {
       this.$emit('seeting', this.seeting)

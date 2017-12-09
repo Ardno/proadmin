@@ -23,8 +23,16 @@ export function getUserid() {
 export function setUserid(id) {
   return Cookies.set('Userid', id)
 }
+export function getDepCld() {
+  return Cookies.get('Depcld')
+}
+
+export function setDepCld(str) {
+  return Cookies.set('Depcld', str)
+}
 export function removeToken() {
   Cookies.remove('Userid')
+  Cookies.remove('Depcld')
   Cookies.remove('Pwd')
   return Cookies.remove(TokenKey)
 }

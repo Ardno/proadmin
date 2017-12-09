@@ -111,9 +111,10 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { getShiftsArr, updateShifts, addShifts, getWorksArr } from '@/api/levelshift'
 import { getRegionArr } from '@/api/grid'
-import { isAccess, isUser } from '@/utils/auth'
+import { isAccess, isUser, getDepCld } from '@/utils/auth'
 import store from '@/store'
 import { parseTime } from '@/utils/index'
 export default {
@@ -127,7 +128,8 @@ export default {
         change_state: '',
         start_index: 0,
         length: 10,
-        pagesize: 10
+        pagesize: 10,
+        department_id: getDepCld()
       },
       listLoading: false,
       tableKey: 0,
@@ -168,10 +170,10 @@ export default {
         start_index: 0,
         length: 10000,
         user_id: store.getters.useinfo._id,
+        department_id: getDepCld(),
         isHandle: 0
       },
       shiftArr: [],
-      userInfo: [],
       depArr: [],
       userArr: [],
       workArr: [],
@@ -274,6 +276,8 @@ export default {
         }, this)
         this.shiftArr = lsArr
         this.totalPages = response.info.count
+      }).catch(errs => {
+        console.log(errs)
       })
     },
     handleSizeChange(val) {
@@ -335,12 +339,14 @@ export default {
     }
   },
   created() {
-    this.userInfo = this.$store.getters.userInfo
     this.loadDep()
     this.loadshiftsArr()
+    this.pageobj.user_id = this.userInfo._id
   },
   computed: {
-
+    ...mapGetters({
+      userInfo: 'useinfo'
+    })
   }
 }
 </script>

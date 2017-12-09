@@ -50,12 +50,11 @@ import SideBar from './sidebar'
 import { mapGetters } from 'vuex'
 import { getRegionArr, updateRegion, getLatlonArr } from '@/api/grid'
 import { parseTime } from '@/utils/index'
-import { fetchList, fetchDepartments } from '@/api/department'
 import { getEventArr } from '@/api/depevent'
-import { isAccess } from '@/utils/auth'
+import { isAccess, getDepCld } from '@/utils/auth'
 import personicon from '@/assets/icon/personicon.png'
 import eventicon from '@/assets/icon/zuob2.png'
-
+import { deepClone } from '@/utils/index'
 const amapManager = new VueAMap.AMapManager()
 export default {
   components: {
@@ -64,7 +63,7 @@ export default {
   data() {
     return {
       zoom: 13,
-      center: [114.085947, 22.54702],
+      center: [109.103313, 18.385587],
       amapManager,
       lng: 0,
       lat: 0,
@@ -178,12 +177,9 @@ export default {
         }, 1000)
       }
     }
-    fetchDepartments().then(res => {
-      this.depArr = res.info.filter(obj => {
-        return !obj.status
-      })
-      this.loadInit()
-    })
+    this.depArr = deepClone(this.$store.getters.commonInfo.depArr)
+    this.userArr = deepClone(this.$store.getters.commonInfo.userArr)
+    this.loadInit()
     loadAMapUI()
   },
   mounted() {
@@ -197,12 +193,17 @@ export default {
       this.markerArr = []
       try {
         this.getRegion()
-        this.getUserArr()
         this.getLatlon()
         this.getEventArr()
       } catch (error) {
         console.log(error)
       }
+    },
+    getRadomPt() {
+      var resultPt = []
+      resultPt.push(109.103313 + Math.random() / 20 * (Math.random() > 0.5 ? -1 : 1))
+      resultPt.push(18.385587 + Math.random() / 20 * (Math.random() > 0.5 ? -1 : 1))
+      return resultPt
     },
     getSetting(obj) {
       this.markerArr = []
@@ -219,13 +220,8 @@ export default {
       // if (obj.raido){
       // }
     },
-    getUserArr() {
-      fetchList({ start_index: 0, length: 10000 }).then(response => {
-        this.userArr = response.info.list
-      })
-    },
     getRegion() { // 获取区域
-      getRegionArr({ start_index: 0, length: 10000 }).then(response => {
+      getRegionArr({ start_index: 0, length: 10000, department_id: getDepCld() }).then(response => {
         const polygons = response.info.list
         this.polygons = []
         this.polygonsArr = []
@@ -261,14 +257,15 @@ export default {
       })
     },
     getLatlon() { // 获取部门人员位置
-      const dep = this.useinfo.department_roles.filter(function(obj) {
-        return obj.is_enable
-      })
+      // const dep = this.useinfo.department_roles.filter(function(obj) {
+      //   return obj.is_enable
+      // })
       this.personArr = []
-      getLatlonArr({ department_id: dep[0].department_id }).then(res => {
+      getLatlonArr({ department_id: getDepCld() }).then(res => {
         res.info.forEach((element, index) => {
           const obj = {
-            position: [element.location.lat, element.location.lon],
+            // position: [element.location.lat, element.location.lon],
+            position: this.getRadomPt(),
             icon: personicon,
             events: {
               init: (marker) => {
@@ -306,11 +303,8 @@ export default {
       })
     },
     getEventArr() { // 获取事件位置
-      const dep = this.useinfo.department_roles.filter(function(obj) {
-        return obj.is_enable
-      })
       this.eventArr = []
-      getEventArr({ start_index: 0, length: 10000, department_id: dep[0].department_id }).then(res => {
+      getEventArr({ start_index: 0, length: 10000, department_id: getDepCld() }).then(res => {
         res.info.list.forEach((element, index) => {
           if (element.lat) {
             const obj = {

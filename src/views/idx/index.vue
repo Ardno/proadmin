@@ -80,6 +80,9 @@
 
 <script>
 import echarts from 'echarts'
+import { mapGetters } from 'vuex'
+import { fetchList } from '@/api/department'
+import { getdepMonthdance } from '@/api/levelshift'
 export default {
   data() {
     return {
@@ -226,8 +229,8 @@ export default {
             radius: '55%',
             center: ['50%', '60%'],
             data: [
-              { value: 120, name: '男' },
-              { value: 12, name: '女' }
+              { value: 0, name: '男' },
+              { value: 0, name: '女' }
             ],
             itemStyle: {
               emphasis: {
@@ -239,55 +242,48 @@ export default {
           }
         ]
       })
+      this.getDepUserInfo()
       //  图表4
       this.chart4 = echarts.init(document.getElementById('pie2'))
       this.chart4.setOption({
         title: {
-          text: '当月考勤记录',
+          text: '上月部门考勤分析',
           x: 'center'
         },
         tooltip: {
           trigger: 'item',
-          formatter: '{a} <br/>{b}: {c} ({d}%)'
+          formatter: '{a} <br/>{b} : {c} ({d}%)'
         },
         legend: {
           orient: 'vertical',
-          x: 'left',
-          data: ['迟到', '缺勤', '换班', '早退', '正常']
+          left: 'left',
+          data: ['缺勤', '早退', '迟到', '正常', '调派', '请假']
         },
         series: [
           {
-            name: '考勤记录',
+            name: '访问来源',
             type: 'pie',
-            selectedMode: 'single',
-            radius: [0, '30%'],
-            label: {
-              normal: {
-                position: 'inner'
-              }
-            },
-            labelLine: {
-              normal: {
-                show: false
-              }
-            },
+            radius: '55%',
+            center: ['50%', '60%'],
             data: [
-              { value: 1, name: '缺勤' },
-              { value: 2, name: '迟到' },
-              { value: 1, name: '早退' }
-            ]
-          },
-          {
-            name: '考勤记录',
-            type: 'pie',
-            radius: ['40%', '55%'],
-            data: [
-              { value: 1, name: '换班' },
-              { value: 12, name: '正常' }
-            ]
+              { value: 0, name: '缺勤' },
+              { value: 0, name: '早退' },
+              { value: 0, name: '迟到' },
+              { value: 0, name: '正常' },
+              { value: 0, name: '调派' },
+              { value: 0, name: '请假' }
+            ],
+            itemStyle: {
+              emphasis: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
           }
         ]
       })
+      this.getKaoqingArr()
       // 图表5
       this.chart5 = echarts.init(document.getElementById('pie3'))
       this.chart5.setOption({
@@ -345,11 +341,87 @@ export default {
           }
         }]
       })
-      // end
+    },
+    // end
+    getDepUserInfo() { // 获取部门人员比例
+      fetchList({ start_index: 0, length: 10000, department_id: this.useinfo.department_id }).then(res => {
+        const arr = res.info.list
+        const nan_arr = arr.filter(obj => { // 性别男集合
+          return !obj.sex
+        })
+        const nv_arr = arr.filter(obj => { // 性别女集合
+          return obj.sex
+        })
+        this.chart3.setOption({
+          series: [
+            {
+              data: [
+                { value: nan_arr.length, name: '男' },
+                { value: nv_arr.length, name: '女' }
+              ]
+            }
+          ]
+        })
+      })
+    },
+    getKaoqingArr() {
+      var nowdays = new Date()
+      var year = nowdays.getFullYear()
+      var month = nowdays.getMonth()
+      if (month === 0) {
+        month = 12
+        year = year - 1
+      }
+      if (month < 10) {
+        month = '0' + month
+      }
+      var firstDay = year + '-' + month + '-' + '01' // 上个月的第一天
+      var myDate = new Date(year, month, 0)
+      var lastDay = year + '-' + month + '-' + myDate.getDate() // 上个月的最后一天
+      const request = {
+        start_time: new Date(firstDay).getTime() / 1000,
+        end_time: new Date(lastDay).getTime() / 1000,
+        department_id: this.useinfo.department_id
+      }
+      getdepMonthdance(request).then(res => {
+        // 1:正常；2：迟到 3：早退；4：缺勤 5：调派
+        const arrlen1 = res.info.work.filter(obj => {
+          return obj.work_state === 1
+        }).length
+        const arrlen2 = res.info.work.filter(obj => {
+          return obj.work_state === 2
+        }).length
+        const arrlen3 = res.info.work.filter(obj => {
+          return obj.work_state === 3
+        }).length
+        const arrlen4 = res.info.work.filter(obj => {
+          return obj.work_state === 4
+        }).length
+        const arrlen5 = res.info.work.filter(obj => {
+          return obj.work_state === 5
+        }).length
+        const arrlen6 = res.info.leave.length //  '请假'
+        this.chart4.setOption({
+          series: [
+            {
+              data: [
+                { value: arrlen4, name: '缺勤' },
+                { value: arrlen3, name: '早退' },
+                { value: arrlen2, name: '迟到' },
+                { value: arrlen1, name: '正常' },
+                { value: arrlen5, name: '调派' },
+                { value: arrlen6, name: '请假' }
+              ]
+            }
+          ]
+        })
+      })
     }
   },
   computed: {
-
+    ...mapGetters({
+      useinfo: 'useinfo'
+    })
   }
 }
 </script>

@@ -157,7 +157,7 @@
 // addLaws, updateLaws, getLaws,
 import { TreeUtil } from '@/utils/index'
 import { addLaws, updateLaws, getLawsArr } from '@/api/depevent'
-import { isAccess } from '@/utils/auth'
+import { isAccess, getDepCld } from '@/utils/auth'
 export default {
   data() {
     const regutypeArr = [
@@ -178,7 +178,7 @@ export default {
         pagesize: 10,
         totalPages: 0,
         currentPage: 1,
-        department_id: '',
+        department_id: getDepCld(),
         regu_id: ''
       },
       duty: {
@@ -315,7 +315,7 @@ export default {
         department_id: '',
         content: ''
       }
-      getLawsArr('').then(response => {
+      getLawsArr({ department_id: getDepCld() }).then(response => {
         const array = response.info
         this.reguArr.push(...response.info)
         const map = { name: 'label', _id: 'id' }

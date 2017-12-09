@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="layui-elem-quote">
-        <el-select clearable class="filter-item" style="width: 130px" filterable v-model="pageobj.department_id" placeholder="请选择部门">
+        <el-select class="filter-item" style="width: 130px" filterable v-model="pageobj.department_id" placeholder="请选择部门">
           <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
           </el-option>
         </el-select>
@@ -49,7 +49,8 @@
 <script>
 import { fetchRoles } from '@/api/department'
 import { getStepsArr } from '@/api/depevent'
-import { isAccess } from '@/utils/auth'
+import { isAccess, getDepCld } from '@/utils/auth'
+import { deepClone } from '@/utils/index'
 export default {
   data() {
     return {
@@ -114,7 +115,11 @@ export default {
       this.getEventsArr()
     },
     getEventsArr() {
-      getStepsArr(this.pageobj).then(res => {
+      const request = deepClone(this.pageobj)
+      if (!request.department_id) {
+        request.department_id = getDepCld()
+      }
+      getStepsArr(request).then(res => {
         if (res.info.count) {
           this.eventStepArr = res.info.list
           this.pageobj.totalPages = res.info.count

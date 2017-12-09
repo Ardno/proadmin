@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <div class="layui-elem-quote">
+    <div class="titles">
       <p class="mb10">
         <el-select clearable class="filter-item" style="width:453px" filterable multiple v-model="pageobj.department_ids" @change="filterArrDep" placeholder="所属部门">
           <el-option v-for="item in  commonInfo.depArr" :key="item._id" :label="item.name" :value="item._id">
@@ -70,16 +70,16 @@
       </el-table-column>
       <el-table-column align="left" label="操作" width="200">
         <template slot-scope="scope">
-          <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('92')" @click="goOtherPage(scope.row._id)" >编辑
-          </el-button> -->
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('92') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)" icon="el-icon-edit" title="编辑"  @click="goOtherPage(scope.row._id)" >
+          </el-button>
           <el-button size="small" type="danger" icon="el-icon-delete" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" title="删除" >
           </el-button>
-          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0"  icon="el-icon-search"  @click="showStepInfo(scope.row)" title="查看/打印" >
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0"  icon="el-icon-search"  @click="showStepInfo(scope.row)" title="查看/审核" >
           </el-button>
           <el-button size="small" type="success"  @click="markComplete(scope.row)" v-if="scope.row.status == '0' && isAccess('94') && (scope.row.is_unfilled == 0 && scope.row.is_unaudited ==0)" >标记完成
           </el-button>
           <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('91') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)">步骤填写</el-button> -->
-          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0" icon="el-icon-document"  @click="showVerifyEvent(scope.row)" title="步骤审核" ></el-button>
+          <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0" icon="el-icon-document"  @click="showVerifyEvent(scope.row)" title="步骤审核" ></el-button> -->
         </template>
       </el-table-column>
     </el-table>
@@ -116,7 +116,8 @@
       <!-- <iframe style="height:400px;width: 100%;" :srcdoc="caseStepInfo.content" frameborder="0"></iframe> -->
       <span slot="footer" class="dialog-footer">
         <el-button v-if="caseStepInfo.content" @click="createPdf(caseStepInfo.content)">打印</el-button>
-        <el-button type="primary" @click="caseStepInfo.dialogVisible = false">取消</el-button>
+        <el-button v-if="caseStepInfo.isAudit" type="primary" @click="showVerifyEvent">审核</el-button>
+        <el-button v-else  type="primary" @click="caseStepInfo.dialogVisible = false">取消</el-button>
       </span>
     </el-dialog>
   </div>
@@ -126,7 +127,7 @@
 import { mapGetters } from 'vuex'
 import { getEventStep } from '@/api/depevent'
 import { getEventArr, getEventTypeArr, updateEvent, auditEventStep, getSteps, getCaseStepinfo } from '@/api/depevent'
-import { isAccess } from '@/utils/auth'
+import { isAccess, getDepCld } from '@/utils/auth'
 export default {
   data() {
     return {
@@ -139,7 +140,7 @@ export default {
         user_id: '',
         type_id: '',
         department_ids: '',
-        department_id: '',
+        department_id: getDepCld(),
         step_status: '',
         start_time: '',
         end_time: ''
@@ -160,7 +161,8 @@ export default {
       caseStepInfo: {
         dialogVisible: false,
         loading: false,
-        content: ''
+        content: '',
+        isAudit: false
       },
       activeitem: null,
       verifyitem: {
@@ -182,7 +184,12 @@ export default {
   methods: {
     isAccess: isAccess,
     filterArrDep(val) {
-      this.department_id = val.join(',')
+      console.log(val)
+      if (val.length) {
+        this.pageobj.department_id = val.join()
+      } else {
+        this.pageobj.department_id = getDepCld()
+      }
     },
     handleQuery() {
       this.pageobj.start_index = 0
@@ -227,10 +234,9 @@ export default {
       }).catch(() => {
       })
     },
-    showVerifyEvent(item) {
+    showVerifyEvent() {
       this.dialogVisible = true
-      this.verifyitem.id = item._id
-      this.activeitem = item
+      this.verifyitem.id = this.activeitem._id
     },
     verifyEvent(type) { // 步骤审核
       if (!this.verifyitem.user_msg) {
@@ -253,6 +259,7 @@ export default {
         }
         auditEventStep(requst).then(res => {
           this.dialogVisible = false
+          this.caseStepInfo.dialogVisible = false
           this.getEventsArr()
           this.$message({
             message: '操作成功',
@@ -270,6 +277,7 @@ export default {
       })
     },
     showStepInfo(item) { //  显示步骤信息
+      this.activeitem = item
       this.caseStepInfo.dialogVisible = true
       this.caseStepInfo.loading = true
       getEventStep({ event_id: item._id }).then(res => {
@@ -288,14 +296,19 @@ export default {
               const val = element.para_value || ''
               content = content.replace(reg, val)
             })
-            if (data.info.role_id_access !== '0') {
-              const arr = data.info.role_id_access.split(',')
+            if (lse.info.access.length) {
+              const arr = lse.info.access
               arr.forEach(element => {
-                const reg1 = new RegExp('\\{\\{' + element + '\\}\\}', 'g')
-                content = content.replace(reg1, '')
+                const reg1 = new RegExp('\\{\\{' + element.role_id + '\\}\\}', 'g')
+                const txt = element.user_msg || ''
+                content = content.replace(reg1, txt)
               })
             }
             this.caseStepInfo.content = content
+            this.caseStepInfo.isAudit = false
+            if (lse.info.role_id === this.userInfo.role_id) {
+              this.caseStepInfo.isAudit = true
+            }
           })
         })
       }).catch(errs => {
@@ -340,7 +353,7 @@ export default {
       })
     },
     loadArr() { // 获取用户集合和事件类型集合
-      getEventTypeArr('').then(res => {
+      getEventTypeArr({ dept_id: getDepCld() }).then(res => {
         this.typeArr = res.info.filter(obj => {
           return !obj.status
         })
@@ -367,6 +380,10 @@ export default {
           })
         })
       })
+    },
+    goOtherPage(val) {
+      this.$store.dispatch('setCaseId', val)
+      this.$router.push({ path: '/reportcase/editcase' })
     }
   }
 }
@@ -374,5 +391,11 @@ export default {
 <style lang="scss" scoped>
   .infoct{
     min-height:400px;
+  }
+  .titles{
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 0 2px 2px 0;
+    background-color: #f2f2f2;
   }
 </style>

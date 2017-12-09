@@ -94,7 +94,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { getLeavesArr, updateLeaves, addLeaves } from '@/api/levelshift'
-import { isAccess, isUser } from '@/utils/auth'
+import { isAccess, isUser, getDepCld } from '@/utils/auth'
 export default {
   data() {
     return {
@@ -104,7 +104,8 @@ export default {
         start_index: 0,
         length: 10,
         pagesize: 10,
-        user_id: ''
+        user_id: '',
+        department_id: getDepCld()
       },
       listLoading: false,
       tableKey: 0,

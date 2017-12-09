@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="layui-elem-quote">
       <el-select clearable class="filter-item" filterable style="width: 130px" v-model="pageobj.department_id" placeholder="部门">
-        <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
+        <el-option v-for="item in  depArrs" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
@@ -31,7 +31,7 @@
       </el-table-column> -->
       <el-table-column align="center" label="操作" width="190">
         <template slot-scope="scope">
-          <el-button size="small" v-if="isAccess('122')" type="primary" @click="handleUpdate(scope.row)">修改
+          <el-button size="small" v-if="isAccess('122')&& scope.row.access!='0'" type="primary" @click="handleUpdate(scope.row)">修改
           </el-button>
         </template>
       </el-table-column>

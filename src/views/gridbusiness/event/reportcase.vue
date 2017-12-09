@@ -44,6 +44,7 @@
 <script>
 import VueAMap from 'vue-amap'
 import { getEventTypeArr, addEvent } from '@/api/depevent'
+import { getDepCld } from '@/utils/auth'
 const amapManager = new VueAMap.AMapManager()
 export default {
   data() {
@@ -136,8 +137,10 @@ export default {
   },
   methods: {
     getEventTypeArr() { // 获取事件类型集合
-      getEventTypeArr({ dept_id: '' }).then(res => {
-        this.eventTypeArr = res.info
+      getEventTypeArr({ dept_id: getDepCld() }).then(res => {
+        this.eventTypeArr = res.info.filter(obj => {
+          return !obj.status
+        })
       })
     },
     changType(val) {

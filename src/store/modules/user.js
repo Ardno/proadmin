@@ -1,6 +1,6 @@
 import { loginByUsername, logout, getUserInfo, getQrcode } from '@/api/login'
 import { fetchList, fetchDepartments } from '@/api/department'
-import { getToken, setToken, removeToken, setUserid, setPwd, getPwd } from '@/utils/auth'
+import { getToken, setToken, removeToken, setUserid, setPwd, getPwd, setDepCld, getDepCld } from '@/utils/auth'
 const user = {
   state: {
     user: '',
@@ -77,6 +77,7 @@ const user = {
           const data = response.info
           setToken(data.access_token)
           setPwd(data.pwd)
+          setDepCld(data.department_sub)
           setUserid(data._id)
           commit('SET_TOKEN', data.access_token)
           commit('SET_PASSWORD', data.pwd)
@@ -185,13 +186,13 @@ const user = {
     },
     // 获取用户集合  获取部门集合
     getAlldepPep({ commit }, data) {
-      fetchDepartments().then(res => {
+      fetchDepartments({ _id: getDepCld() }).then(res => {
         const depArr = res.info.filter(obj => {
           return !obj.status
         })
         commit('SET_DEPARR', depArr)
       })
-      fetchList({ start_index: 0, length: 10000 }).then(response => {
+      fetchList({ start_index: 0, length: 10000, department_id: getDepCld() }).then(response => {
         const userArr = response.info.list.filter(obj => {
           return !obj.status
         })

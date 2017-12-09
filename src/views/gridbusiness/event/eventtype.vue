@@ -85,7 +85,7 @@
 
 <script>
 import { getEventTypeArr, addEventType, updateEventType, getStepsArr } from '@/api/depevent'
-import { isAccess } from '@/utils/auth'
+import { isAccess, getDepCld } from '@/utils/auth'
 export default {
   data() {
     return {
@@ -233,7 +233,11 @@ export default {
       this.getEventTypeArr()
     },
     getEventTypeArr() { // 获取步骤类型集合
-      getEventTypeArr(this.listQuery).then(res => {
+      let dept_id = getDepCld()
+      if (this.listQuery.dept_id) {
+        dept_id = this.listQuery.dept_id
+      }
+      getEventTypeArr({ dept_id: dept_id }).then(res => {
         this.eventArr = res.info
       })
     },

@@ -102,10 +102,9 @@
 import { fetchList } from '@/api/department'
 import { getWorksArr, addWorks } from '@/api/levelshift'
 import { getRegionArr } from '@/api/grid'
-import { isAccess, isUser } from '@/utils/auth'
+import { isAccess, isUser, getDepCld } from '@/utils/auth'
 import { deepClone } from '@/utils/index'
 import store from '@/store'
-
 export default {
   data() {
     return {
@@ -115,6 +114,7 @@ export default {
         pagesize: 10,
         user_id: '',
         isHandle: '',
+        department_id: getDepCld(),
         totalPages: 0,
         currentPage: 1
       },
@@ -221,13 +221,13 @@ export default {
     }
   },
   created() {
-    fetchList({ start_index: 0, length: 10000 }).then(response => {
+    fetchList({ start_index: 0, length: 10000, department_id: getDepCld() }).then(response => {
       this.userArr = response.info.list.filter(obj => {
         return !obj.status
       })
       this.loadWorkArr()
     })
-    getRegionArr({ start_index: 0, length: 10000 }).then(response => {
+    getRegionArr({ start_index: 0, length: 10000, department_id: getDepCld() }).then(response => {
       this.polygons = response.info.list.filter(obj => {
         return !obj.status
       })
