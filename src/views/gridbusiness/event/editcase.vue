@@ -45,7 +45,8 @@
           <span v-if="item.para_type == 7" class="blue poi" @click="selectLoc(item)"><i class="el-icon-location"></i>选择地点</span>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="submitForm('eventForm')">提交审核</el-button>
+          <el-button type="primary" @click="submitForm(0)">保存</el-button>
+          <el-button type="success" @click="submitForm(1)">提交审核</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -79,8 +80,9 @@ export default {
       requstParm: {
         step_id: '',
         event_id: '',
-        status: 1,
-        list: []
+        update_user_id: '',
+        list: [],
+        auto: 0
       },
       lawsArr: [],
       userArr: [],
@@ -147,6 +149,7 @@ export default {
   created() {
     this.userArr = this.$store.getters.commonInfo.userArr
     this.eventid = this.$store.getters.caseid
+    this.requstParm.update_user_id = this.$store.getters.useinfo._id
     if (this.eventid) {
       this.getEvent()
       this.getLawsArr()
@@ -204,28 +207,52 @@ export default {
       this.requstParm.list = JSON.stringify(this.requstParm.list)
       return flg
     },
-    submitForm() {
-      if (this.checkForm()) {
-        console.log(this.requstParm)
+    submitForm(type) {
+      this.requstParm.auto = type
+      if (type) {
+        this.$confirm('你确定要提交审核吗?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          updateCaseStep(this.requstParm).then(response => {
+            this.$message({
+              message: '提交成功！',
+              type: 'success',
+              duration: 4 * 1000
+            })
+            this.$router.push({ path: '/reportcase/mycase' })
+          }).catch(() => {
+            this.$message({
+              message: '提交失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
+          })
+        }).catch(() => {
+        })
+        // if (this.checkForm()) {
+        // } else {
+        //   this.$message({
+        //     message: '请填写完整信息~',
+        //     type: 'warning',
+        //     duration: 4 * 1000
+        //   })
+        // }
+      } else {
         updateCaseStep(this.requstParm).then(response => {
           this.$message({
-            message: '提交成功！',
+            message: '保存成功！',
             type: 'success',
             duration: 4 * 1000
           })
           this.$router.push({ path: '/reportcase/mycase' })
         }).catch(() => {
           this.$message({
-            message: '提交失败，请稍后再试',
+            message: '保存失败，请稍后再试',
             type: 'error',
             duration: 4 * 1000
           })
-        })
-      } else {
-        this.$message({
-          message: '请填写完整信息~',
-          type: 'warning',
-          duration: 4 * 1000
         })
       }
     },
@@ -238,9 +265,6 @@ export default {
     handleExceed(files, fileList) {
       this.$message.warning(`当前限制选择 10 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
     }
-  },
-  computed: {
-
   }
 }
 </script>

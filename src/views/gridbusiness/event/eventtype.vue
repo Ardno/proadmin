@@ -35,7 +35,7 @@
           <span>{{scope.row.deptname}}</span>
       </template>
       </el-table-column>
-      <el-table-column align="center" label="步骤">
+      <el-table-column align="left" label="步骤">
       <template slot-scope="scope">
           <span>{{conversionSteps(scope.row.step_ids)}}</span>
       </template>
@@ -151,7 +151,6 @@ export default {
         for (var key in this.eventInfo.steparr) {
           this.eventInfo.steparr[key] = Number(this.eventInfo.steparr[key])
         }
-        console.log(this.eventInfo.steparr)
       } else {
         this.eventInfo.steparr = []
       }
@@ -261,16 +260,15 @@ export default {
       const rets = []
       if (str.length) {
         const arr = str.split(',')
-        arr.forEach(function(id) {
+        arr.forEach(function(id, index) {
           const saf = this.allStepsArr.filter(obj => {
             return obj._id === Number(id)
           })
           if (saf.length) {
-            rets.push(saf[0].name)
+            rets.push((index + 1) + '.' + saf[0].name)
           }
         }, this)
-        console.log(rets)
-        return rets.join(',')
+        return rets.join(', ')
       }
       return '暂无步骤'
     }

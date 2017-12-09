@@ -68,7 +68,7 @@
           <span v-else>无</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="300">
+      <el-table-column align="left" label="操作" width="200">
         <template slot-scope="scope">
           <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('92')" @click="goOtherPage(scope.row._id)" >编辑
           </el-button> -->
@@ -76,8 +76,8 @@
           </el-button>
           <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0"  icon="el-icon-search"  @click="showStepInfo(scope.row)" title="查看/打印" >
           </el-button>
-          <!-- <el-button size="small" type="success"  @click="markComplete(scope.row)" v-if="scope.row.status == '0' && isAccess('94') && (scope.row.is_unfilled == 0 && scope.row.is_unaudited ==0)" >标记完成
-          </el-button> -->
+          <el-button size="small" type="success"  @click="markComplete(scope.row)" v-if="scope.row.status == '0' && isAccess('94') && (scope.row.is_unfilled == 0 && scope.row.is_unaudited ==0)" >标记完成
+          </el-button>
           <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('91') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)">步骤填写</el-button> -->
           <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0" icon="el-icon-document"  @click="showVerifyEvent(scope.row)" title="步骤审核" ></el-button>
         </template>
@@ -125,7 +125,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import { getEventStep } from '@/api/depevent'
-import { getEventArr, getEventTypeArr, updateEvent, updateSteps, getSteps, getCaseStepinfo } from '@/api/depevent'
+import { getEventArr, getEventTypeArr, updateEvent, auditEventStep, getSteps, getCaseStepinfo } from '@/api/depevent'
 import { isAccess } from '@/utils/auth'
 export default {
   data() {
@@ -162,6 +162,7 @@ export default {
         loading: false,
         content: ''
       },
+      activeitem: null,
       verifyitem: {
         user_msg: '',
         id: ''
@@ -229,6 +230,7 @@ export default {
     showVerifyEvent(item) {
       this.dialogVisible = true
       this.verifyitem.id = item._id
+      this.activeitem = item
     },
     verifyEvent(type) { // 步骤审核
       if (!this.verifyitem.user_msg) {
@@ -239,18 +241,21 @@ export default {
         })
         return
       }
+
       getEventStep({ event_id: this.verifyitem.id }).then(res => {
         const requst = {
           step_id: res.info.step_id,
           event_id: res.info.event_id,
           user_id: this.userInfo._id,
+          role_id: this.userInfo.role_id,
           status: type,
           user_msg: this.verifyitem.user_msg
         }
-        updateSteps(requst).then(res => {
+        auditEventStep(requst).then(res => {
           this.dialogVisible = false
+          this.getEventsArr()
           this.$message({
-            message: '关闭成功',
+            message: '操作成功',
             type: 'success',
             duration: 4 * 1000
           })
@@ -258,7 +263,7 @@ export default {
       }).catch(errs => {
         this.dialogVisible = false
         this.$message({
-          message: '审核失败，请稍后再试',
+          message: '操作失败，请稍后再试',
           type: 'error',
           duration: 4 * 1000
         })

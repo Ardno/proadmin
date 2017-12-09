@@ -112,6 +112,15 @@ const user = {
             role[0] = 'admin'
           }
           data.birthday = data.birthday * 1000
+          const arr = data.department_roles.filter(obj => {
+            return obj.is_enable
+          })
+          if (arr.length) { // 由于信息主部门不准确，现获取个人部门数组里面的主部门
+            data.department_id = arr[0].department_id
+            data.dept_name = arr[0].deptname
+            data.role_id = arr[0].role_id
+            data.role_name = arr[0].rolename
+          }
           commit('SET_USEINFO', data)
           commit('SET_ROLES', role)
           commit('SET_NAME', data.name)
