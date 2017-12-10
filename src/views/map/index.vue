@@ -91,7 +91,7 @@ export default {
               // renderCluserMarker: this._renderCluserMarker
             })
             console.log(cluster)
-          }, 5000)
+          }, 4000)
         },
         click: (e) => {
           const { lng, lat } = e.lnglat
@@ -273,8 +273,8 @@ export default {
       getLatlonArr({ department_id: getDepCld() }).then(res => {
         res.info.forEach((element, index) => {
           const obj = {
-            // position: [element.location.lat, element.location.lon],
-            position: this.getRadomPt(),
+            position: [element.location.lon, element.location.lat],
+            // position: this.getRadomPt(),
             icon: personicon,
             events: {
               init: (marker) => {
@@ -318,7 +318,8 @@ export default {
         res.info.list.forEach((element, index) => {
           if (element.lat) {
             const obj = {
-              position: [element.lat, element.lon],
+              position: [element.lon, element.lat],
+              // position: this.getRadomPt(),
               icon: eventicon,
               events: {
                 init: (marker) => {
