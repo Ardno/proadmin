@@ -69,7 +69,7 @@
 <script>
 import VueAMap from 'vue-amap'
 import { getEventStep, getLawsArr, updateCaseStep } from '@/api/depevent'
-import { getDepCld } from '@/utils/auth'
+// import { getDepCld } from '@/utils/auth'
 const amapManager = new VueAMap.AMapManager()
 export default {
   data() {
@@ -175,7 +175,7 @@ export default {
       })
     },
     getLawsArr() {
-      getLawsArr({ department_id: getDepCld() }).then(response => {
+      getLawsArr({ department_id: '' }).then(response => {
         this.lawsArr = response.info
       })
     },

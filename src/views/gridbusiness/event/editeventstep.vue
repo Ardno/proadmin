@@ -73,7 +73,7 @@ import Tinymce from '@/components/Tinymce'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import MDinput from '@/components/MDinput'
 import { fetchRoles } from '@/api/department'
-import { getDepCld } from '@/utils/auth'
+// import { getDepCld } from '@/utils/auth'
 import { getSteps, addSteps, updateSteps, getLawsArr } from '@/api/depevent'
 const paraTypeArr = [
   { _id: '0', name: '文本控件' },
@@ -300,7 +300,7 @@ export default {
     },
     init() { // 初始化
       this.depArr = this.$store.getters.commonInfo.depArr
-      getLawsArr({ department_id: getDepCld() }).then(response => {
+      getLawsArr({ department_id: '' }).then(response => {
         this.lawArr = response.info
       })
       this.changeDepRule()

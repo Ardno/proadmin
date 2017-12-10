@@ -78,7 +78,7 @@
               <el-form-item label="生日">
                 <span class="g6">{{depInfo.birthday | parseTime('{y}-{m}-{d}',true)}}</span>
               </el-form-item>
-              <el-form-item v-if="depInfo.access!= '0'"  v-for="(pitem,index) in depInfodep.depArr" :label="'部门'+(index+1)" :key="pitem._id">
+              <el-form-item v-show="depInfo.access!='0'"  v-for="(pitem,index) in depInfodep.depArr" :label="'部门'+(index+1)" :key="pitem._id">
                 <span class="g6">{{pitem.deptname}}</span>
                 <span class="g6 ml30">（<span class="b">职务：</span>{{pitem.rolename}}）</span>
                 <el-button v-show="isAccess('24') && depInfodep.depArr.length > 1" class="r ml10" type="text" @click="handleUpdatePeInfo('2', pitem, index)"> 删除</el-button>

@@ -18,6 +18,7 @@ const user = {
       articlePlatform: []
     },
     commonInfo: {
+      alldepArr: [],
       depArr: [],
       userArr: []
     }
@@ -62,6 +63,9 @@ const user = {
     },
     SET_DEPARR: (state, depArr) => {
       state.commonInfo.depArr = depArr
+    },
+    SET_ALLDEPARR: (state, alldepArr) => {
+      state.commonInfo.alldepArr = alldepArr
     }
   },
 
@@ -191,6 +195,12 @@ const user = {
           return !obj.status
         })
         commit('SET_DEPARR', depArr)
+      })
+      fetchDepartments().then(res => {
+        const depArr = res.info.filter(obj => {
+          return !obj.status
+        })
+        commit('SET_ALLDEPARR', depArr)
       })
       fetchList({ start_index: 0, length: 10000, department_id: getDepCld() }).then(response => {
         const userArr = response.info.list.filter(obj => {

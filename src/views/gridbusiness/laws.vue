@@ -157,7 +157,7 @@
 // addLaws, updateLaws, getLaws,
 import { TreeUtil } from '@/utils/index'
 import { addLaws, updateLaws, getLawsArr } from '@/api/depevent'
-import { isAccess, getDepCld } from '@/utils/auth'
+import { isAccess } from '@/utils/auth'
 export default {
   data() {
     const regutypeArr = [
@@ -178,7 +178,8 @@ export default {
         pagesize: 10,
         totalPages: 0,
         currentPage: 1,
-        department_id: getDepCld(),
+        department_id: '',
+        // department_id: getDepCld(),
         regu_id: ''
       },
       duty: {
@@ -315,7 +316,7 @@ export default {
         department_id: '',
         content: ''
       }
-      getLawsArr({ department_id: getDepCld() }).then(response => {
+      getLawsArr({ department_id: '' }).then(response => {
         const array = response.info
         this.reguArr.push(...response.info)
         const map = { name: 'label', _id: 'id' }
@@ -331,7 +332,8 @@ export default {
       })
     },
     loadDps() {
-      this.depArr = this.$store.getters.commonInfo.depArr
+      // this.depArr = this.$store.getters.commonInfo.depArr
+      this.depArr = this.$store.getters.commonInfo.alldepArr
       this.getLawsArr()
     },
     filterDepRegu(id, flg) { // 转换部门和法律
