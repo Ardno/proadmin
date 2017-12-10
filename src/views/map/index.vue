@@ -72,17 +72,26 @@ export default {
       PathSimplifier: '',
       geocoder: '',
       mapobj: null,
+      markerRefs: [],
       events: {
         init: (map) => {
           this.mapobj = this.$refs.map
-          this.geocoder.getAddress([map.getCenter().lng, map.getCenter().lat], (status, result) => {
-            if (status === 'complete' && result.info === 'OK') {
-              if (result && result.regeocode) {
-                this.address = result.regeocode.formattedAddress
-                this.$nextTick()
-              }
-            }
-          })
+          // this.geocoder.getAddress([map.getCenter().lng, map.getCenter().lat], (status, result) => {
+          //   if (status === 'complete' && result.info === 'OK') {
+          //     if (result && result.regeocode) {
+          //       this.address = result.regeocode.formattedAddress
+          //       this.$nextTick()
+          //     }
+          //   }
+          // })
+          setTimeout(() => {
+            console.log(this.markerRefs)
+            const cluster = new AMap.MarkerClusterer(map, this.markerRefs, {
+              gridSize: 80
+              // renderCluserMarker: this._renderCluserMarker
+            })
+            console.log(cluster)
+          }, 5000)
         },
         click: (e) => {
           const { lng, lat } = e.lnglat
@@ -273,6 +282,7 @@ export default {
                   offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
                   content: element.name
                 })
+                this.markerRefs.push(marker)
               },
               click: (e) => {
                 const obj = element
@@ -316,6 +326,7 @@ export default {
                     offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
                     content: element.name
                   })
+                  this.markerRefs.push(marker)
                 },
                 click: (e) => {
                   const obj = element
@@ -405,6 +416,28 @@ export default {
         }, this)
       })
       return name
+    },
+    _renderCluserMarker(context) {
+      var factor = Math.pow(context.count / 16, 1 / 18)
+      var div = document.createElement('div')
+      var Hue = 180 - factor * 180
+      var bgColor = 'hsla(' + Hue + ',100%,50%,0.7)'
+      var fontColor = 'hsla(' + Hue + ',100%,20%,1)'
+      var borderColor = 'hsla(' + Hue + ',100%,40%,1)'
+      var shadowColor = 'hsla(' + Hue + ',100%,50%,1)'
+      div.style.backgroundColor = bgColor
+      var size = Math.round(30 + Math.pow(context.count / 16, 1 / 5) * 20)
+      div.style.width = div.style.height = size + 'px'
+      div.style.border = 'solid 1px ' + borderColor
+      div.style.borderRadius = size / 2 + 'px'
+      div.style.boxShadow = '0 0 1px ' + shadowColor
+      div.innerHTML = context.count
+      div.style.lineHeight = size + 'px'
+      div.style.color = fontColor
+      div.style.fontSize = '14px'
+      div.style.textAlign = 'center'
+      context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2))
+      context.marker.setContent(div)
     }
   },
   computed: {

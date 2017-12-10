@@ -137,7 +137,9 @@ export default {
   },
   methods: {
     getEventTypeArr() { // 获取事件类型集合
-      getEventTypeArr({ dept_id: getDepCld() }).then(res => {
+      const requst = { dept_id: getDepCld() }
+      console.log(requst)
+      getEventTypeArr().then(res => {
         this.eventTypeArr = res.info.filter(obj => {
           return !obj.status
         })
