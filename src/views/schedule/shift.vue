@@ -304,7 +304,9 @@ export default {
                 type: 'success',
                 duration: 4 * 1000
               })
-              this.loadshiftsArr()
+              setTimeout(() => {
+                this.loadshiftsArr()
+              }, 500)
             }).catch(() => {
               this.$message({
                 message: '申请失败，请稍后再试',
@@ -321,7 +323,9 @@ export default {
                   type: 'success',
                   duration: 4 * 1000
                 })
-                this.loadshiftsArr()
+                setTimeout(() => {
+                  this.loadshiftsArr()
+                }, 500)
               }).catch(() => {
                 this.$message({
                   message: '修改信息失败，请稍后再试',

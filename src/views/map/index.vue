@@ -91,7 +91,10 @@ export default {
               // renderCluserMarker: this._renderCluserMarker
             })
             console.log(cluster)
-          }, 4000)
+          }, 1000)
+          map.on('zoomchange', (e) => {
+            this.windows[0].visible = false
+          })
         },
         click: (e) => {
           const { lng, lat } = e.lnglat
