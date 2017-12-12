@@ -113,7 +113,7 @@
       <!-- 分页 -->
       <el-dialog :title="titlea" width="600px"  @close="closeCall" :visible.sync="dialogFormVisible">
         <el-form label-position="right" label-width="80px" :rules="infoRules" ref="infoForm" :model="duty">
-          <el-form-item label="上级法规" >
+          <el-form-item label="所属法律法规" >
             <el-select class="filter-item" :clearable="true" filterable style="width: 130px" v-model="duty.regu_id" placeholder="请选择">
               <el-option v-for="item in  creguArr" :key="item._id" :label="item.name" :value="item._id">
               </el-option>

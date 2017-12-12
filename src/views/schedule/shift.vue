@@ -114,6 +114,7 @@
 import { mapGetters } from 'vuex'
 import { getShiftsArr, updateShifts, addShifts, getWorksArr } from '@/api/levelshift'
 import { getRegionArr } from '@/api/grid'
+import { fetchList } from '@/api/department'
 import { isAccess, isUser, getDepCld } from '@/utils/auth'
 import store from '@/store'
 import { parseTime } from '@/utils/index'
@@ -252,7 +253,17 @@ export default {
     },
     loadDep() { // 获取用户部门和用户 区域
       this.depArr = this.$store.getters.commonInfo.depArr
-      this.userArr = this.$store.getters.commonInfo.userArr
+      const dep = this.$store.getters.useinfo.department_roles
+      const arr = []
+      dep.forEach(element => {
+        arr.push(element.department_id)
+      })
+      fetchList({ start_index: 0, length: 10000, department_id: arr.join(',') }).then(response => {
+        const userArr = response.info.list.filter(obj => {
+          return !obj.status
+        })
+        this.userArr = userArr
+      })
       getRegionArr(this.requesetUser).then(response => {
         this.regionArr = response.info.list.filter(obj => {
           return !obj.status
@@ -260,8 +271,9 @@ export default {
       })
       getWorksArr(this.requesetUser).then(response => {
         this.workArr = response.info.list.filter(obj => {
-          return !obj.status
+          return !obj.work_state
         })
+        console.log(this.workArr)
       })
     },
     loadshiftsArr() { // 获取换班列表
