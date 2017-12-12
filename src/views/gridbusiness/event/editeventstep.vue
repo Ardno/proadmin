@@ -129,10 +129,8 @@ export default {
     const stepid = this.$store.getters.stepid
     if (stepid) {
       this.getSteps(stepid)
-      this.depArr = this.$store.getters.commonInfo.depArr
-    } else {
-      this.init()
     }
+    this.init()
   },
   methods: {
     insertRole(id) {

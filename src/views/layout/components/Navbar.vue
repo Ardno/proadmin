@@ -13,23 +13,23 @@
             <svg-icon class="" icon-class="remind" />
           </router-link>
         </el-badge>
-        <el-tooltip effect="dark" content="换肤" placement="bottom">
+        <!-- <el-tooltip effect="dark" content="换肤" placement="bottom">
           <theme-picker class="theme-switch right-menu-item"></theme-picker>
-        </el-tooltip>
-        <el-dropdown class="avatar-container right-menu-item" trigger="click">
+        </el-tooltip> -->
+        <el-dropdown class="avatar-container right-menu-item" @command="handleCommand">
           <div class="avatar-wrapper">
             <img class="user-avatar" :src="'http://gridmap-file.xiaoketech.com/images/user/'+avatar+'.png'" :onerror="defaultImg">
-            <i class="el-icon-caret-bottom"></i>
+            <span class="dib vt">{{temp.name}}
+              <i class="el-icon-caret-bottom"></i>
+            </span>
           </div>
           <el-dropdown-menu slot="dropdown">
-            <router-link to="/">
-              <el-dropdown-item>
-                首页
-              </el-dropdown-item>
-            </router-link>
-            <el-dropdown-item ><span @click="dialogInfo=true" >个人信息</span></el-dropdown-item>
-            <el-dropdown-item ><span @click="handlePwd(temp)" >修改密码</span></el-dropdown-item>
-            <el-dropdown-item divided><span @click="logout" style="display:block;">退出登录</span></el-dropdown-item>
+            <el-dropdown-item command="a" >
+              首页
+            </el-dropdown-item>
+            <el-dropdown-item command="b"  >个人信息</el-dropdown-item>
+            <el-dropdown-item command="c" >修改密码</el-dropdown-item>
+            <el-dropdown-item command="d"  divided>退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
       </div>
@@ -171,6 +171,17 @@ export default {
     })
   },
   methods: {
+    handleCommand(command) {
+      if (command === 'a') {
+        this.$router.push({ path: '/index' })
+      } else if (command === 'b') {
+        this.dialogInfo = true
+      } else if (command === 'c') {
+        this.handlePwd(this.temp)
+      } else if (command === 'd') {
+        this.logout()
+      }
+    },
     closeCall() {
       this.$refs.infoForm.resetFields()
     },

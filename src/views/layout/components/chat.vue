@@ -89,18 +89,19 @@
               <li class="layui-icon layim-tool-search" @click="searchflg=true" title="搜索">
                 <svg-icon icon-class="icon-fangdajing" />
               </li>
-              <li class="layui-icon layim-tool-msgbox " title="消息盒子">
+              <li class="layui-icon layim-tool-msgbox vh" title="消息盒子">
                 <svg-icon icon-class="icon-laba" />
                 <span v-if="totalCount" class="layui-anim layui-anim-loop layer-anim-05">{{totalCount}}</span>
               </li>
               <li class="layui-icon layim-tool-find" @click="creatGroup.dialogVisible = true" title="创建群">
                 <svg-icon icon-class="icon-jia1" />
               </li>
-              <li class="layui-icon layim-tool-skin" title="更换背景">
-                <svg-icon icon-class="icon-pifu" />
-              </li>
-              <li class="layui-icon layim-tool-about" title="关于">
+              <li class="layui-icon layim-tool-about vh" title="关于">
                 <svg-icon icon-class="icon-guanyu" />
+              </li>
+              <li class="layui-icon layim-tool-msgbox " title="消息盒子">
+                <svg-icon icon-class="icon-laba" />
+                <span v-if="totalCount" class="layui-anim layui-anim-loop layer-anim-05">{{totalCount}}</span>
               </li>
             </ul>
             <div class="layui-layim-search" v-if="searchflg" style="display: block;">

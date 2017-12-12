@@ -2,7 +2,7 @@
   <div class="pht100 rel">
     <el-amap vid="amapDemo" ref="map" :center="center" :map-manager="amapManager" :zoom="zoom" :plugin="plugin" :events="events" class="amap-demo">
       <!-- 区域 -->
-      <el-amap-polygon v-for="(polygon, index) in polygons" :key="index" :vid="index" :ref="`polygon_${index}`" :path="polygon.path" :events="polygon.events">
+      <el-amap-polygon v-for="(polygon, index) in polygons" :key="index" :vid="index" :ref="`polygon_${index}`" :strokeWeight="polygon.strokeWeight" :strokeOpacity="polygon.strokeOpacity" :strokeColor="polygon.strokeColor" :fillColor="polygon.fillColor" :fillOpacity="polygon.fillOpacity" :path="polygon.path" :events="polygon.events">
       </el-amap-polygon>
       <!-- 点坐标 -->
       <el-amap-marker v-for="(marker, index) in markerArr" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :events="marker.events" :visible="marker.visible" :draggable="marker.draggable">
@@ -54,6 +54,7 @@ import { getEventArr } from '@/api/depevent'
 import { isAccess, getDepCld } from '@/utils/auth'
 import personicon from '@/assets/icon/personicon.png'
 import eventicon from '@/assets/icon/zuob2.png'
+import avatar from '@/assets/login_images/avatar.png'
 import { deepClone } from '@/utils/index'
 const amapManager = new VueAMap.AMapManager()
 export default {
@@ -84,14 +85,6 @@ export default {
           //     }
           //   }
           // })
-          setTimeout(() => {
-            console.log(this.markerRefs)
-            const cluster = new AMap.MarkerClusterer(map, this.markerRefs, {
-              gridSize: 80
-              // renderCluserMarker: this._renderCluserMarker
-            })
-            console.log(cluster)
-          }, 1000)
           map.on('zoomchange', (e) => {
             this.windows[0].visible = false
           })
@@ -201,6 +194,9 @@ export default {
   },
   methods: {
     isAccess: isAccess,
+    defaultImg() {
+      return 'this.onerror=null;this.src="' + avatar + '"'
+    },
     loadInit() { // 初始化加载
       this.markerArr = []
       try {
@@ -237,11 +233,20 @@ export default {
         const polygons = response.info.list
         this.polygons = []
         this.polygonsArr = []
+        const colorArr = {}
         polygons.forEach(function(element) {
           if (!element.status) {
+            if (!colorArr[element.department_id]) {
+              colorArr[element.department_id] = '#' + Math.floor(Math.random() * 0xffffff).toString(16)
+            }
             const obj = {
               path: element.latlon_list,
               editable: false,
+              strokeColor: '#000',
+              strokeWeight: 2,
+              strokeOpacity: 0.5,
+              fillOpacity: 0.1,
+              fillColor: colorArr[element.department_id],
               extData: element,
               events: {
                 click: () => {
@@ -292,10 +297,12 @@ export default {
                 const uploadtime = parseTime(obj.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
                 this.windows[0].position = [e.lnglat.lng, e.lnglat.lat]
                 this.windows[0].visible = true
+                // <span style="font-size:11px;color:blue;">在线</span>
+                // <a href="javascript:" style="color:blue">点击对话</a>
                 const ctstr = `<div class="info">
-                 <div class="info-top">${obj.name}<span style="font-size:11px;color:blue;">在线</span></div>
+                 <div class="info-top">${obj.name}</div>
                  <div class="info-middle" style="background-color: white;">
-                 <img src="http://gridmap-file.xiaoketech.com/images/user/${obj.location.user_id}.png">
+                 <img src="http://gridmap-file.xiaoketech.com/images/user/${obj.location.user_id}.png" onerror="this.onerror=null;this.src='${avatar}'">
                  地址：${obj.location.address}<br>更新时间：${uploadtime}<br>
                  </div></div>`
                 this.windows[0].content = ctstr
@@ -311,6 +318,13 @@ export default {
           this.markerArr.push(obj)
           this.personArr.push(obj)
         })
+        setTimeout(() => {
+          const cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs, {
+            gridSize: 80
+            // renderCluserMarker: this._renderCluserMarker
+          })
+          console.log(cluster)
+        }, 1000)
       }).catch(errs => {
         console.log('获取部门人员位置出错')
       })
@@ -337,12 +351,13 @@ export default {
                   const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                   this.windows[0].position = [e.lnglat.lng, e.lnglat.lat]
                   this.windows[0].visible = true
+                  // <a href="javascript:" style="color:blue">点击查看事件</a>
                   const ctstr = `<div class="info">
                   <div class="info-top">${obj.name}</div>
                   <div class="info-middle" style="background-color: white;">
+                  处理人：${obj.username} <br>
                   时间：${happen_time}<br>
                   地址：${obj.address}<br>
-                  <a href="#" style="color:blue">点击查看事件</a>
                   </div></div>`
                   this.windows[0].content = ctstr
                 },
@@ -510,6 +525,7 @@ export default {
   .info-middle img {
       float: left;
       margin-right: 6px;
+      max-width: 70px!important;
   }
 }     
 </style>
