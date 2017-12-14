@@ -8,7 +8,7 @@
       <el-amap-marker v-for="(marker, index) in markerArr" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :events="marker.events" :visible="marker.visible" :draggable="marker.draggable">
       </el-amap-marker>
       <!-- 信息窗体 -->
-      <el-amap-info-window v-for="(window, index) in windows" :ref="`window_${index}`" :key="index" :position="window.position" :content="window.content" :visible="window.visible" :events="window.events">
+      <el-amap-info-window v-for="(window, index) in windows" :closeWhenClickMap="true" :ref="`window_${index}`" :key="index" :template="window.template" :position="window.position"  :visible="window.visible" :events="window.events">
       </el-amap-info-window>
     </el-amap>
     <div class="pottoolbar" >
@@ -85,9 +85,9 @@ export default {
           //     }
           //   }
           // })
-          map.on('zoomchange', (e) => {
-            this.windows[0].visible = false
-          })
+          // map.on('zoomchange', (e) => {
+          //   this.windows[0].visible = false
+          // })
         },
         click: (e) => {
           const { lng, lat } = e.lnglat
@@ -117,8 +117,9 @@ export default {
       windows: [
         {
           position: [121.5273285, 31.21515044],
-          content: 'Hi! I am here!',
+          template: '<span>changed</span>',
           visible: false,
+          data: null,
           events: {
             close: () => {
               this.windows[0].visible = false
@@ -295,17 +296,18 @@ export default {
               click: (e) => {
                 const obj = element
                 const uploadtime = parseTime(obj.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                this.windows[0].position = [e.lnglat.lng, e.lnglat.lat]
+                this.windows[0].position = [element.location.lon, element.location.lat]
                 this.windows[0].visible = true
                 // <span style="font-size:11px;color:blue;">在线</span>
                 // <a href="javascript:" style="color:blue">点击对话</a>
+                this.windows[0].data = obj.name
                 const ctstr = `<div class="info">
                  <div class="info-top">${obj.name}</div>
-                 <div class="info-middle" style="background-color: white;">
+                 <div @click="handler" class="info-middle" style="background-color: white;">
                  <img src="http://gridmap-file.xiaoketech.com/images/user/${obj.location.user_id}.png" onerror="this.onerror=null;this.src='${avatar}'">
                  地址：${obj.location.address}<br>更新时间：${uploadtime}<br>
                  </div></div>`
-                this.windows[0].content = ctstr
+                this.windows[0].template = ctstr
               },
               dragend: (e) => {
                 this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
@@ -351,15 +353,16 @@ export default {
                   const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                   this.windows[0].position = [e.lnglat.lng, e.lnglat.lat]
                   this.windows[0].visible = true
+                  this.windows[0].data = obj.name
                   // <a href="javascript:" style="color:blue">点击查看事件</a>
                   const ctstr = `<div class="info">
                   <div class="info-top">${obj.name}</div>
-                  <div class="info-middle" style="background-color: white;">
+                  <div class="info-middle"  style="background-color: white;">
                   处理人：${obj.username} <br>
                   时间：${happen_time}<br>
                   地址：${obj.address}<br>
                   </div></div>`
-                  this.windows[0].content = ctstr
+                  this.windows[0].template = ctstr
                 },
                 dragend: (e) => {
                   this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
@@ -376,6 +379,9 @@ export default {
       }).catch(errs => {
         console.log('获取事件位置出错')
       })
+    },
+    handler() {
+      console.log(this.windows[0].data)
     },
     updateRegion() { // 修改区域用户
       this.regionobj.user_ids = this.regionobj.userArr.join(',')
