@@ -166,6 +166,7 @@ import single_avatar from '@/assets/images/single-avatar.svg'
 import avteinfo from '@/assets/images/avteinfo.svg'
 import store from '@/store/index'
 import axios from 'axios'
+import Bus from '@/utils/bus'
 export default {
   name: 'chat',
   components: {
@@ -220,6 +221,18 @@ export default {
       })
     }
     this.JIMInit()
+    Bus.$on('chatVel', id => { // 监听地图页面点击人员图标聊天
+      const friend_list = this.friend_list
+      friend_list.forEach(element => {
+        element.list.forEach(els => {
+          const tid = els.username.substring(5)
+          if (id === tid) {
+            this.imCkPanle(els)
+          }
+        })
+      })
+      this.colseIm = false
+    })
   },
   methods: {
     filterName(strid) {

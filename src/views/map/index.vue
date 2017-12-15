@@ -56,6 +56,7 @@ import personicon from '@/assets/icon/personicon.png'
 import eventicon from '@/assets/icon/zuob2.png'
 import avatar from '@/assets/login_images/avatar.png'
 import { deepClone } from '@/utils/index'
+import Bus from '@/utils/bus'
 const amapManager = new VueAMap.AMapManager()
 export default {
   components: {
@@ -119,7 +120,6 @@ export default {
           position: [121.5273285, 31.21515044],
           template: '<span>changed</span>',
           visible: false,
-          data: null,
           events: {
             close: () => {
               this.windows[0].visible = false
@@ -299,13 +299,12 @@ export default {
                 this.windows[0].position = [element.location.lon, element.location.lat]
                 this.windows[0].visible = true
                 // <span style="font-size:11px;color:blue;">在线</span>
-                // <a href="javascript:" style="color:blue">点击对话</a>
-                this.windows[0].data = obj.name
                 const ctstr = `<div class="info">
                  <div class="info-top">${obj.name}</div>
-                 <div @click="handler" class="info-middle" style="background-color: white;">
+                 <div @click="handler('1','${obj._id}')" class="info-middle" style="background-color: white;">
                  <img src="http://gridmap-file.xiaoketech.com/images/user/${obj.location.user_id}.png" onerror="this.onerror=null;this.src='${avatar}'">
                  地址：${obj.location.address}<br>更新时间：${uploadtime}<br>
+                 <a href="javascript:" style="color:blue">点击对话</a>
                  </div></div>`
                 this.windows[0].template = ctstr
               },
@@ -353,7 +352,6 @@ export default {
                   const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                   this.windows[0].position = [e.lnglat.lng, e.lnglat.lat]
                   this.windows[0].visible = true
-                  this.windows[0].data = obj.name
                   // <a href="javascript:" style="color:blue">点击查看事件</a>
                   const ctstr = `<div class="info">
                   <div class="info-top">${obj.name}</div>
@@ -380,8 +378,11 @@ export default {
         console.log('获取事件位置出错')
       })
     },
-    handler() {
-      console.log(this.windows[0].data)
+    handler(type, val) {
+      console.log(type, val)
+      if (type === '1') {
+        Bus.$emit('chatVel', val)
+      }
     },
     updateRegion() { // 修改区域用户
       this.regionobj.user_ids = this.regionobj.userArr.join(',')

@@ -1,10 +1,12 @@
 <template>
   <div class="app-container calendar-list-container">
     <div class="layui-elem-quote">
-      <el-select  class="filter-item" filterable style="width: 130px" v-model="listQuery.department" placeholder="请输入部门">
+      <el-cascader placeholder="试试搜索：部门" :options="depArr" v-model="listQuery.department" @change="changeDep" filterable change-on-select></el-cascader>
+      <!-- <el-cascader :options="depArr"  change-on-select ></el-cascader> -->
+      <!-- <el-select  class="filter-item" filterable style="width: 130px" v-model="listQuery.department" placeholder="请输入部门">
         <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
-      </el-select>
+      </el-select> -->
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
     </div>
 
@@ -148,7 +150,7 @@ import { mapGetters } from 'vuex'
 import { fetchList, fetchRoles, updatePeInfo } from '@/api/department'
 import { validateMblNo, validateIdNum } from '@/utils/validate'
 import { isAccess } from '@/utils/auth'
-import { deepClone } from '@/utils/index'
+import { deepClone, TreeUtil, removeTreeArr } from '@/utils/index'
 export default {
   data() {
     const validateUserIdNum = (rule, value, callback) => {
@@ -179,7 +181,7 @@ export default {
         pagesize: 10,
         totalPages: 0,
         currentPage: 1,
-        department: '',
+        department: [],
         department_id: '',
         role_id: ''
       },
@@ -230,10 +232,23 @@ export default {
     })
   },
   created() {
-    this.listQuery.department = this.useinfo.dept_name
+    this.listQuery.department = [this.useinfo.department_id]
     this.listQuery.department_id = this.useinfo.department_id
     this.loadRls('')
-    this.depArr = deepClone(this.$store.getters.commonInfo.depArr)
+    const array = deepClone(this.$store.getters.commonInfo.depArr)
+    const map = { name: 'label', _id: 'value' }
+    array.forEach(element => {
+      element.parentid = element.parent
+    })
+    try {
+      const tree1 = new TreeUtil(array, '_id', 'parent', map)
+      const depArr = tree1.toTree()
+      removeTreeArr(depArr)
+      this.depArr = depArr
+      console.log(this.depArr)
+    } catch (error) {
+      console.log(error)
+    }
     this.getList(true)
   },
   methods: {
@@ -258,6 +273,10 @@ export default {
         }
       }, this)
       return name
+    },
+    changeDep(val) {
+      this.listQuery.department_id = val[val.length - 1]
+      console.log(this.listQuery.department_id)
     },
     createFilter(queryString) {
       return (restaurant) => {
@@ -368,15 +387,15 @@ export default {
     },
     getList(flg) {
       this.listLoading = true
-      const array = this.depArr
-      if (!flg) {
-        this.listQuery.department_id = this.listQuery.department
-        array.forEach(function(element) { // 在已有部门查找是否存在该部门，
-          if (this.listQuery.department === element.value) {
-            this.listQuery.department_id = element._id
-          }
-        }, this)
-      }
+      // const array = this.depArr
+      // if (!flg) {
+      //   this.listQuery.department_id = this.listQuery.department
+      //   array.forEach(function(element) { // 在已有部门查找是否存在该部门，
+      //     if (this.listQuery.department === element.value) {
+      //       this.listQuery.department_id = element._id
+      //     }
+      //   }, this)
+      // }
       fetchList(this.listQuery).then(response => {
         this.list = response.info.list
         this.listQuery.totalPages = response.info.count

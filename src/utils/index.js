@@ -337,6 +337,8 @@ export function TreeUtil(data, key, parentKey, map) {
           pos[data[i][this.key]] = posArr.concat([obj.children.length - 1])
           data.splice(i, 1)
           i--
+        } else { // 异常处理，防止死循环
+          break
         }
       }
       i++
@@ -363,6 +365,20 @@ export function TreeUtil(data, key, parentKey, map) {
     }
     return _temp
   }
+}
+// 移除树结构中的空子数组
+export function removeTreeArr(tree) {
+  const arr = tree
+  const remove = (data) => {
+    data.forEach(element => {
+      if (element.children.length) {
+        remove(element.children)
+      } else {
+        delete element.children
+      }
+    })
+  }
+  remove(arr)
 }
 /**
  * 数组根据数组对象中的某个属性值进行排序的方法
