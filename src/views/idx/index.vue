@@ -7,7 +7,7 @@
             <i class="fa fa-user"><svg-icon icon-class="inx-02" /></i>
           </div>
           <div class="value">
-            <h1 class="count">2</h1>
+            <h1 class="count">{{dataInfo.today}}</h1>
             <p>新增事件</p>
           </div>
         </div>
@@ -18,7 +18,7 @@
             <i class="fa fa-user"><svg-icon icon-class="inx-04" /></i>
           </div>
           <div class="value">
-            <h1 class="count">12</h1>
+            <h1 class="count">{{dataInfo.treatment_day}}</h1>
             <p>待处理事件</p>
           </div>
         </div>
@@ -29,7 +29,7 @@
             <i class="fa fa-user"><svg-icon icon-class="addressbook" /></i>
           </div>
           <div class="value">
-            <h1 class="count">11</h1>
+            <h1 class="count">{{dataInfo.implement_user}}</h1>
             <p>执行用户</p>
           </div>
         </div>
@@ -40,7 +40,7 @@
             <i class="fa fa-user"><svg-icon icon-class="inx-03" /></i>
           </div>
           <div class="value">
-            <h1 class="count">123</h1>
+            <h1 class="count">{{dataInfo.all_user}}</h1>
             <p>在线用户</p>
           </div>
         </div>
@@ -82,6 +82,7 @@
 import echarts from 'echarts'
 import { mapGetters } from 'vuex'
 import { fetchList } from '@/api/department'
+import { indexInfo } from '@/api/platform'
 import { getdepMonthdance } from '@/api/levelshift'
 export default {
   data() {
@@ -90,7 +91,15 @@ export default {
       chart2: null,
       chart3: null,
       chart4: null,
-      chart5: null
+      chart5: null,
+      dataInfo: {
+        all_event: 0,
+        all_region: 0,
+        all_user: 0,
+        implement_user: 0,
+        today: 0,
+        treatment_day: 0
+      }
     }
   },
   mounted() {
@@ -416,7 +425,15 @@ export default {
           ]
         })
       })
+    },
+    indexInfo() {
+      indexInfo().then(res => {
+        this.dataInfo = res.info[0]
+      })
     }
+  },
+  created() {
+    this.indexInfo()
   },
   computed: {
     ...mapGetters({
