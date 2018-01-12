@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="layui-elem-quote">
         <el-select class="filter-item" style="width: 130px" filterable v-model="pageobj.department_id" placeholder="请选择部门">
-          <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
+          <el-option v-for="item in  depArr" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
           </el-option>
         </el-select>
         <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>

@@ -194,11 +194,33 @@ const user = {
         const depArr = res.info.filter(obj => {
           return !obj.status
         })
+        depArr.forEach(element => {
+          depArr.forEach(sle => {
+            if (element.parent === sle._id) {
+              element.parentName = '隶属-' + sle.name
+            } else {
+              if (!element.parent) {
+                element.parentName = ''
+              }
+            }
+          })
+        })
         commit('SET_DEPARR', depArr)
       })
       fetchDepartments().then(res => {
         const depArr = res.info.filter(obj => {
           return !obj.status
+        })
+        depArr.forEach(element => {
+          depArr.forEach(sle => {
+            if (element.parent === sle._id) {
+              element.parentName = '隶属-' + sle.name
+            } else {
+              if (!element.parent) {
+                element.parentName = ''
+              }
+            }
+          })
         })
         commit('SET_ALLDEPARR', depArr)
       })

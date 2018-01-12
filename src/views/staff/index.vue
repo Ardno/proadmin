@@ -1,12 +1,12 @@
 <template>
   <div class="app-container calendar-list-container">
     <div class="layui-elem-quote">
-      <el-cascader placeholder="试试搜索：部门" :options="depArr" v-model="listQuery.department" @change="changeDep" filterable change-on-select></el-cascader>
+      <!-- <el-cascader placeholder="试试搜索：部门" :options="depArr" v-model="listQuery.department" @change="changeDep" filterable change-on-select></el-cascader> -->
       <!-- <el-cascader :options="depArr"  change-on-select ></el-cascader> -->
-      <!-- <el-select  class="filter-item" filterable style="width: 130px" v-model="listQuery.department" placeholder="请输入部门">
-        <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
+      <el-select  class="filter-item" filterable v-model="listQuery.department_id" placeholder="请输入部门">
+        <el-option v-for="item in  depArr" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
         </el-option>
-      </el-select> -->
+      </el-select>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
     </div>
 
@@ -50,7 +50,7 @@
         <template slot-scope="scope">
           <el-tag v-if="scope.row.status == '0'" type="primary">正常</el-tag>
           <el-tag v-if="scope.row.status == '1'" type="danger">离职</el-tag>
-          <el-tag v-if="scope.row.status == '2'" type="warning">审核中</el-tag>
+          <el-tag v-if="scope.row.status == '2'" type="warning">待审核</el-tag>
         </template>
       </el-table-column>
       <el-table-column align="center" label="部门">
@@ -65,10 +65,13 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="300">
         <template slot-scope="scope">
-          <el-button size="small" v-if="isAccess('12')" type="primary" @click="handleUpdateDa(scope.row)">修改
+          <el-button size="small" v-if="isAccess('12')&&scope.row.status != '2'" type="primary" @click="handleUpdateDa(scope.row)">修改
           </el-button>
-          <el-button :plain="true" v-if="isAccess('13')" size="small" type="primary" @click="handlePwd(scope.row)">重置密码</el-button>
-          <el-button :plain="true" v-if="isAccess('14')" size="small" type="primary" @click="handleKaoq(scope.row)">设置考勤</el-button>
+          <el-button size="small" v-if="isAccess('12')&&scope.row.status == '2'" type="primary" @click="approval(scope.row)">审核用户
+          </el-button>
+          
+          <el-button :plain="true" v-if="isAccess('13')&&scope.row.status != '2'" size="small" type="primary" @click="handlePwd(scope.row)">重置密码</el-button>
+          <el-button :plain="true" v-if="isAccess('14')&&scope.row.status != '2'" size="small" type="primary" @click="handleKaoq(scope.row)">设置考勤</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -140,17 +143,37 @@
         <el-button @click="dialogFormVisiblek = false">取 消</el-button>
         <el-button type="primary" @click="handleUpdateKq">确 定</el-button>
       </div>
-    </el-dialog>  
+    </el-dialog>
+    <el-dialog title="用户审核" :visible.sync="shenheq.dialogFormVisible" width="600px" >
+      <el-form class="small-space" :model="shenheq" :rules="infoFormsq" ref="infoFormsq" label-position="right" label-width="100px">
+        <el-form-item label="用户部门" prop="department_id">
+          <el-select class="filter-item" filterable v-model="shenheq.department_id" placeholder="请分配" @visible-change="changeDepRule">
+            <el-option v-for="item in  depArr" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id+''">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="用户职务" prop="role_id">
+          <el-select class="filter-item" filterable v-model="shenheq.role_id" placeholder="请分配">
+            <el-option v-for="item in  fetchArr" :key="item._id" :label="item.name" :value="item._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="shenheq.dialogFormVisible= false">取 消</el-button>
+        <el-button type="primary" @click="approvalStatus()">审核通过</el-button>
+      </div>
+    </el-dialog> 
   </div>
 </template>
 
 <script>
 import { getadcArr } from '@/api/schedule'
 import { mapGetters } from 'vuex'
-import { fetchList, fetchRoles, updatePeInfo } from '@/api/department'
+import { fetchList, fetchRoles, updatePeInfo, updateDepRoles } from '@/api/department'
 import { validateMblNo, validateIdNum } from '@/utils/validate'
 import { isAccess } from '@/utils/auth'
-import { deepClone, TreeUtil, removeTreeArr } from '@/utils/index'
+import { deepClone } from '@/utils/index'
 export default {
   data() {
     const validateUserIdNum = (rule, value, callback) => {
@@ -211,6 +234,19 @@ export default {
         _id: '',
         dance_config_id: ''
       },
+      infoFormsq: {
+        department_id: [{ required: true, trigger: 'change', message: '请选择部门' }],
+        role_id: [{ type: 'number', required: true, trigger: 'change', message: '请选择职务' }]
+      },
+      shenheq: {
+        dialogFormVisible: false,
+        user_id: '',
+        _id: '',
+        department_id: '',
+        role_id: '',
+        is_enable: '1'
+      },
+      fetchArr: [],
       kaoqingArr: [],
       listLoading: true,
       tableKey: 0
@@ -232,35 +268,49 @@ export default {
     })
   },
   created() {
-    this.listQuery.department = [this.useinfo.department_id]
+    this.listQuery.department = this.useinfo.department_id
     this.listQuery.department_id = this.useinfo.department_id
     this.loadRls('')
     const array = deepClone(this.$store.getters.commonInfo.depArr)
-    const map = { name: 'label', _id: 'value' }
-    array.forEach(element => {
-      element.parentid = element.parent
-    })
-    try {
-      const tree1 = new TreeUtil(array, '_id', 'parent', map)
-      const depArr = tree1.toTree()
-      removeTreeArr(depArr)
-      this.depArr = depArr
-      console.log(this.depArr)
-    } catch (error) {
-      console.log(error)
-    }
+    this.depArr = array
+    // const map = { name: 'label', _id: 'value' }
+    // array.forEach(element => {
+    //   element.parentid = element.parent
+    // })
+    // try {
+    //   const tree1 = new TreeUtil(array, '_id', 'parent', map)
+    //   const depArr = tree1.toTree()
+    //   removeTreeArr(depArr)
+    //   this.depArr = depArr
+    //   console.log(this.depArr)
+    // } catch (error) {
+    //   console.log(error)
+    // }
     this.getList(true)
   },
   methods: {
     isAccess: isAccess,
+    changeDepRule(id, flg) {
+      const request = {
+        start_index: 0,
+        length: 10000,
+        department_id: id || this.shenheq.department_id
+      }
+      fetchRoles(request).then(response => {
+        this.fetchArr = response.info
+        if (id === false && !flg) {
+          this.shenheq.role_id = ''
+        }
+      })
+    },
     filterDepRose(arr, flg) { // 转换部门和集合
       let name = ''
       arr.forEach(function(element) {
-        if (element.is_enable) {
+        if (element.is_enable === '1') {
           if (flg) {
             this.depArr.forEach(function(els) {
               if (Number(element.department_id) === els._id) {
-                name = els.value
+                name = els.name
               }
             }, this)
           } else {
@@ -381,6 +431,36 @@ export default {
       this.dialogFormVisiblek = true
       this.reqkaoq._id = item._id
       this.reqkaoq.dance_config_id = item.dance_config_id
+    },
+    approval(item) { // 审核用户
+      this.shenheq.dialogFormVisible = true
+      this.shenheq._id = item.department_roles[0]._id
+      this.shenheq.user_id = item._id
+      this.shenheq.role_id = ''
+      this.shenheq.department_id = item.department_roles[0].department_id
+      this.changeDepRule()
+    },
+    approvalStatus() { // 审核用户
+      this.$refs.infoFormsq.validate(valid => {
+        updateDepRoles(this.shenheq).then(response => {
+          updatePeInfo({ _id: this.shenheq.user_id, status: '0' }).then(response => {
+            this.getList()
+            this.shenheq.dialogFormVisible = false
+            this.$message({
+              message: '审核成功~',
+              type: 'success',
+              duration: 4 * 1000
+            })
+          }).catch(() => {
+          })
+        }).catch(() => {
+          this.$message({
+            message: '审核失败，请稍后重试',
+            type: 'error',
+            duration: 4 * 1000
+          })
+        })
+      })
     },
     formatDate(te) {
       // this.temp.birthday = Math.round(new Date(te).getTime() / 1000)

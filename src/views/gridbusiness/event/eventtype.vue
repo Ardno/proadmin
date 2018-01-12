@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="layui-elem-quote">
         <el-select clearable class="filter-item" style="width: 130px" filterable v-model="listQuery.dept_id" placeholder="请选择部门">
-        <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
+        <el-option v-for="item in  depArr" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
         </el-option>
         </el-select>
         <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
@@ -55,7 +55,7 @@
       <el-form class="small-space" :model="eventInfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="120px">
         <el-form-item label="部门" prop="dept_id">
           <el-select filterable v-model="eventInfo.dept_id" @change="changeStep" placeholder="请选择部门">
-            <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
+            <el-option v-for="item in  depArr" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>

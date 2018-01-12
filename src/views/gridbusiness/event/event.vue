@@ -2,11 +2,11 @@
   <div class="app-container">
     <div class="titles">
       <p class="mb10">
-        <!-- <el-select clearable class="filter-item" style="width:453px" filterable multiple v-model="pageobj.department_ids" @change="filterArrDep" placeholder="所属部门">
-          <el-option v-for="item in  commonInfo.depArr" :key="item._id" :label="item.name" :value="item._id">
+        <el-select clearable class="filter-item"  filterable v-model="pageobj.department_ids" @change="filterArrDep" placeholder="试试搜索：部门">
+          <el-option v-for="item in  commonInfo.depArr" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
           </el-option>
-        </el-select> -->
-        <el-cascader placeholder="试试搜索：部门" :options="depArr" v-model="pageobj.department_ids" @change="filterArrDep" filterable change-on-select></el-cascader>
+        </el-select>
+        <!-- <el-cascader placeholder="试试搜索：部门" :options="depArr" v-model="pageobj.department_ids" @change="filterArrDep" filterable change-on-select></el-cascader> -->
       </p>
       <p class="mb10">
         <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.type_id" placeholder="事件类型">
@@ -129,7 +129,7 @@ import { mapGetters } from 'vuex'
 import { getEventStep } from '@/api/depevent'
 import { getEventArr, getEventTypeArr, updateEvent, auditEventStep, getSteps, getCaseStepinfo } from '@/api/depevent'
 import { isAccess, getDepCld } from '@/utils/auth'
-import { deepClone, TreeUtil, removeTreeArr } from '@/utils/index'
+import { deepClone } from '@/utils/index'
 export default {
   data() {
     return {
@@ -182,29 +182,31 @@ export default {
   },
   created() {
     const array = deepClone(this.commonInfo.depArr)
-    const map = { name: 'label', _id: 'value' }
-    array.forEach(element => {
-      element.parentid = element.parent
-    })
-    try {
-      const tree1 = new TreeUtil(array, '_id', 'parent', map)
-      const depArr = tree1.toTree()
-      removeTreeArr(depArr)
-      this.depArr = depArr
-    } catch (error) {
-      console.log(error)
-    }
+    this.depArr = array
+    // const map = { name: 'label', _id: 'value' }
+    // array.forEach(element => {
+    //   element.parentid = element.parent
+    // })
+    // try {
+    //   const tree1 = new TreeUtil(array, '_id', 'parent', map)
+    //   const depArr = tree1.toTree()
+    //   removeTreeArr(depArr)
+    //   this.depArr = depArr
+    // } catch (error) {
+    //   console.log(error)
+    // }
     this.loadArr()
     this.getEventsArr()
   },
   methods: {
     isAccess: isAccess,
     filterArrDep(val) {
-      if (val.length) {
-        this.pageobj.department_id = val[val.length - 1]
-      } else {
-        this.pageobj.department_id = this.userInfo.department_id
-      }
+      // if (val.length) {
+      //   this.pageobj.department_id = val[val.length - 1]
+      // } else {
+      //   this.pageobj.departmvalent_id = this.userInfo.department_id
+      // }
+      this.pageobj.department_id = val
     },
     handleQuery() {
       this.pageobj.start_index = 0

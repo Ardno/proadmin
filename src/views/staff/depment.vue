@@ -142,13 +142,13 @@
     <el-dialog title="用户部门" :visible.sync="dialogFormVisiblee" width="600px" >
       <el-form class="small-space" :model="depInfodep.department" :rules="infoRulese" ref="infoForme" label-position="right" label-width="100px">
         <el-form-item label="部门" prop="department_id">
-          <el-select class="filter-item" v-model="depInfodep.department.department_id" placeholder="请选择" @visible-change="changeDepRule">
-            <el-option v-for="item in  restaurants" :key="item._id" :label="item.name" :value="item._id">
+          <el-select class="filter-item" filterable v-model="depInfodep.department.department_id" placeholder="请选择" @visible-change="changeDepRule">
+            <el-option v-for="item in  restaurants" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="职务" prop="role_id">
-          <el-select class="filter-item" v-model="depInfodep.department.role_id" placeholder="请选择">
+          <el-select class="filter-item" filterable  v-model="depInfodep.department.role_id" placeholder="请选择">
             <el-option v-for="item in  fetchArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
