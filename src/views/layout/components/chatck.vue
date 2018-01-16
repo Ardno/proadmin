@@ -57,16 +57,16 @@
                   <div class="layim-chat-file" v-else-if="list.content.msg_type=='file'" >
                       <div class="top display-flex">
                         <div class="image"></div>
-                        <p class="text flex-1">{{list.content.msg_body.fname}}</p>
+                        <p class="text flex-1">{{list.content.msg_body.fname||list.content.msg_body.name}}</p>
                       </div>
                       <div v-if="userInfo.username == list.content.from_id" class="bottom fix">
-                        <span class="l">{{list.content.msg_body.fsize | FileSize}}</span>
+                        <span v-if="list.content.msg_body.fsize" class="l">{{list.content.msg_body.fsize | FileSize}}</span>
                         <span class="r" v-if="list.success == 1">正在发送</span>
                         <span class="r" v-else-if="list.success == 3">发送失败</span>
                         <span class="r" v-else>已发送</span>
                       </div>
                       <div v-else class="bottom fix">
-                        <span class="l">{{list.content.msg_body.fsize | FileSize}}</span>
+                        <span v-if="list.content.msg_body.fsize" class="l">{{list.content.msg_body.fsize | FileSize}}</span>
                         <a class="r" :href="list.content.msg_body.media_url" target="_blank" style="color:#2DD0CF">查看文件</a>
                       </div>
                   </div>
@@ -342,15 +342,17 @@ export default {
             if (element.content.msg_body.type === 'image') {
               element.content.msg_type = 'image'
               // 加载图片获取图片真实宽度和高度
-              var image = new Image()
+              const image = new Image()
               image.onload = () => {
                 this.$set(this.msgs[index].content.msg_body, 'width', image.width)
                 this.$set(this.msgs[index].content.msg_body, 'height', image.height)
-                this.$set(this.msgs[index].content.msg_body, 'media_url', `images/im/${element.content.msg_body}`)
+                this.$set(this.msgs[index].content.msg_body, 'media_url', `${process.env.BASE_API}images/im/${element.content.msg_body.name}`)
               }
-              image.src = `images/im/${element.content.msg_body}`
-            } else if (element.content.msg_body.type === 'file') {
+              image.src = `${process.env.BASE_API}images/im/${element.content.msg_body.name}`
+              console.log(`${process.env.BASE_API}images/im/${element.content.msg_body.name}`)
+            } else {
               element.content.msg_type = 'file'
+              this.$set(this.msgs[index].content.msg_body, 'media_url', `${process.env.BASE_API}video/im/${element.content.msg_body.name}`)
             }
           }
         }
