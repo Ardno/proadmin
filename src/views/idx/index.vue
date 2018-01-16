@@ -120,6 +120,7 @@ export default {
     if (!this.chart1) {
       return
     }
+    // 测试啊
     this.chart1.dispose()
     this.chart1 = null
     this.chart2.dispose()
