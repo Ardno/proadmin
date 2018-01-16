@@ -47,7 +47,7 @@
                     <img v-else :src="activeItem.avatar" :onerror="defaultImg()">
                     <cite >
                       {{ userInfo.username == list.content.from_id ? '':filterName(list.content.from_name)}}
-                    <i >{{list.content.create_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
+                    <i >{{list.ctime_ms | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
                   </div>   
                   <span v-if="list.success == 1" class="spinrose mr10 activespin"></span>
                   <span v-if="list.success == 3" title="重新发送" @click="repeatSendMsg(list)" class="dib f24 g9 mt30 poi mr10"><svg-icon icon-class="refresh" /></span>
@@ -338,8 +338,23 @@ export default {
                   this.$set(this.msgs[index].content.msg_body, 'media_url', '')
                 }
               })
+          } else if (element.content.msg_type === 'custom') {
+            if (element.content.msg_body.type === 'image') {
+              element.content.msg_type = 'image'
+              // 加载图片获取图片真实宽度和高度
+              var image = new Image()
+              image.onload = () => {
+                this.$set(this.msgs[index].content.msg_body, 'width', image.width)
+                this.$set(this.msgs[index].content.msg_body, 'height', image.height)
+                this.$set(this.msgs[index].content.msg_body, 'media_url', `images/im/${element.content.msg_body}`)
+              }
+              image.src = `images/im/${element.content.msg_body}`
+            } else if (element.content.msg_body.type === 'file') {
+              element.content.msg_type = 'file'
+            }
           }
         }
+        console.log(this.msgs)
       } else {
         // 通知更新会话面板
       }
