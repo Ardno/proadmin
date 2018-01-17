@@ -442,24 +442,29 @@ export default {
     },
     approvalStatus() { // 审核用户
       this.$refs.infoFormsq.validate(valid => {
-        updateDepRoles(this.shenheq).then(response => {
-          updatePeInfo({ _id: this.shenheq.user_id, status: '0' }).then(response => {
-            this.getList()
-            this.shenheq.dialogFormVisible = false
-            this.$message({
-              message: '审核成功~',
-              type: 'success',
-              duration: 4 * 1000
+        if (valid) {
+          updateDepRoles(this.shenheq).then(response => {
+            updatePeInfo({ _id: this.shenheq.user_id, status: '0' }).then(response => {
+              this.getList()
+              this.shenheq.dialogFormVisible = false
+              this.$message({
+                message: '审核成功~',
+                type: 'success',
+                duration: 4 * 1000
+              })
+            }).catch(() => {
             })
           }).catch(() => {
+            this.$message({
+              message: '审核失败，请稍后重试',
+              type: 'error',
+              duration: 4 * 1000
+            })
           })
-        }).catch(() => {
-          this.$message({
-            message: '审核失败，请稍后重试',
-            type: 'error',
-            duration: 4 * 1000
-          })
-        })
+        } else {
+          console.log('error submit!!')
+          return false
+        }
       })
     },
     formatDate(te) {
