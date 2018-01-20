@@ -244,14 +244,14 @@ export default {
       this.$refs.pwdForm.validate(valid => {
         if (valid) {
           if (this.pwdRequst.newPwd === this.pwdRequst.comPwd) {
-            if (this.userpassword === md5(this.pwdRequst.pwd)) {
-              updatePeInfo({ _id: this.temp['_id'], pwd: this.pwdRequst.pwd }).then(response => {
+            if (this.userpassword === md5(this.pwdRequst.newPwd)) {
+              updatePeInfo({ _id: this.temp['_id'], pwd: this.pwdRequst.newPwd }).then(response => {
                 this.$message({
                   message: '修改成功',
                   type: 'success',
                   duration: 4 * 1000
                 })
-                this.$store.dispatch('SET_PASSWORD', md5(this.pwdRequst.pwd))
+                this.$store.dispatch('SET_PASSWORD', md5(this.pwdRequst.newPwd))
                 this.dialogPwdInfo = false
               }).catch(() => {
                 this.$message({
