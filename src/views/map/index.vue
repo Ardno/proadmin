@@ -280,7 +280,11 @@ export default {
       // })
       this.personArr = []
       getLatlonArr({ department_id: getDepCld() }).then(res => {
-        res.info.forEach((element, index) => {
+        const data = res.info.filter(obj => {
+          const count = new Date().getTime() - obj.location.uploadtime * 1000
+          return count < 300000 // 位置更新时间少于5分钟视为在线
+        })
+        data.forEach((element, index) => {
           const obj = {
             position: [element.location.lon, element.location.lat],
             // position: this.getRadomPt(),
@@ -302,7 +306,7 @@ export default {
                 const ctstr = `<div class="info">
                  <div class="info-top">${obj.name}</div>
                  <div @click="handler('1','${obj._id}')" class="info-middle" style="background-color: white;">
-                 <img src="http://gridmap-file.xiaoketech.com/images/user/${obj.location.user_id}.png" onerror="this.onerror=null;this.src='${avatar}'">
+                 <img src="${process.env.upload_API}images/user/${obj.location.user_id}.png" onerror="this.onerror=null;this.src='${avatar}'">
                  地址：${obj.location.address}<br>更新时间：${uploadtime}<br>
                  <a href="javascript:" style="color:blue">点击对话</a>
                  </div></div>`
@@ -333,7 +337,10 @@ export default {
     getEventArr() { // 获取事件位置
       this.eventArr = []
       getEventArr({ start_index: 0, length: 10000, department_id: getDepCld() }).then(res => {
-        res.info.list.forEach((element, index) => {
+        const data = res.info.list.filter((obj) => {
+          return !obj.status
+        })
+        data.forEach((element, index) => {
           if (element.lat) {
             const obj = {
               position: [element.lon, element.lat],
@@ -350,14 +357,15 @@ export default {
                 click: (e) => {
                   const obj = element
                   const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                  this.windows[0].position = [e.lnglat.lng, e.lnglat.lat]
+                  this.windows[0].position = [element.lon, element.lat]
                   this.windows[0].visible = true
                   // <a href="javascript:" style="color:blue">点击查看事件</a>
                   const ctstr = `<div class="info">
                   <div class="info-top">${obj.name}</div>
                   <div class="info-middle"  style="background-color: white;">
                   处理人：${obj.username} <br>
-                  时间：${happen_time}<br>
+                  发生时间：${happen_time}<br>
+                  状态：进行中...<br>
                   地址：${obj.address}<br>
                   </div></div>`
                   this.windows[0].template = ctstr

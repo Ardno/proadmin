@@ -18,7 +18,7 @@
         </el-tooltip> -->
         <el-dropdown class="avatar-container right-menu-item" @command="handleCommand">
           <div class="avatar-wrapper">
-            <img class="user-avatar" :src="'http://gridmap-file.xiaoketech.com/images/user/'+avatar+'.png'" :onerror="defaultImg">
+            <img class="user-avatar" :src="upload_API+'images/user/'+avatar+'.png'" :onerror="defaultImg">
             <span class="dib vt">{{temp.name}}
               <i class="el-icon-caret-bottom"></i>
             </span>
@@ -141,6 +141,7 @@ export default {
         newPwd: '',
         comPwd: ''
       },
+      upload_API: process.env.upload_API,
       count: 0,
       log: errLogStore.state.errLog,
       defaultImg: 'this.onerror=null;this.src="' + avatar + '"',

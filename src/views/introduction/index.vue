@@ -6,7 +6,7 @@
           <el-row type="flex" class="row-bg" justify="center">
           <el-col :span="9">
             <div class="tc pt20">
-             <img :src="avatar ? 'http://gridmap-file.xiaoketech.com/images/user/'+temp._id+'.png':avatarm">
+             <img :src="avatar ? upload_API+'images/user/'+temp._id+'.png':avatarm">
             </div>
           </el-col>
           <el-col :span="15">
@@ -91,6 +91,7 @@ export default {
     return {
       avatarm,
       dialogFormVisible: false,
+      upload_API: process.env.upload_API,
       infoRules: {
         name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
         nation: [{ required: true, trigger: 'blur', message: '请输入民族' }],

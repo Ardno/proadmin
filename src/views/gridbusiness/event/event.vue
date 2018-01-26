@@ -7,8 +7,6 @@
           </el-option>
         </el-select>
         <!-- <el-cascader placeholder="试试搜索：部门" :options="depArr" v-model="pageobj.department_ids" @change="filterArrDep" filterable change-on-select></el-cascader> -->
-      </p>
-      <p class="mb10">
         <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.type_id" placeholder="事件类型">
           <el-option v-for="item in  typeArr" :key="item._id" :label="item.name" :value="item._id">
           </el-option>

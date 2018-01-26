@@ -497,7 +497,7 @@ export default {
             const obj = {
               username: 'yzwg_' + element._id,
               nickname: element.name,
-              avatar: 'http://gridmap-file.xiaoketech.com/images/user/' + element._id + '.png',
+              avatar: process.env.upload_API + 'images/user/' + element._id + '.png',
               avatarUrl: single_avatar,
               mobile: element.mobile,
               gender: element.sex + 1,
