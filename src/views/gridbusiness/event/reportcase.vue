@@ -16,6 +16,9 @@
         <el-form-item label="发生时间" prop="happen_time_t">
           <el-date-picker v-model="eventForm.happen_time_t" type="datetime" placeholder="请选择发生时间" @change="changetime"></el-date-picker>
         </el-form-item>
+        <!-- <el-form-item label="预计完成时间" prop="expected_time">
+          <el-date-picker v-model="eventForm.expected_time" type="datetime" placeholder="请预估完成时间" @change="changetime"></el-date-picker>
+        </el-form-item> -->
         <el-form-item label="发生地点">
           <span class="mr10">{{eventForm.address}}</span>
           <span class="blue poi" @click="dialogVisible=true"><i class="el-icon-location"></i>选择地点</span>

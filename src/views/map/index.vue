@@ -357,16 +357,21 @@ export default {
                 click: (e) => {
                   const obj = element
                   const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                  let update_time = '暂无更新'
+                  if (obj.update_time) {
+                    update_time = parseTime(obj.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                  }
                   this.windows[0].position = [element.lon, element.lat]
                   this.windows[0].visible = true
                   // <a href="javascript:" style="color:blue">点击查看事件</a>
                   const ctstr = `<div class="info">
                   <div class="info-top">${obj.name}</div>
                   <div class="info-middle"  style="background-color: white;">
-                  处理人：${obj.username} <br>
-                  发生时间：${happen_time}<br>
-                  状态：进行中...<br>
-                  地址：${obj.address}<br>
+                  状态：<span class="g6">进行中...</span><br>
+                  地址：<span class="g6">${obj.address}</span><br>
+                  处理人：<span class="g6">${obj.username}</span> <br>
+                  发生时间：<span class="g6">${happen_time}</span><br>
+                  更新时间：<span class="g6">${update_time}</span><br>
                   </div></div>`
                   this.windows[0].template = ctstr
                 },

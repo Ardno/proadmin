@@ -1,12 +1,12 @@
 <template>
   <div class="app-container calendar-list-container">
     <div class="layui-elem-quote">
-      <!-- <el-cascader placeholder="试试搜索：部门" :options="depArr" v-model="listQuery.department" @change="changeDep" filterable change-on-select></el-cascader> -->
+      <el-cascader placeholder="试试搜索：部门" :options="mydepArr" v-model="listQuery.department" @change="changeDep" filterable change-on-select></el-cascader>
       <!-- <el-cascader :options="depArr"  change-on-select ></el-cascader> -->
-      <el-select  class="filter-item" filterable v-model="listQuery.department_id" placeholder="请输入部门">
+      <!-- <el-select  class="filter-item" filterable v-model="listQuery.department_id" placeholder="请输入部门">
         <el-option v-for="item in  depArr" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
         </el-option>
-      </el-select>
+      </el-select> -->
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
     </div>
 
@@ -173,7 +173,7 @@ import { mapGetters } from 'vuex'
 import { fetchList, fetchRoles, updatePeInfo, updateDepRoles } from '@/api/department'
 import { validateMblNo, validateIdNum } from '@/utils/validate'
 import { isAccess } from '@/utils/auth'
-import { deepClone } from '@/utils/index'
+import { deepClone, TreeUtil, removeTreeArr } from '@/utils/index'
 export default {
   data() {
     const validateUserIdNum = (rule, value, callback) => {
@@ -192,6 +192,7 @@ export default {
     }
     return {
       depArr: [],
+      mydepArr: [],
       statusArr: [
         { id: 0, text: '正常' },
         { id: 1, text: '离职' },
@@ -268,24 +269,25 @@ export default {
     })
   },
   created() {
-    this.listQuery.department = this.useinfo.department_id
+    this.listQuery.department = [this.useinfo.department_id]
     this.listQuery.department_id = this.useinfo.department_id
     this.loadRls('')
+    this.depArr = this.$store.getters.commonInfo.depArr
     const array = deepClone(this.$store.getters.commonInfo.depArr)
-    this.depArr = array
-    // const map = { name: 'label', _id: 'value' }
-    // array.forEach(element => {
-    //   element.parentid = element.parent
-    // })
-    // try {
-    //   const tree1 = new TreeUtil(array, '_id', 'parent', map)
-    //   const depArr = tree1.toTree()
-    //   removeTreeArr(depArr)
-    //   this.depArr = depArr
-    //   console.log(this.depArr)
-    // } catch (error) {
-    //   console.log(error)
-    // }
+    // this.depArr = array
+    const map = { name: 'label', _id: 'value' }
+    array.forEach(element => {
+      element.parentid = element.parent
+    })
+    try {
+      const tree1 = new TreeUtil(array, '_id', 'parent', map)
+      const mydepArr = tree1.toTree()
+      removeTreeArr(mydepArr)
+      this.mydepArr = mydepArr
+      console.log(this.mydepArr)
+    } catch (error) {
+      console.log(error)
+    }
     this.getList(true)
   },
   methods: {

@@ -61,9 +61,15 @@
           <span>{{scope.row.happen_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
-      <el-table-column label="结束时间">
+      <!-- <el-table-column label="结束时间">
         <template slot-scope="scope">
           <span v-if="scope.row.close_time">{{scope.row.close_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+          <span v-else>无</span>
+        </template>
+      </el-table-column> -->
+      <el-table-column label="最后更新时间">
+        <template slot-scope="scope">
+          <span v-if="scope.row.update_time">{{scope.row.close_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
           <span v-else>无</span>
         </template>
       </el-table-column>
