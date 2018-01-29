@@ -4,7 +4,7 @@
       <span class="f16">请假记录</span>
       <el-button class="filter-item" type="primary"  @click="addLeave" >请假</el-button>
     </div>
-    <div class="mb10" v-if="isAccess('71')">
+    <div class="mb10" v-if="isAccess('82')">
       <el-select clearable class="filter-item" filterable style="width: 130px" v-model="pageobj.user_id" placeholder="申请用户">
         <el-option v-for="item in  userArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
@@ -50,9 +50,9 @@
         <template slot-scope="scope">
           <el-button size="small" type="primary" v-if="scope.row.approval_state == '0' && isUser(scope.row.user_id)"  @click="updateLeave(scope.row)">修改
           </el-button>
-          <el-button size="small" type="info" v-if="scope.row.approval_state == '0' && !isUser(scope.row.user_id) && isAccess('71')"  @click="updateStatus(scope.row,true)">同意
+          <el-button size="small" type="info" v-if="scope.row.approval_state == '0' && !isUser(scope.row.user_id) && isAccess('82')"  @click="updateStatus(scope.row,true)">同意
           </el-button>
-          <el-button size="small" type="warning" v-if="scope.row.approval_state == '0' && !isUser(scope.row.user_id) && isAccess('71')"  @click="updateStatus(scope.row,false)">拒绝
+          <el-button size="small" type="warning" v-if="scope.row.approval_state == '0' && !isUser(scope.row.user_id) && isAccess('82')"  @click="updateStatus(scope.row,false)">拒绝
           </el-button>
         </template>
       </el-table-column>
@@ -211,7 +211,7 @@ export default {
       this.loadLeavesArr()
     },
     loadLeavesArr() { // 获取请假列表
-      if (!this.isAccess('71')) {
+      if (!this.isAccess('82')) {
         this.pageobj.user_id = this.userInfo._id
       }
       getLeavesArr(this.pageobj).then(response => {

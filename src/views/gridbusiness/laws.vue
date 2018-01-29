@@ -13,7 +13,7 @@
           法律法规
         </span>
         <!-- <el-button class="filter-item" type="primary" icon="search" @click="getList">搜索</el-button> -->
-        <el-button class="filter-item" v-if="isAccess('141')" type="primary" icon="plus" @click="addRegu"> 添加</el-button>
+        <el-button class="filter-item" v-if="isAccess('41')" type="primary" icon="plus" @click="addRegu"> 添加</el-button>
       </div>
       <el-container>
         <el-aside width="410px">
@@ -24,7 +24,7 @@
           <el-card class="box-card">
             <div slot="header" class="clearfix">
               <span>法律法规详情</span>
-              <el-button v-if="updateduty.name" style="float: right; padding: 3px 0" @click="updateRegu" type="text">修改</el-button>
+              <el-button v-if="updateduty.name && isAccess('42')" style="float: right; padding: 3px 0" @click="updateRegu" type="text">修改</el-button>
             </div>
             <el-form :model="updateduty" label-position="right" label-width="80px" class="demo-form-inline" v-loading="listLoading">
               <el-form-item label="名称">

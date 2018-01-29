@@ -5,7 +5,7 @@
       <el-button class="filter-item" type="primary"  @click="addShift" >换班</el-button>
     </div>
     <div class="mb10">
-      <el-select clearable v-if="isAccess('61')"  v-model="pageobj.user_id" filterable placeholder="请选择用户">
+      <el-select clearable v-if="isAccess('83')"  v-model="pageobj.user_id" filterable placeholder="请选择用户">
         <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
@@ -277,7 +277,7 @@ export default {
       })
     },
     loadshiftsArr() { // 获取换班列表
-      if (!this.isAccess('61')) {
+      if (!this.isAccess('83')) {
         this.pageobj.user_id = this.userInfo._id
       }
       getShiftsArr(this.pageobj).then(response => {

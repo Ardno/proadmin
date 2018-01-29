@@ -75,13 +75,13 @@
       </el-table-column>
       <el-table-column align="left" label="操作" width="200">
         <template slot-scope="scope">
-          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('92') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)" icon="el-icon-edit" title="编辑"  @click="goOtherPage(scope.row._id)" >
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('51') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)" icon="el-icon-edit" title="填写事件"  @click="goOtherPage(scope.row._id)" >
           </el-button>
-          <el-button size="small" type="danger" icon="el-icon-delete" v-if="scope.row.status == '0' && isAccess('93')" @click="closeEvent(scope.row)" title="删除" >
+          <el-button size="small" type="danger" icon="el-icon-delete" v-if="scope.row.status == '0' && isAccess('52')" @click="closeEvent(scope.row)" title="删除" >
           </el-button>
-          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0"  icon="el-icon-search"  @click="showStepInfo(scope.row)" title="查看/审核" >
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('53') && scope.row.is_unaudited>0"  icon="el-icon-search"  @click="showStepInfo(scope.row)" title="查看/审核" >
           </el-button>
-          <el-button size="small" type="success"  @click="markComplete(scope.row)" v-if="scope.row.status == '0' && isAccess('94') && (scope.row.is_unfilled == 0 && scope.row.is_unaudited ==0)" >标记完成
+          <el-button size="small" type="success"  @click="markComplete(scope.row)" v-if="scope.row.status == '0' && isAccess('54') && (scope.row.is_unfilled == 0 && scope.row.is_unaudited ==0)" >标记完成
           </el-button>
           <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('91') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)">步骤填写</el-button> -->
           <!-- <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('95') && scope.row.is_unaudited>0" icon="el-icon-document"  @click="showVerifyEvent(scope.row)" title="步骤审核" ></el-button> -->

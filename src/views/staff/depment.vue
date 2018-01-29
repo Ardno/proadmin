@@ -5,7 +5,7 @@
         <span class="mr10 ">
           单位部门结构
         </span>
-        <el-button type="primary" v-if="isAccess('21')" size="mini"  @click="dialogFormVisible = true">添加部门</el-button>
+        <el-button type="primary" v-if="isAccess('101')" size="mini"  @click="dialogFormVisible = true">添加部门</el-button>
       </div>
       <div class="left-side">
         <div class="grid-content bg-purple">
@@ -47,7 +47,7 @@
               <el-form-item label="部门状态">
                 <span class="g6">{{depInfo.status ? '解散':'正常'}}</span>
                 <el-tooltip class="item" effect="dark" content="修改部门的状态" placement="right">
-                  <el-button  v-show="firstflg && infoupdate&&isAccess('23') && depInfo._id !=1" class="r" type="text" @click="updateDtpsate">{{depInfo.status ? '恢复':'解散'}}</el-button>
+                  <el-button  v-show="firstflg && infoupdate&&isAccess('104') && depInfo._id !=1" class="r" type="text" @click="updateDtpsate">{{depInfo.status ? '恢复':'解散'}}</el-button>
                 </el-tooltip>
               </el-form-item>
               <el-form-item label="考勤规则">
@@ -57,8 +57,8 @@
                 <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}',true)}}</span>
               </el-form-item>
               <el-form-item style="border:none">
-                <el-button type="primary" v-show="firstflg && isAccess('22')&& depInfo._id !=1" @click="updateInfo">{{infoupdate?'修改':'保存'}}</el-button>
-                <el-button v-show="firstflg && infoupdate && isAccess('25')" @click="updateKaoqing">设置考勤规则</el-button>
+                <el-button type="primary" v-show="firstflg && isAccess('102')&& depInfo._id !=1" @click="updateInfo">{{infoupdate?'修改':'保存'}}</el-button>
+                <el-button v-show="firstflg && infoupdate && isAccess('103')" @click="updateKaoqing">设置考勤规则</el-button>
                 <el-button v-show="!infoupdate" @click="resetForm">取消</el-button>
               </el-form-item>
             </el-form>
@@ -81,9 +81,9 @@
               <el-form-item v-show="depInfo.access!='0'"  v-for="(pitem,index) in depInfodep.depArr" :label="'部门'+(index+1)" :key="pitem._id">
                 <span class="g6">{{pitem.deptname}}</span>
                 <span class="g6 ml30">（<span class="b">职务：</span>{{pitem.rolename}}）</span>
-                <el-button v-show="isAccess('24') && depInfodep.depArr.length > 1" class="r ml10" type="text" @click="handleUpdatePeInfo('2', pitem, index)"> 删除</el-button>
-                <el-button v-show="isAccess('24')" class="r ml10" type="text" @click="handleUpdatePeInfo('1',pitem ,index)"> 修改</el-button>
-                <el-button v-show="isAccess('24') && index===0" class="r ml10" type="text" @click="handleUpdatePeInfo('0',pitem,index)"> 添加</el-button>
+                <el-button v-show="isAccess('105') && depInfodep.depArr.length > 1" class="r ml10" type="text" @click="handleUpdatePeInfo('2', pitem, index)"> 删除</el-button>
+                <el-button v-show="isAccess('105')" class="r ml10" type="text" @click="handleUpdatePeInfo('1',pitem ,index)"> 修改</el-button>
+                <el-button v-show="isAccess('105') && index===0" class="r ml10" type="text" @click="handleUpdatePeInfo('0',pitem,index)"> 添加</el-button>
               </el-form-item>
               <el-form-item label="加入时间">
                 <span class="g6">{{depInfo.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>

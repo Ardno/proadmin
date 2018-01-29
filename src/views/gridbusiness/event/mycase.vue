@@ -56,7 +56,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="250">
         <template slot-scope="scope">
-          <el-button size="small" type="primary" v-if="scope.row.status == '0' && isAccess('92') && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)" @click="goOtherPage(scope.row._id)" >编辑
+          <el-button size="small" type="primary" v-if="scope.row.status == '0' && (scope.row.is_unfilled > 0 && scope.row.is_unaudited ==0)" @click="goOtherPage(scope.row._id)" >编辑
           </el-button>
         </template>
       </el-table-column>

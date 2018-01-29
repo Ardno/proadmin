@@ -72,7 +72,7 @@ export const asyncRouterMap = [
     redirect: 'operationlog/index',
     name: '操作日志',
     meta: { icon: 'lock', title: '操作日志' },
-    children: [{ path: 'index', component: _import('operationlog/index'), name: '操作记录', meta: { role: ['110'], icon: 'lock', title: '操作记录' }}]
+    children: [{ path: 'index', component: _import('operationlog/index'), name: '操作记录', meta: { role: ['20'], icon: 'lock', title: '操作记录' }}]
   },
   {
     path: '/reportcase',
@@ -93,8 +93,8 @@ export const asyncRouterMap = [
     name: '网格业务',
     meta: { icon: 'wanggeyuan', title: '网格业务' },
     children: [
-      { path: 'attendance', component: _import('schedule/attendance'), name: '考勤配置', meta: { role: ['40'], title: '考勤配置' }},
-      { path: 'laws', component: _import('gridbusiness/laws'), name: '法律法规', meta: { role: ['140'], title: '法律法规' }}
+      { path: 'attendance', component: _import('schedule/attendance'), name: '考勤配置', meta: { role: ['30'], title: '考勤配置' }},
+      { path: 'laws', component: _import('gridbusiness/laws'), name: '法律法规', meta: { role: ['40'], title: '法律法规' }}
       // { path: 'treatment', component: _import('gridbusiness/treatment'), name: '业务处理' }
     ]
   },
@@ -105,10 +105,10 @@ export const asyncRouterMap = [
     name: '事件管理',
     meta: { icon: 'createtask_fill', title: '事件管理' },
     children: [
-      { path: 'event', component: _import('gridbusiness/event/event'), name: '事件列表', meta: { role: ['90'], title: '事件列表' }},
-      { path: 'eventtype', component: _import('gridbusiness/event/eventtype'), name: '事件类型', meta: { role: ['80'], title: '事件类型' }},
-      { path: 'eventstep', component: _import('gridbusiness/event/eventstep'), name: '事件步骤', meta: { role: ['150'], title: '事件步骤', noCache: true }},
-      { path: 'editeventstep', component: _import('gridbusiness/event/editeventstep'), hidden: true, name: '编辑步骤', meta: { role: ['151', '152'], title: '编辑步骤', noCache: true }}
+      { path: 'event', component: _import('gridbusiness/event/event'), name: '事件列表', meta: { role: ['50'], title: '事件列表' }},
+      { path: 'eventtype', component: _import('gridbusiness/event/eventtype'), name: '事件类型', meta: { role: ['60'], title: '事件类型' }},
+      { path: 'eventstep', component: _import('gridbusiness/event/eventstep'), name: '事件步骤', meta: { role: ['70'], title: '事件步骤', noCache: true }},
+      { path: 'editeventstep', component: _import('gridbusiness/event/editeventstep'), hidden: true, name: '编辑步骤', meta: { title: '编辑步骤', noCache: true }}
     ]
   },
   {
@@ -118,10 +118,10 @@ export const asyncRouterMap = [
     name: '工作日程',
     meta: { icon: 'chart', title: '工作日程' },
     children: [
-      { path: 'index', component: _import('schedule/index'), name: '工作记录', meta: { role: ['170'], title: '工作记录' }},
-      { path: 'attendancelist', component: _import('schedule/attendancelist'), name: '考勤记录', meta: { role: ['161'], title: '考勤记录' }},
-      { path: 'leave', component: _import('schedule/leave'), name: '请假', meta: { role: ['70'], title: '请假' }},
-      { path: 'shift', component: _import('schedule/shift'), name: '换班', meta: { role: ['60'], title: '换班' }}
+      { path: 'index', component: _import('schedule/index'), name: '工作记录', meta: { title: '工作记录' }},
+      { path: 'attendancelist', component: _import('schedule/attendancelist'), name: '考勤记录', meta: { title: '考勤记录' }},
+      { path: 'leave', component: _import('schedule/leave'), name: '请假', meta: { title: '请假' }},
+      { path: 'shift', component: _import('schedule/shift'), name: '换班', meta: { title: '换班' }}
     ]
   },
   {
@@ -131,9 +131,9 @@ export const asyncRouterMap = [
     name: '部门管理',
     meta: { icon: 'dep', title: '部门管理' },
     children: [
-      { path: 'index', component: _import('staff/index'), name: '人员列表', meta: { role: ['10'], title: '人员列表' }},
-      { path: 'depment', component: _import('staff/depment'), name: '部门树形架构', meta: { role: ['20'], title: '部门树形架构' }},
-      { path: 'duty', component: _import('staff/duty'), name: '职位列表', meta: { role: ['120'], title: '职位列表' }}
+      { path: 'index', component: _import('staff/index'), name: '人员列表', meta: { role: ['90'], title: '人员列表' }},
+      { path: 'depment', component: _import('staff/depment'), name: '部门树形架构', meta: { role: ['100'], title: '部门树形架构' }},
+      { path: 'duty', component: _import('staff/duty'), name: '职位列表', meta: { role: ['110'], title: '职位列表' }}
     ]
   },
   {
@@ -142,7 +142,7 @@ export const asyncRouterMap = [
     redirect: 'noredirect',
     name: '电子印章',
     children: [
-      { path: 'index', component: _import('seal/index'), name: '电子印章', meta: { role: ['162'], icon: 'peoplefill', title: '电子印章' }}
+      { path: 'index', component: _import('seal/index'), name: '电子印章', meta: { role: ['120'], icon: 'peoplefill', title: '电子印章' }}
     ]
   },
 

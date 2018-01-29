@@ -65,13 +65,13 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="300">
         <template slot-scope="scope">
-          <el-button size="small" v-if="isAccess('12')&&scope.row.status != '2'" type="primary" @click="handleUpdateDa(scope.row)">修改
+          <el-button size="small" v-if="isAccess('91')&&scope.row.status != '2'" type="primary" @click="handleUpdateDa(scope.row)">修改
           </el-button>
-          <el-button size="small" v-if="isAccess('12')&&scope.row.status == '2'" type="primary" @click="approval(scope.row)">审核用户
+          <el-button size="small" v-if="isAccess('94')&&scope.row.status == '2'" type="primary" @click="approval(scope.row)">审核用户
           </el-button>
           
-          <el-button :plain="true" v-if="isAccess('13')&&scope.row.status != '2'" size="small" type="primary" @click="handlePwd(scope.row)">重置密码</el-button>
-          <el-button :plain="true" v-if="isAccess('14')&&scope.row.status != '2'" size="small" type="primary" @click="handleKaoq(scope.row)">设置考勤</el-button>
+          <el-button :plain="true" v-if="isAccess('92')&&scope.row.status != '2'" size="small" type="primary" @click="handlePwd(scope.row)">重置密码</el-button>
+          <el-button :plain="true" v-if="isAccess('93')&&scope.row.status != '2'" size="small" type="primary" @click="handleKaoq(scope.row)">设置考勤</el-button>
         </template>
       </el-table-column>
     </el-table>

@@ -34,11 +34,11 @@
           </el-select>
         </el-form-item>
       </el-form>
-      <div slot="footer" class="dialog-footer" v-if="isAccess('131')">
-        <el-button v-show="!regionobj.update && isAccess('131')" class="ml20" @click="regionobj.update=true" type="text">修改</el-button>
+      <div slot="footer" class="dialog-footer" v-if="isAccess('10')">
+        <el-button v-show="!regionobj.update && isAccess('12')" class="ml20" @click="regionobj.update=true" type="text">修改</el-button>
         <el-button v-show="regionobj.update" class="ml20" @click="updateRegion" type="text">保存</el-button>
         <el-button v-show="regionobj.update" class="ml20" @click="regionobj.update=false" type="text">取消</el-button>
-        <el-button v-show="!regionobj.update && isAccess('131')" type="text" @click="deteleRegion">删除当前区域</el-button>
+        <el-button v-show="!regionobj.update && isAccess('13')" type="text" @click="deteleRegion">删除当前区域</el-button>
       </div>
     </el-dialog>
   </div>

@@ -6,7 +6,7 @@
           </el-option>
         </el-select>
         <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
-        <el-button class="filter-item" v-if="isAccess('151')" type="primary" icon="plus" @click="goOtherPage('')">新建</el-button>
+        <el-button class="filter-item" v-if="isAccess('71')" type="primary" icon="plus" @click="goOtherPage('')">新建</el-button>
     </div>
     <el-table :key='tableKey' :data="eventStepArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="创建时间">
@@ -25,7 +25,7 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="190">
         <template slot-scope="scope">
-            <el-button size="small" type="primary" v-if="isAccess('152')" icon="edit" @click="goOtherPage(scope.row._id)">编辑
+            <el-button size="small" type="primary" v-if="isAccess('72')" icon="edit" @click="goOtherPage(scope.row._id)">编辑
             </el-button>
         </template>
       </el-table-column>

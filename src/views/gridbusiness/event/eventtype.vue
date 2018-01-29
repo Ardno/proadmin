@@ -6,7 +6,7 @@
         </el-option>
         </el-select>
         <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
-        <el-button class="filter-item" v-if="isAccess('81')" @click="addShij" type="primary" icon="plus">添加类型</el-button>
+        <el-button class="filter-item" v-if="isAccess('61')" @click="addShij" type="primary" icon="plus">添加类型</el-button>
     </div>
     <el-table :key='tableKey' :data="eventArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column align="center" label="序号" width="65">
@@ -42,11 +42,11 @@
       </el-table-column>
       <el-table-column align="center" label="操作" width="190">
       <template slot-scope="scope">
-          <el-button size="small" type="primary" v-if="isAccess('82')" @click="updateshow(scope.row)">修改
+          <el-button size="small" type="primary" v-if="isAccess('62')" @click="updateshow(scope.row)">修改
           </el-button>
-          <el-button size="small" type="danger" v-if="isAccess('82')" v-show="!scope.row.status" @click="updateStaus(scope.row)">失效
+          <el-button size="small" type="danger" v-if="isAccess('63')" v-show="!scope.row.status" @click="updateStaus(scope.row)">失效
           </el-button>
-          <el-button size="small" type="info" v-if="isAccess('82')" v-show="scope.row.status" @click="updateStaus(scope.row)">恢复
+          <el-button size="small" type="info" v-if="isAccess('63')" v-show="scope.row.status" @click="updateStaus(scope.row)">恢复
           </el-button>
       </template>
       </el-table-column>

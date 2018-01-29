@@ -11,7 +11,7 @@
           <span class="oico"><svg-icon icon-class="addressbook" /></span>
         </el-tooltip>
       </li> -->
-      <li @click="trajectory.dialogFormVisible = true">
+      <li v-if="isAccess('14')"  @click="trajectory.dialogFormVisible = true">
         <el-tooltip class="item" effect="dark" content="历史轨迹" placement="left">
           <span class="oico"><svg-icon icon-class="time" /></span>
         </el-tooltip>
@@ -26,12 +26,12 @@
           <span class="oico"><svg-icon icon-class="setup" /></span>
         </el-tooltip>
       </li>
-      <li v-if="isAccess('130')"  @click="addPolygon">
+      <li v-if="isAccess('11')"  @click="addPolygon">
         <el-tooltip class="item" effect="dark" content="添加区域" placement="left">
           <span class="oico"><svg-icon icon-class="editor" /></span>
         </el-tooltip>
       </li>
-      <li v-if="isAccess('130')" @click="completePolygon">
+      <li v-if="isAccess('11')" @click="completePolygon">
         <el-tooltip class="item" effect="dark" content="完成区域编辑" placement="left">
           <span class="oico"><svg-icon icon-class="success" /></span>
         </el-tooltip>
