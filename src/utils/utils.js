@@ -147,8 +147,11 @@ export function imgReader(file, callback, callback2) {
       img.onload = function() {
         const width = img.naturalWidth
         const height = img.naturalHeight
+        const filename = files.name
+        const postf = filename.substring(filename.lastIndexOf('.') + 1, filename.length)
         resolve({
           src: that.result,
+          postf,
           width,
           height
         })

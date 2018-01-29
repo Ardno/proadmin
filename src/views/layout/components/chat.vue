@@ -25,7 +25,7 @@
                   <li>
                     <ul class="layui-layim-list layui-show layim-list-history">
                       <li @click="imCkPanle(list)" v-for="(list, index) in conversations" :key="index" >
-                        <img :src="list.avatar || list.avatarUrl">
+                        <img :src="list.avatar" :onerror="defaultImg(list.avatarUrl)">
                         <span v-if="list.type === 3">{{list.nickname}}</span>
                         <time class="r g9 time">{{list.mtime | reducerDate}}</time>
                         <span v-if="list.type === 4">{{list.name}}</span>
@@ -141,8 +141,8 @@
         <span class="mb10 db">群成员</span>
         <el-transfer filterable :filter-method="creatGroup.filterMethod" filter-placeholder="请输入用户名"  v-model="creatGroup.value" :data="creatGroup.data">
         </el-transfer>
-        <span class="mb10 db mt20">是否创建部门<span class="g9 f12">(在创建群同时创建部门并添加成员）</span></span>
-        <el-switch v-model="creatGroup.createDep" on-text="" off-text=""></el-switch>
+        <!-- <span class="mb10 db mt20">是否创建部门<span class="g9 f12">(在创建群同时创建部门并添加成员）</span></span>
+        <el-switch v-model="creatGroup.createDep" on-text="" off-text=""></el-switch> -->
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="creatGroup.dialogVisible = false">取 消</el-button>
@@ -246,7 +246,7 @@ export default {
       return name
     },
     defaultImg(ads) {
-      return 'this.onerror=null;this.src="' + ads + '"'
+      return 'this.src="' + ads + '"'
     },
     hoverflow(type) {
       if (type === 'on') {
@@ -278,7 +278,6 @@ export default {
         name: '',
         info: '',
         createDep: false,
-        data: [],
         value: []
       })
     },
@@ -497,7 +496,7 @@ export default {
             const obj = {
               username: 'yzwg_' + element._id,
               nickname: element.name,
-              avatar: process.env.upload_API + 'images/user/' + element._id + '.png',
+              avatar: process.env.upload_API + 'images/user/' + element._id + '.jpg',
               avatarUrl: single_avatar,
               mobile: element.mobile,
               gender: element.sex + 1,
@@ -574,6 +573,8 @@ export default {
         for (const conver of conversations) {
           if (conver.type === 3) {
             conver.avatarUrl = single_avatar
+            const userid = conver.name.substring(5)
+            conver.avatar = process.env.upload_API + 'images/user/' + userid + '.jpg'
             conver.nickname = this.filterName(conver.username)
           } else {
             conver.avatarUrl = group_avatar

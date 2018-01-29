@@ -453,7 +453,7 @@ export function reducerDate(msgTime) {
   } else if (gapDate <= 1 && gapDate > 0) {
     showTime = '昨天'
   } else if (gapDate <= 0) {
-    showTime = `${t.h}:${t.m}`
+    showTime = `${t.h}:${t.i}`
   } else {
     showTime = ''
   }

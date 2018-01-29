@@ -6,7 +6,7 @@
           <el-row type="flex" class="row-bg" justify="center">
           <el-col :span="9">
             <div class="tc pt20">
-             <img :src="avatar ? upload_API+'images/user/'+temp._id+'.png':avatarm">
+             <img :src="avatar ? upload_API+'images/user/'+temp._id+'.jpg':avatarm">
             </div>
           </el-col>
           <el-col :span="15">

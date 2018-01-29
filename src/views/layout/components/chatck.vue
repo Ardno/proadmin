@@ -79,19 +79,19 @@
               <span class="layui-icon layim-tool-image g9" title="上传图片" layim-event="image">
                 <svg-icon icon-class="picture" />
                 <input type="file" name="file" @change="sendPicEmit" id="sendPic"></span>
-              <span class="layui-icon layim-tool-image g9" style="font-size:19px" title="发送文件" layim-event="image" data-type="file">
+              <!-- <span class="layui-icon layim-tool-image g9" style="font-size:19px" title="发送文件" layim-event="image" data-type="file">
                 <svg-icon icon-class="icon-wenjian" />
-                <input type="file" name="file" @change="sendFileEmit" id="sendFile"></span>
+                <input type="file" name="file" @change="sendFileEmit" id="sendFile"></span> -->
               <!-- <span class="layui-icon layim-tool-audio g9" style="font-size:21px" title="发送网络音频" layim-event="media" data-type="audio">
                 <svg-icon icon-class="icon-erji" />
               </span>
               <span class="layui-icon layim-tool-video g9" title="发送网络视频" layim-event="media" data-type="video">
                 <svg-icon icon-class="video" />
               </span> -->
-              <span class="layim-tool-log" layim-event="chatLog">
+              <!-- <span class="layim-tool-log" layim-event="chatLog">
                 <svg-icon class="f20 g9" icon-class="time" />
                 <i>聊天记录</i>
-              </span>
+              </span> -->
             </div>
             <!-- 输入框 -->
             <div class="layim-chat-textarea">
@@ -346,13 +346,16 @@ export default {
               image.onload = () => {
                 this.$set(this.msgs[index].content.msg_body, 'width', image.width)
                 this.$set(this.msgs[index].content.msg_body, 'height', image.height)
-                this.$set(this.msgs[index].content.msg_body, 'media_url', `${process.env.BASE_API}images/im/${element.content.msg_body.name}`)
+                this.$set(this.msgs[index].content.msg_body, 'media_url', `${process.env.upload_API}images/im/${element.content.msg_body.name}`)
               }
-              image.src = `${process.env.BASE_API}images/im/${element.content.msg_body.name}`
-              console.log(`${process.env.BASE_API}images/im/${element.content.msg_body.name}`)
-            } else {
+              image.src = `${process.env.upload_API}images/im/${element.content.msg_body.name}`
+              console.log(`${process.env.upload_API}images/im/${element.content.msg_body.name}`)
+            } else if (element.content.msg_body.type === 'video') {
               element.content.msg_type = 'file'
-              this.$set(this.msgs[index].content.msg_body, 'media_url', `${process.env.BASE_API}video/im/${element.content.msg_body.name}`)
+              this.$set(this.msgs[index].content.msg_body, 'media_url', `${process.env.upload_API}video/im/${element.content.msg_body.name}`)
+            } else if (element.content.msg_body.type === 'voice') {
+              element.content.msg_type = 'file'
+              this.$set(this.msgs[index].content.msg_body, 'media_url', `${process.env.upload_API}audio/im/${element.content.msg_body.name}`)
             }
           }
         }
@@ -531,7 +534,7 @@ export default {
           msgs.msg_type = 4
         }
         const msglist = this.messageList // 离线消息列表
-        imgUpLoad({ FileData: value.src, type: 1 }).then(obj => {
+        imgUpLoad({ FileData: value.src, filetype: value.postf, type: 1 }).then(obj => {
         })
         if (msglist[this.activeItem.id]) {
           msglist[this.activeItem.id].msgs.push(msgs)
@@ -718,12 +721,14 @@ export default {
                   .onSuccess((urlInfo) => {
                     arr[index].success = 2
                     msg.content.msg_body.media_url = urlInfo.url
+                    msg.ctime_ms = msgs.ctime_ms
                     arr[index] = msg
                     // this.$set(this.msgs[index].content.msg_body, 'media_url', urlInfo.url)
                   }).onFail((errr) => {
                     // this.$set(this.msgs[index].content.msg_body, 'media_url', '')
                     arr[index].success = 2
                     msg.content.msg_body.media_url = ''
+                    msg.ctime_ms = msgs.ctime_ms
                     arr[index] = msg
                   })
               } else {
@@ -733,6 +738,8 @@ export default {
             } else { // 发送失败
               arr[index].success = 3
             }
+            arr[index].ctime_ms = msgs.ctime_ms
+            console.log(arr[index])
           }
         }
       }
@@ -1033,7 +1040,7 @@ export default {
           text-align: left;
           font-style: normal;
           i {
-            padding-left: 15px;
+            // padding-left: 15px;
             font-style: normal;
           }
         }

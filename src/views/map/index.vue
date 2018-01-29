@@ -306,7 +306,7 @@ export default {
                 const ctstr = `<div class="info">
                  <div class="info-top">${obj.name}</div>
                  <div @click="handler('1','${obj._id}')" class="info-middle" style="background-color: white;">
-                 <img src="${process.env.upload_API}images/user/${obj.location.user_id}.png" onerror="this.onerror=null;this.src='${avatar}'">
+                 <img src="${process.env.upload_API}images/user/${obj.location.user_id}.jpg" onerror="this.onerror=null;this.src='${avatar}'">
                  地址：${obj.location.address}<br>更新时间：${uploadtime}<br>
                  <a href="javascript:" style="color:blue">点击对话</a>
                  </div></div>`
