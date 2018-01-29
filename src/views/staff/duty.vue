@@ -126,7 +126,7 @@ export default {
               Object.keys(object[item][access]).forEach(accessmodel => {
                 if (accessmodel !== 'name') {
                   const obj = object[item][access][accessmodel]
-                  obj['name'] = object[item][access]['name'] +"--"+ obj['name']
+                  obj['name'] = object[item][access]['name'] + '--' + obj['name']
                   this.accessArr.push(obj)
                 }
               })
