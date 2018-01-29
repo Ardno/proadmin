@@ -1,7 +1,7 @@
 module.exports = {
     NODE_ENV: '"development"',
     ENV_CONFIG: '"dev"',
-    BASE_API: '"http://gridmap.xiaoketech.com/"',
-    upload_API: '"http://gridmap-file.xiaoketech.com/"',
-    APP_ORIGIN: '"http://gridmap.xiaoketech.com/"'
+    BASE_API: '"http://120.76.228.172:82/"',
+    upload_API: '"http://120.76.228.172:83/"',
+    APP_ORIGIN: '"http://120.76.228.172:82/"'
 }

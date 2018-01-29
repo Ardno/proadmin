@@ -68,7 +68,7 @@ service.interceptors.response.use(
   error => {
     console.log('err' + error)// for debug
     Message({
-      message: error.message,
+      message: '服务器繁忙，请稍后再试',
       type: 'error',
       duration: 5 * 1000
     })
