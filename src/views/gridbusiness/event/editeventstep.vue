@@ -73,7 +73,7 @@ import Tinymce from '@/components/Tinymce'
 import Sticky from '@/components/Sticky' // 粘性header组件
 import MDinput from '@/components/MDinput'
 import { fetchRoles } from '@/api/department'
-// import { getDepCld } from '@/utils/auth'
+import { findParentTop } from '@/utils/index'
 import { getSteps, addSteps, updateSteps, getLawsArr } from '@/api/depevent'
 const paraTypeArr = [
   { _id: '0', name: '文本控件' },
@@ -208,6 +208,15 @@ export default {
         start_index: 0,
         length: 10000,
         department_id: id || this.postForm.department_id
+      }
+      if (request.department_id) {
+        const alldepArr = this.$store.getters.commonInfo.alldepArr
+        const arr = alldepArr.filter(obj => {
+          return obj._id === request.department_id
+        })
+        if (arr.length) {
+          request.department_id = findParentTop(alldepArr, arr[0])
+        }
       }
       fetchRoles(request).then(response => {
         this.fetchArr = response.info

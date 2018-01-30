@@ -104,6 +104,7 @@ import { getWorksArr, addWorks } from '@/api/levelshift'
 import { getRegionArr } from '@/api/grid'
 import { isAccess, isUser, getDepCld } from '@/utils/auth'
 import { deepClone } from '@/utils/index'
+import { mapGetters } from 'vuex'
 import store from '@/store'
 export default {
   data() {
@@ -162,7 +163,10 @@ export default {
       const arr = this.userArr.filter(obj => {
         return obj._id === id
       })
-      return arr[0].name
+      if (arr[0]) {
+        return arr[0].name
+      }
+      return ''
     },
     handleQuery() { // 查询工作集合
       this.pageobj.start_index = 0
@@ -235,6 +239,9 @@ export default {
     this.pageobj.user_id = store.getters.useinfo._id
   },
   computed: {
+    ...mapGetters({
+      userInfo: 'useinfo'
+    })
   }
 }
 </script>

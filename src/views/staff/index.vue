@@ -173,7 +173,7 @@ import { mapGetters } from 'vuex'
 import { fetchList, fetchRoles, updatePeInfo, updateDepRoles } from '@/api/department'
 import { validateMblNo, validateIdNum } from '@/utils/validate'
 import { isAccess } from '@/utils/auth'
-import { deepClone, TreeUtil, removeTreeArr } from '@/utils/index'
+import { deepClone, TreeUtil, removeTreeArr, findParentTop } from '@/utils/index'
 export default {
   data() {
     const validateUserIdNum = (rule, value, callback) => {
@@ -297,6 +297,15 @@ export default {
         start_index: 0,
         length: 10000,
         department_id: id || this.shenheq.department_id
+      }
+      if (request.department_id) {
+        const alldepArr = this.$store.getters.commonInfo.alldepArr
+        const arr = alldepArr.filter(obj => {
+          return obj._id === Number(this.shenheq.department_id)
+        })
+        if (arr.length) {
+          request.department_id = findParentTop(alldepArr, arr[0])
+        }
       }
       fetchRoles(request).then(response => {
         this.fetchArr = response.info

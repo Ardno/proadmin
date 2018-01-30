@@ -495,3 +495,56 @@ export function lastMonthDate() {
   console.log(date)
   return date
 }
+/*
+  *函数定义
+  *找到顶级部门depArr部门数组，dep当前部门对象
+**/
+export function findParentTop(depArr, dep) {
+  if (!dep.parent) { // 判断当前部门是否顶级部门
+    return dep._id
+  }
+  for (let index = 0; index < depArr.length; index++) {
+    const element = depArr[index]
+    if (dep.parent === element._id) {
+      if (element.parent === 0) {
+        return element._id
+      }
+      return findParentTop(depArr, element)
+    }
+  }
+}
+/*
+  *函数定义
+  *找到上级部门
+**/
+export function findParent(depArr, dep) {
+  const arr = []
+  for (let index = 0; index < depArr.length; index++) {
+    const element = depArr[index]
+    if (dep.parent === element._id) {
+      if (element.parent === 0) {
+        if (arr.length) {
+          return element._id
+        }
+        return [element._id]
+      }
+      arr.push(element._id)
+      return arr.concat(findParent(depArr, element))
+    }
+  }
+}
+/*
+  *函数定义
+  *找到下级部门
+**/
+export function findChirden(depArr, dep) {
+  let arr = []
+  for (let index = 0; index < depArr.length; index++) {
+    const element = depArr[index]
+    if (dep._id === element.parent) {
+      arr.push(element)
+      arr = arr.concat(findChirden(depArr, element))
+    }
+  }
+  return arr
+}

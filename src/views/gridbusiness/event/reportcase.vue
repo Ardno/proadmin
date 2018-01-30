@@ -47,7 +47,7 @@
 <script>
 import VueAMap from 'vue-amap'
 import { getEventTypeArr, addEvent } from '@/api/depevent'
-import { getDepCld } from '@/utils/auth'
+import { findParent, deepClone } from '@/utils/index'
 const amapManager = new VueAMap.AMapManager()
 export default {
   data() {
@@ -140,9 +140,17 @@ export default {
   },
   methods: {
     getEventTypeArr() { // 获取事件类型集合
-      const requst = { dept_id: getDepCld() }
-      console.log(requst)
-      getEventTypeArr().then(res => {
+      const alldepArr = deepClone(this.$store.getters.commonInfo.alldepArr)
+      const arr = alldepArr.filter(obj => {
+        return obj._id === this.$store.getters.useinfo.department_id
+      })
+      const delarr = findParent(alldepArr, arr[0])
+      let dept_id = ''
+      if (delarr && delarr.length) {
+        delarr.push(this.$store.getters.useinfo.department_id)
+        dept_id = delarr.join(',')
+      }
+      getEventTypeArr({ dept_id: dept_id }).then(res => {
         this.eventTypeArr = res.info.filter(obj => {
           return !obj.status
         })
@@ -185,9 +193,6 @@ export default {
         }
       })
     }
-  },
-  computed: {
-
   }
 }
 </script>

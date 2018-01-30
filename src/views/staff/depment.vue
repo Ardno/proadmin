@@ -168,7 +168,7 @@
 
 <script>
 import { fetchDepartments, createDep, fetchList, updateDep, addDepRoles, fetchRoles, queryDepRoles, updateDepRoles, deleteDepRoles } from '@/api/department'
-import { TreeUtil, deepClone, sortBy } from '@/utils/index'
+import { TreeUtil, deepClone, sortBy, findParentTop } from '@/utils/index'
 import { isAccess } from '@/utils/auth'
 import { getadcArr } from '@/api/schedule'
 import axios from 'axios'
@@ -700,6 +700,15 @@ export default {
         start_index: 0,
         length: 10000,
         department_id: id || this.depInfodep.department.department_id
+      }
+      if (request.department_id) {
+        const alldepArr = this.$store.getters.commonInfo.alldepArr
+        const arr = alldepArr.filter(obj => {
+          return obj._id === request.department_id
+        })
+        if (arr.length) {
+          request.department_id = findParentTop(alldepArr, arr[0])
+        }
       }
       fetchRoles(request).then(response => {
         this.fetchArr = response.info
