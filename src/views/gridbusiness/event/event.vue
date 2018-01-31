@@ -115,12 +115,12 @@
     <el-dialog
       title="步骤信息"
       :visible.sync="caseStepInfo.dialogVisible"
-      width="800px">
-      <div class="infoct" v-html="caseStepInfo.content" v-loading="caseStepInfo.loading">
+      width="1200px">
+      <div class="infoct" v-loading="caseStepInfo.loading">
+        <tinymce id="tinymce" :height='500' v-model="caseStepInfo.content"></tinymce>
       </div>
-      <!-- <iframe style="height:400px;width: 100%;" :srcdoc="caseStepInfo.content" frameborder="0"></iframe> -->
       <span slot="footer" class="dialog-footer">
-        <el-button v-if="caseStepInfo.content" @click="createPdf(caseStepInfo.content)">打印</el-button>
+        <!-- <el-button v-if="caseStepInfo.content" @click="createPdf(caseStepInfo.content)">打印</el-button> -->
         <el-button v-if="caseStepInfo.isAudit" type="primary" @click="showVerifyEvent">审核</el-button>
         <el-button v-else  type="primary" @click="caseStepInfo.dialogVisible = false">取消</el-button>
       </span>
@@ -129,12 +129,14 @@
 </template>
 
 <script>
+import Tinymce from '@/components/Tinymce'
 import { mapGetters } from 'vuex'
 import { getEventStep } from '@/api/depevent'
 import { getEventArr, getEventTypeArr, updateEvent, auditEventStep, getSteps, getCaseStepinfo } from '@/api/depevent'
 import { isAccess, getDepCld } from '@/utils/auth'
 import { deepClone, TreeUtil, removeTreeArr } from '@/utils/index'
 export default {
+  components: { Tinymce },
   data() {
     return {
       pageobj: {
@@ -310,12 +312,21 @@ export default {
           getCaseStepinfo({ event_id: resl.event_id, step_id: resl.step_id }).then(lse => {
             let reg = ''
             lse.info.steps.forEach(element => { // 替换步骤文档中的参数
-              if (element.para_type === '6') {
+              if (element.para_type === 6) {
                 reg = new RegExp(element.para_name, 'g')
               } else {
                 reg = new RegExp('\\{\\{' + element.para_name + '\\}\\}', 'g')
               }
-              const val = element.para_value || ''
+              let val = element.para_value || ''
+              if (element.para_type === 3) {
+                if (val) {
+                  const arr = val.split(',')
+                  val = ''
+                  arr.forEach(els => {
+                    val += `<img style="max-width:200px; margin-right: 10px;" src="${process.env.upload_API}images/other/${els}">`
+                  })
+                }
+              }
               content = content.replace(reg, val)
             })
             if (lse.info.access.length) {

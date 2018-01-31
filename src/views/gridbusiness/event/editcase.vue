@@ -22,7 +22,7 @@
             action=""
             :http-request="data => handleFileUpload(data,item)"
             :on-preview="handlePreview"
-            :on-remove="handleRemove"
+            :on-remove="(file, fileList) =>handleRemove(file, fileList,item)"
             :file-list="item.fileList"
             :on-exceed="handleExceed" 
             multiple
@@ -32,8 +32,9 @@
           </el-upload>
           <el-upload v-if="item.para_type == 4"
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
-            :on-preview="handlePreview" :on-remove="handleRemove"  multiple :limit="10" :on-exceed="handleExceed" :file-list="item.fileList">
+            action=""
+            :http-request="data => handleFileUpload(data,item)"
+            :on-preview="handlePreview" :on-remove="(file, fileList) =>handleRemove(file, fileList,item)"  multiple :limit="10" :on-exceed="handleExceed" :file-list="item.fileList">
             <el-button size="small" type="primary">点击上传</el-button>
             <div slot="tip" class="el-upload__tip">最多只能上传10个文件</div>
           </el-upload>
@@ -175,9 +176,17 @@ export default {
         this.eventObj.steps = res.info.steps
         this.eventObj.steps.forEach(element => {
           if (element.para_type === 3 || element.para_type === 4) { // 图片，文件
-            element.fileList = [
-              { name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100' },
-              { name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100' }]
+            element.fileList = []
+            if (element.para_value) {
+              const array = element.para_value.split(',')
+              array.forEach(els => {
+                const obj = {
+                  name: els,
+                  url: `${process.env.upload_API}images/other/${els}`
+                }
+                element.fileList.push(obj)
+              })
+            }
           }
         })
       })
@@ -196,29 +205,49 @@ export default {
       this.item.para_value = this.positionObj.address
     },
     checkForm() {
-      let flg = true
+      // let flg = true
       this.requstParm.list = []
       this.eventObj.steps.forEach(element => {
-        if (!element.para_value) {
-          flg = false
-          if (element.para_type === 3 || element.para_type === 4) { // 图片，文件
-            if (element.fileList.length) {
-              flg = true
-            }
+        if (element.para_type === 3 || element.para_type === 4) { // 图片，文件
+          if (element.fileList.length) {
+            const array = []
+            element.fileList.forEach(els => {
+              array.push(els.name)
+            })
+            element.para_value = array.join(',')
+          } else {
+            element.para_value = ''
           }
-          if (element.para_type === 6) {
-            flg = true
-          }
-        } else {
-          this.requstParm.list.push(element)
         }
+        this.requstParm.list.push(element)
+        // if (!element.para_value) {
+        //   flg = false
+        //   if (element.para_type === 3 || element.para_type === 4) { // 图片，文件
+        //     if (element.fileList.length) {
+        //       const array = []
+        //       element.fileList.forEach(els => {
+        //         array.push(els.name)
+        //       })
+        //       element.para_value = array.join(',')
+        //       flg = true
+        //     } else {
+        //       element.para_value = ''
+        //     }
+        //   }
+        //   if (element.para_type === 6) {
+        //     flg = true
+        //   }
+        // } else {
+        //   this.requstParm.list.push(element)
+        // }
       })
       this.requstParm.list = JSON.stringify(this.requstParm.list)
-      return flg
+      // return flg
     },
     submitForm(type) {
       this.requstParm.auto = type
       this.checkForm()
+      console.log(this.eventObj.steps)
       if (type) {
         this.$confirm('你确定要提交审核吗?', '提示', {
           confirmButtonText: '确定',
@@ -271,20 +300,28 @@ export default {
         imgUpLoad({ FileData: obj.data, filetype: obj.postf, type: 1 }).then(res => {
           if (res.code === 200) {
             const obj = {
-              name: res.info,
-              status: 'success',
-              uid: data.uid,
-              url: `${process.env.upload_API}images/other/${res.info}`
+              'name': res.info,
+              'status': 'success',
+              'uid': data.file.uid,
+              'url': `${process.env.upload_API}images/other/${res.info}`
             }
-            console.log(item.fileList)
             item.fileList.push(obj)
-            console.log(item.fileList)
+            data.onSuccess()
+          } else {
+            data.onError()
           }
         })
       })
     },
-    handleRemove(file, fileList) {
-      console.log(file, fileList)
+    handleRemove(file, fileList, item) {
+      let cunt = ''
+      item.fileList.forEach((element, index) => {
+        console.log(index)
+        if (file.uid === element.uid) {
+          cunt = index
+        }
+      })
+      item.fileList.splice(cunt, 1)
     },
     handlePreview(file) {
       console.log(file)
