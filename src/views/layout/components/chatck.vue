@@ -534,7 +534,7 @@ export default {
           msgs.msg_type = 4
         }
         const msglist = this.messageList // 离线消息列表
-        imgUpLoad({ FileData: value.src, filetype: value.postf, type: 1 }).then(obj => {
+        imgUpLoad({ FileData: value.src, filetype: value.postf, type: 2 }).then(obj => {
         })
         if (msglist[this.activeItem.id]) {
           msglist[this.activeItem.id].msgs.push(msgs)

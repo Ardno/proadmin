@@ -192,3 +192,29 @@ export function fileReader(file, callback) {
     console.log('Promise Rejected')
   })
 }
+/**
+ * 把文件转换成base64
+ * @param file: Object, input file 对象
+ * @param callback: function 回调函数
+ */
+export function fileReaderBase64(file, callback) {
+  const files = file
+  if (!files.type || files.type === '') {
+    return false
+  }
+  const reader = new FileReader()
+  reader.readAsDataURL(files)
+  return new Promise((resolve, reject) => {
+    reader.onload = function(e) {
+      const filename = files.name
+      const postf = filename.substring(filename.lastIndexOf('.') + 1, filename.length)
+      resolve(
+        {
+          data: this.result,
+          postf
+        })
+    }
+  }).catch(() => {
+    console.log('Promise Rejected')
+  })
+}

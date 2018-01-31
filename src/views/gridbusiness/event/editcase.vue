@@ -16,22 +16,26 @@
           7：地图选择控件 -->
           <el-input v-if="item.para_type == 0" v-model="item.para_value"></el-input>
           <el-input v-if="item.para_type == 1" type="textarea" autosize :rows="2" v-model="item.para_value"></el-input>
-          <el-input v-if="item.para_type == 2" type="datetime" v-model="item.para_value"></el-input>
+          <el-date-picker v-if="item.para_type == 2" v-model="item.para_value" value-format="yyyy年MM月dd日" type="date" placeholder="选择日期"> </el-date-picker>
           <el-upload v-if="item.para_type == 3"
             class="upload-demo"
-            action="https://jsonplaceholder.typicode.com/posts/"
+            action=""
+            :http-request="data => handleFileUpload(data,item)"
             :on-preview="handlePreview"
             :on-remove="handleRemove"
             :file-list="item.fileList"
-            list-type="picture">
+            :on-exceed="handleExceed" 
+            multiple
+            list-type="picture" :limit="10" >
             <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">最多只能上传10张图片</div>
           </el-upload>
           <el-upload v-if="item.para_type == 4"
             class="upload-demo"
             action="https://jsonplaceholder.typicode.com/posts/"
             :on-preview="handlePreview" :on-remove="handleRemove"  multiple :limit="10" :on-exceed="handleExceed" :file-list="item.fileList">
             <el-button size="small" type="primary">点击上传</el-button>
-            <div slot="tip" class="el-upload__tip">最多只能上传10条</div>
+            <div slot="tip" class="el-upload__tip">最多只能上传10个文件</div>
           </el-upload>
           <el-select v-if="item.para_type == 5" clearable class="filter-item" filterable  v-model="item.para_value" placeholder="人员">
             <el-option v-for="item in  userArr" :key="item._id" :label="item.name" :value="item._id">
@@ -69,6 +73,8 @@
 <script>
 import VueAMap from 'vue-amap'
 import { getEventStep, getLawsArr, updateCaseStep } from '@/api/depevent'
+import { fileReaderBase64 } from '@/utils/utils'
+import { imgUpLoad } from '@/api/upload'
 // import { getDepCld } from '@/utils/auth'
 const amapManager = new VueAMap.AMapManager()
 export default {
@@ -169,7 +175,9 @@ export default {
         this.eventObj.steps = res.info.steps
         this.eventObj.steps.forEach(element => {
           if (element.para_type === 3 || element.para_type === 4) { // 图片，文件
-            element.fileList = []
+            element.fileList = [
+              { name: 'food.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100' },
+              { name: 'food2.jpeg', url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100' }]
           }
         })
       })
@@ -257,6 +265,23 @@ export default {
           })
         })
       }
+    },
+    handleFileUpload(data, item) {
+      fileReaderBase64(data.file).then(obj => {
+        imgUpLoad({ FileData: obj.data, filetype: obj.postf, type: 1 }).then(res => {
+          if (res.code === 200) {
+            const obj = {
+              name: res.info,
+              status: 'success',
+              uid: data.uid,
+              url: `${process.env.upload_API}images/other/${res.info}`
+            }
+            console.log(item.fileList)
+            item.fileList.push(obj)
+            console.log(item.fileList)
+          }
+        })
+      })
     },
     handleRemove(file, fileList) {
       console.log(file, fileList)

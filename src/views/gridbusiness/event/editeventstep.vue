@@ -41,9 +41,12 @@
                 <el-input style="width: 130px" v-else placeholder="参数名" v-model="para.para_name"></el-input>
                 <el-button v-if="index === 0" @click="addPare">新增</el-button>
                 <el-button v-show="index !== 0" @click.prevent="removePare(para)">删除</el-button>
-                <el-button @click.prevent="insertContent(para)">插入</el-button>
+                <!-- 文件只做上传不做插入 -->
+                <el-button v-if="para.para_type != '4'" @click.prevent="insertContent(para)">插入</el-button>
               </el-form-item>
-              <p class="f12 g9">提示：参数类型指的是用户以何种方式填写事件原由，插入参数后，不可直接在富文本框里面对参数进行修改。</p>
+              <p class="f12 g9">提示：
+              1.参数类型指的是用户以何种方式填写事件原由，插入参数后，不可直接在富文本框里面对参数进行修改.<br>
+              2.默认添加的表格无边框，添加边框需设置表格边框值</p>
             </el-col>
             <el-col :span="11">
               <el-form-item label-width="80px" v-for="(role, index) in postForm.roleArr" :label="'审核'+ (index)" :key="role._id">
@@ -79,8 +82,8 @@ const paraTypeArr = [
   { _id: '0', name: '文本控件' },
   { _id: '1', name: '多行文本控件' },
   { _id: '2', name: '时间控件' },
-  // { _id: '3', name: '图片控件（多图上传）' },
-  // { _id: '4', name: '文件控件（视频，语音均是文件，只做上传）' },
+  { _id: '3', name: '图片控件（多图上传）' },
+  { _id: '4', name: '文件控件（视频，语音均是文件，只做上传）' },
   { _id: '5', name: '人员选择控件（当前人员所在部门下）' },
   // { _id: '6', name: '法律法规选择控件' },
   { _id: '7', name: '地址选择控件' }
