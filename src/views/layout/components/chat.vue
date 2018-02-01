@@ -16,74 +16,87 @@
               <span class="layui-layim-remark">{{userInfo.mobile}}</span>
             </div>
             <!-- 面板 -->
-            <el-tabs v-model="activeName" @tab-click="handleClick">
-              <el-tab-pane name="first">
-                <span slot="label">
-                  <svg-icon icon-class="message_fill" />
-                </span>
-                <ul @mouseenter="hoverflow('on')" @mouseleave="hoverflow('off')" class="layim-tab-content layui-show" :style="{overflow:overflow}">
-                  <li>
-                    <ul class="layui-layim-list layui-show layim-list-history">
-                      <li @click="imCkPanle(list)" v-for="(list, index) in conversations" :key="index" >
-                        <img :src="list.avatar" :onerror="defaultImg(list.avatarUrl)">
-                        <span v-if="list.type === 3">{{list.nickname}}</span>
-                        <time class="r g9 time">{{list.mtime | reducerDate}}</time>
-                        <span v-if="list.type === 4">{{list.name}}</span>
-                        <p >{{list.content && list.content.msg_body && list.content.msg_body.text}}
-                          <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
-                        </p>
-                        <p v-if="list.content.msg_type=='image'">[图片]
-                          <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
-                        </p>
-                        <p v-if="list.content.msg_type=='file'">[文件]
-                          <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
-                        </p>
-                        
-                      </li>
-                      <li v-if="!conversations.length" style="padding-top:30%;font-size: 12px;">你当前还没有任何消息~</li>
-                    </ul>
+            <div class="rel">
+              <el-tabs v-model="activeName" @tab-click="handleClick">
+                <el-tab-pane name="first">
+                  <span slot="label">
+                    <svg-icon icon-class="message_fill" />
+                  </span>
+                  <ul @mouseenter="hoverflow('on')" @mouseleave="hoverflow('off')" class="layim-tab-content layui-show" :style="{overflow:overflow}">
+                    <li>
+                      <ul class="layui-layim-list layui-show layim-list-history">
+                        <li @click="imCkPanle(list)" v-for="(list, index) in conversations" :key="index" >
+                          <img :src="list.avatar" :onerror="defaultImg(list.avatarUrl)">
+                          <span v-if="list.type === 3">{{list.nickname}}</span>
+                          <time class="r g9 time">{{list.mtime | reducerDate}}</time>
+                          <span v-if="list.type === 4">{{list.name}}</span>
+                          <p >{{list.content && list.content.msg_body && list.content.msg_body.text}}
+                            <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
+                          </p>
+                          <p v-if="list.content.msg_type=='image'||list.content.msg_body.type=='image'">[图片]
+                            <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
+                          </p>
+                          <p v-else-if="list.content.msg_type=='file'|| list.content.msg_type=='custom'">[文件]
+                            <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
+                          </p>
+                          
+                        </li>
+                        <li v-if="!conversations.length" style="padding-top:30%;font-size: 12px;">你当前还没有任何消息~</li>
+                      </ul>
+                    </li>
+                  </ul>
+                </el-tab-pane>
+                <el-tab-pane name="second">
+                  <span slot="label">
+                    <svg-icon icon-class="people_fill" />
+                  </span>
+                  <el-collapse :style="{overflow:'auto'}" class="layim-tab-content">
+                    <el-collapse-item v-for="(flist, index) in friend_list" :key="index" >
+                      <template slot="title">
+                        <span>{{flist.groupname}}</span>
+                        <em>(
+                          <cite class="layim-count">{{flist.len}}</cite>)</em>
+                      </template>
+                      <ul class="layui-layim-list">
+                        <li @click="imCkPanle(clist)" v-for="(clist, index) in flist.list" :key="index">
+                          <img :src="clist.avatar" :onerror="defaultImg(clist.avatarUrl)">
+                          <span>{{clist.nickname}}</span>
+                          <p>{{clist.mobile}}</p>
+                        </li>
+                      </ul>
+                    </el-collapse-item>
+                  </el-collapse>
+                </el-tab-pane>
+                <el-tab-pane name="third">
+                  <span slot="label">
+                    <svg-icon icon-class="group_fill" />
+                  </span>
+                  <ul @mouseenter="hoverflow('on')" @mouseleave="hoverflow('off')" class="layim-tab-content" :style="{overflow:overflow}">
+                    <li>
+                      <ul class="layui-layim-list layui-show layim-list-group">
+                        <li @click="imCkPanle(list)" v-for="(list, index) in group_list" :key="index">
+                          <img :src="list.avatar" :onerror="defaultImg(list.avatarUrl)">
+                          <span>{{list.name}}</span>
+                          <p>{{list.desc  || '暂无群描述'}}</p>
+                        </li>
+                        <li v-if="!group_list.length" style="padding-top:30%;font-size: 12px;">你还没有添加过群~</li>
+                      </ul>
+                    </li>
+                  </ul>
+                </el-tab-pane>
+              </el-tabs>
+              <!-- 搜索面板 -->
+              <div class="seach-panle" v-if="searchflg" >
+                <ul v-if="searchData.length > 0" class="layui-layim-list">
+                  <li @click="imCkPanle(clist)" v-for="(clist, index) in searchData" :key="index">
+                    <img :src="clist.avatar" :onerror="defaultImg(clist.avatarUrl)">
+                    <span>{{clist.nickname}}</span>
+                    <p>{{clist.mobile}}</p>
                   </li>
                 </ul>
-              </el-tab-pane>
-              <el-tab-pane name="second">
-                <span slot="label">
-                  <svg-icon icon-class="people_fill" />
-                </span>
-                <el-collapse :style="{overflow:'auto'}" class="layim-tab-content">
-                  <el-collapse-item v-for="(flist, index) in friend_list" :key="index" >
-                    <template slot="title">
-                      <span>{{flist.groupname}}</span>
-                      <em>(
-                        <cite class="layim-count">{{flist.len}}</cite>)</em>
-                    </template>
-                    <ul class="layui-layim-list">
-                      <li @click="imCkPanle(clist)" v-for="(clist, index) in flist.list" :key="index">
-                        <img :src="clist.avatar" :onerror="defaultImg(clist.avatarUrl)">
-                        <span>{{clist.nickname}}</span>
-                        <p>{{clist.mobile}}</p>
-                      </li>
-                    </ul>
-                  </el-collapse-item>
-                </el-collapse>
-              </el-tab-pane>
-              <el-tab-pane name="third">
-                <span slot="label">
-                  <svg-icon icon-class="group_fill" />
-                </span>
-                <ul @mouseenter="hoverflow('on')" @mouseleave="hoverflow('off')" class="layim-tab-content" :style="{overflow:overflow}">
-                  <li>
-                    <ul class="layui-layim-list layui-show layim-list-group">
-                      <li @click="imCkPanle(list)" v-for="(list, index) in group_list" :key="index">
-                        <img :src="list.avatar" :onerror="defaultImg(list.avatarUrl)">
-                        <span>{{list.name}}</span>
-                        <p>{{list.desc  || '暂无群描述'}}</p>
-                      </li>
-                      <li v-if="!group_list.length" style="padding-top:30%;font-size: 12px;">你还没有添加过群~</li>
-                    </ul>
-                  </li>
-                </ul>
-              </el-tab-pane>
-            </el-tabs>
+                <p v-else class="mt30 tc">无搜索结果...</p>
+              </div>
+            </div>
             <!-- 底部 -->
             <ul class="layui-unselect layui-layim-tool">
               <li class="layui-icon layim-tool-search" @click="searchflg=true" title="搜索">
@@ -105,7 +118,7 @@
               </li>
             </ul>
             <div class="layui-layim-search" v-if="searchflg" style="display: block;">
-              <input>
+              <input v-model="searchkey">
               <label class="layui-icon" layim-event="closeSearch" @click="searchflg=false">
                 <svg-icon icon-class="close" />
               </label>
@@ -122,7 +135,9 @@
     <transition name="el-zoom-in-bottom">
       <div v-if="colseIm" @click="colseIm=false" class="layui-layim-close">
         <img  :src="avteinfo">
-        <span >我的聊天</span>
+        <el-badge :value="totalCount" class="item">
+          <span >我的聊天 </span>
+        </el-badge>
       </div>
     </transition>
     <transition name="el-fade-in-linear">
@@ -179,6 +194,15 @@ export default {
     reducerDate
   },
   computed: {
+    searchData() {
+      var search = this.searchkey
+      if (search) {
+        return this.searchList.filter((obj) => {
+          return String(obj['nickname']).toLowerCase().indexOf(search) > -1
+        })
+      }
+      return []
+    }
   },
   data() {
     return {
@@ -190,7 +214,9 @@ export default {
       activeName: 'first',
       JIM: null,
       overflow: 'hidden',
+      searchkey: '',
       userArr: [],
+      searchList: [],
       friend_list: [],
       group_list: [],
       conversations: [],
@@ -325,9 +351,7 @@ export default {
           const arr = this.conversations.splice(i, 1) // 把收到的消息的会话提到第一位
           if (content) {
             arr[0].content = content
-            if (content.create_time) {
-              arr[0].mtime = content.create_time
-            }
+            arr[0].mtime = arr[0].content.create_time
           }
           if (flg) { // 设置已读
             this.totalCount = this.totalCount - arr[0].unread_msg_count
@@ -506,6 +530,7 @@ export default {
             }
             arr.push(obj)
           })
+          this.searchList = arr
           this.getGropsUser(arr)
           const memo = {}
           arr.forEach(function(element) {
@@ -1130,6 +1155,14 @@ export default {
     width: 700px
   }
 }
-
+.seach-panle{
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #fff;
+  overflow-y: auto;
+}
 </style>
 

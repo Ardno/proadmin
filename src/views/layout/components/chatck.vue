@@ -495,7 +495,7 @@ export default {
         this.sendPicContent(msgs, value, img)
       })
     }, // end发送图片消息
-    sendPicContent(msgs, value, data, repeatSend) {
+    sendPicContent(msgs, value, data, repeatSend) { // 改为发送自定义消息
       if (!repeatSend) {
         msgs = {
           content: {
@@ -513,50 +513,63 @@ export default {
           msgKey: this.msgKey++,
           unread_count: 0
         }
-        // 发送单聊图片
-        if (this.activeItem.type === 3) {
-          const singlePicFormData = {
-            target_username: this.activeItem.username,
-            appkey: authPayload.appKey,
-            image: data,
-            need_receipt: false
-          }
-          msgs.singlePicFormData = singlePicFormData
-          msgs.msg_type = 3
-        // 发送群聊图片
-        } else if (this.activeItem.type === 4) {
-          const groupPicFormData = {
-            target_gid: this.activeItem.gid,
-            image: data,
-            need_receipt: false
-          }
-          msgs.groupPicFormData = groupPicFormData
-          msgs.msg_type = 4
-        }
         const msglist = this.messageList // 离线消息列表
         imgUpLoad({ FileData: value.src, filetype: value.postf, type: 2 }).then(obj => {
-        })
-        if (msglist[this.activeItem.id]) {
-          msglist[this.activeItem.id].msgs.push(msgs)
-        } else {
-          msglist[this.activeItem.id] = { // 构造消息记录
-            from_appkey: '',
-            from_username: this.userInfo.username,
-            key: '',
-            msg_type: this.activeItem.type,
-            msgs: [msgs],
-            receipt_msgs: '',
-            unread_msg_count: 0
+          // 发送单聊图片
+          if (obj.code !== 200) {
+            this.$message.error('图片发送失败~')
+            return
           }
-          this.getActiveMsg()
-        }
-      }
-      // 发送单聊图片
-      if (this.activeItem.type === 3) {
-        this.JIMsendSinglePic(msgs.singlePicFormData, msgs)
-      // 发送群聊图片
-      } else if (this.activeItem.type === 4) {
-        this.JIMsendGroupPic(msgs.groupPicFormData, msgs)
+          if (this.activeItem.type === 3) {
+            const singlePicFormData = {
+              target_username: this.activeItem.username,
+              appkey: authPayload.appKey,
+              custom: {
+                type: 'image',
+                name: obj.info
+              }
+              // image: data,
+            }
+            msgs.singlePicFormData = singlePicFormData
+            msgs.msg_type = 3
+          // 发送群聊图片
+          } else if (this.activeItem.type === 4) {
+            const groupPicFormData = {
+              target_gid: this.activeItem.gid,
+              custom: {
+                type: 'image',
+                name: obj.info
+              }
+              // image: data,
+              // need_receipt: false
+            }
+            msgs.groupPicFormData = groupPicFormData
+            msgs.msg_type = 4
+          }
+          if (msglist[this.activeItem.id]) {
+            msglist[this.activeItem.id].msgs.push(msgs)
+          } else {
+            msglist[this.activeItem.id] = { // 构造消息记录
+              from_appkey: '',
+              from_username: this.userInfo.username,
+              key: '',
+              msg_type: this.activeItem.type,
+              msgs: [msgs],
+              receipt_msgs: '',
+              unread_msg_count: 0
+            }
+            this.getActiveMsg()
+          }
+          // 发送单聊图片
+          if (this.activeItem.type === 3) {
+            // this.JIMsendSinglePic(msgs.singlePicFormData, msgs)
+            this.JIMsendSingleCustom(msgs.singlePicFormData, msgs)
+          // 发送群聊图片
+          } else if (this.activeItem.type === 4) {
+            // this.JIMsendGroupPic(msgs.groupPicFormData, msgs)
+            this.JIMsendGroupCustom(msgs.groupPicFormData, msgs)
+          }
+        })
       }
     },
     sendFileEmit(event) { // 发送文件消息
@@ -690,6 +703,26 @@ export default {
           this.sendMsgComplete(false, '', msgs)
         })
     },
+    JIMsendSingleCustom(singleCustomData, msgs) { // 发送单人自定义消息
+      this.JIM.sendSingleCustom(singleCustomData)
+        .onSuccess((data, msg) => {
+          this.sendMsgComplete(true, msg, msgs)
+        }).onFail((erros) => {
+          this.sendMsgComplete(false, '', msgs)
+        }).onTimeout((data) => {
+          this.sendMsgComplete(false, '', msgs)
+        })
+    },
+    JIMsendGroupCustom(groupCustomData, msgs) { // 发送群组自定义消息
+      this.JIM.sendGroupCustom(groupCustomData)
+        .onSuccess((data, msg) => {
+          this.sendMsgComplete(true, msg, msgs)
+        }).onFail((erros) => {
+          this.sendMsgComplete(false, '', msgs)
+        }).onTimeout((data) => {
+          this.sendMsgComplete(false, '', msgs)
+        })
+    },
     JIMsendSingleFile(singleFileData, msgs) { // 发送单人文件消息
       this.JIM.sendSingleFile(singleFileData).onSuccess((data, msg) => {
         this.sendMsgComplete(true, msg, msgs)
@@ -716,6 +749,7 @@ export default {
           if (msgs.msgKey === arr[index].msgKey) {
             if (flg) { // 发送成功
               this.setHistoryIm(msgs)
+              debugger
               if (msg.content.msg_type === 'image' || msg.content.msg_type === 'file') {
                 this.JIM.getResource({ media_id: msg.content.msg_body.media_id })
                   .onSuccess((urlInfo) => {
@@ -731,6 +765,8 @@ export default {
                     msg.ctime_ms = msgs.ctime_ms
                     arr[index] = msg
                   })
+              } else if (msg.content.msg_type === 'custom') {
+                arr[index].success = 2
               } else {
                 arr[index].success = 2
                 arr[index] = msg

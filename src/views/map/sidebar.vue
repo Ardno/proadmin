@@ -223,10 +223,10 @@ export default {
       const center = o.getCenter()
       const _polygon = function(lat, lon) {
         const arr = [ // 构建多边形经纬度坐标数组
-          [lat - 0.008, lon + 0.005],
-          [lat - 0.008, lon - 0.005],
-          [lat + 0.008, lon - 0.005],
-          [lat + 0.008, lon + 0.005]
+          [lat - 0.002, lon + 0.001],
+          [lat - 0.002, lon - 0.001],
+          [lat + 0.002, lon - 0.001],
+          [lat + 0.002, lon + 0.001]
         ]
         return new AMap.Polygon({
           map: o,

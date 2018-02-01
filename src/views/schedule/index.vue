@@ -103,7 +103,6 @@ import { fetchList } from '@/api/department'
 import { getWorksArr, addWorks } from '@/api/levelshift'
 import { getRegionArr } from '@/api/grid'
 import { isAccess, isUser, getDepCld } from '@/utils/auth'
-import { deepClone } from '@/utils/index'
 import { mapGetters } from 'vuex'
 import store from '@/store'
 export default {
@@ -202,7 +201,12 @@ export default {
     createDeploy() {
       this.$refs.infoForm.validate(valid => {
         if (valid) {
-          const requst = deepClone(this.deployment)
+          const requst = {
+            region_id: this.deployment.region_id,
+            user_id: this.deployment.user_id,
+            r_start_time: this.deployment.r_start_time,
+            r_end_time: this.deployment.r_end_time
+          }
           requst.r_start_time = Math.round(new Date(requst.r_start_time).getTime() / 1000)
           requst.r_end_time = Math.round(new Date(requst.r_end_time).getTime() / 1000)
           addWorks(requst).then(response => {
