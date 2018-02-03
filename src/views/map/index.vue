@@ -53,9 +53,11 @@ import { parseTime } from '@/utils/index'
 import { getEventArr } from '@/api/depevent'
 import { isAccess, getDepCld } from '@/utils/auth'
 import personicon from '@/assets/icon/personicon.png'
+import pergray from '@/assets/icon/pergray.png'
 import eventicon from '@/assets/icon/zuob2.png'
 import avatar from '@/assets/login_images/avatar.png'
 import { deepClone } from '@/utils/index'
+import Cookies from 'js-cookie'
 import Bus from '@/utils/bus'
 const amapManager = new VueAMap.AMapManager()
 export default {
@@ -74,6 +76,14 @@ export default {
       PathSimplifier: '',
       geocoder: '',
       mapobj: null,
+      seeting: {
+        person: true,
+        allperson: true,
+        raido: true,
+        region: true,
+        event: true
+      },
+      cluster: null,
       markerRefs: [],
       events: {
         init: (map) => {
@@ -200,7 +210,16 @@ export default {
     },
     loadInit() { // 初始化加载
       this.markerArr = []
+      const obj = Cookies.get('seeting')
+      if (obj) {
+        this.seeting = JSON.parse(obj)
+        console.log(this.seeting)
+      }
       try {
+        if (this.cluster) {
+          this.markerRefs = []
+          this.cluster.setMap(null)
+        }
         this.getRegion()
         this.getLatlon()
         this.getEventArr()
@@ -217,8 +236,10 @@ export default {
     getSetting(obj) {
       this.markerArr = []
       this.polygons = []
-      if (obj.person) {
-        this.markerArr.push(...this.personArr)
+      if (this.seeting.person === obj.person && this.seeting.allperson === obj.allperson) { // 判断是否改变
+      } else {
+        this.loadInit()
+        // this.markerArr.push(...this.personArr)
       }
       if (obj.event) {
         this.markerArr.push(...this.eventArr)
@@ -266,7 +287,9 @@ export default {
                 }
               }
             }
-            this.polygons.push(obj)
+            if (this.seeting.region) {
+              this.polygons.push(obj)
+            }
             this.polygonsArr.push(obj)
           }
         }, this)
@@ -280,15 +303,26 @@ export default {
       // })
       this.personArr = []
       getLatlonArr({ department_id: getDepCld() }).then(res => {
-        const data = res.info.filter(obj => {
-          const count = new Date().getTime() - obj.location.uploadtime * 1000
-          return count < 300000 // 位置更新时间少于5分钟视为在线
+        let data = null
+        res.info.forEach(element => {
+          const count = new Date().getTime() - element.location.uploadtime * 1000
+          if (count < 300000) { // 位置更新时间少于5分钟视为在线
+            element.state = 1
+          } else {
+            element.state = 0
+          }
         })
+        data = res.info
+        if (!this.seeting.allperson) {
+          data = data.filter(obj => {
+            return obj.state
+          })
+        }
         data.forEach((element, index) => {
           const obj = {
             position: [element.location.lon, element.location.lat],
             // position: this.getRadomPt(),
-            icon: personicon,
+            icon: element.state ? personicon : pergray,
             events: {
               init: (marker) => {
                 marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
@@ -298,16 +332,19 @@ export default {
                 this.markerRefs.push(marker)
               },
               click: (e) => {
-                const obj = element
-                const uploadtime = parseTime(obj.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                this.windows[0].position = [element.location.lon, element.location.lat]
+                const obje = element
+                const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                this.windows[0].position = [obje.location.lon, obje.location.lat]
                 this.windows[0].visible = true
-                // <span style="font-size:11px;color:blue;">在线</span>
+                let strtip = `<span class="ml15 f12 g9">离线 </span>`
+                if (obje.state) {
+                  strtip = `<span class="ml15 f12 blue">在线 </span>`
+                }
                 const ctstr = `<div class="info">
-                 <div class="info-top">${obj.name}</div>
-                 <div @click="handler('1','${obj._id}')" class="info-middle" style="background-color: white;">
-                 <img src="${process.env.upload_API}images/user/${obj.location.user_id}.jpg" onerror="this.onerror=null;this.src='${avatar}'">
-                 地址：${obj.location.address}<br>更新时间：${uploadtime}<br>
+                 <div class="info-top">${obje.name}${strtip}</div>
+                 <div @click="handler('1','${obje._id}')" class="info-middle" style="background-color: white;">
+                 <img src="${process.env.upload_API}images/user/${obje.location.user_id}.jpg" onerror="this.onerror=null;this.src='${avatar}'">
+                 地址：${obje.location.address}<br>更新时间：${uploadtime}<br>
                  <a href="javascript:" style="color:blue">点击对话</a>
                  </div></div>`
                 this.windows[0].template = ctstr
@@ -320,15 +357,17 @@ export default {
             visible: true,
             draggable: false
           }
-          this.markerArr.push(obj)
+          if (this.seeting.person) {
+            this.markerArr.push(obj)
+          }
           this.personArr.push(obj)
         })
         setTimeout(() => {
-          const cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs, {
+          this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs, {
             gridSize: 80
             // renderCluserMarker: this._renderCluserMarker
           })
-          console.log(cluster)
+          console.log(this.cluster)
         }, 1000)
       }).catch(errs => {
         console.log('获取部门人员位置出错')
@@ -383,7 +422,9 @@ export default {
               visible: true,
               draggable: false
             }
-            this.markerArr.push(obj)
+            if (this.seeting.event) {
+              this.markerArr.push(obj)
+            }
             this.eventArr.push(obj)
           }
         })

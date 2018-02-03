@@ -1170,8 +1170,8 @@ export default {
         }
       }
       .layim-chat-img{
-        max-width: 219px;
-        max-height: 300px;
+        max-width: 400px;
+        max-height: 400px;
         cursor: -webkit-zoom-in;
         cursor: zoom-in;
         border-radius: 5px;

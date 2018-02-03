@@ -66,12 +66,13 @@
       <div>
         <p class="mb10">
           <span class="mr5">人员显示</span><el-switch on-text="" off-text="" v-model="seeting.person"></el-switch>
-          <span class="ml40 mr5">事件显示</span><el-switch on-text="" off-text="" v-model="seeting.event"></el-switch>
+          <span class="ml40 mr5">显示离线</span><el-switch on-text="" off-text="" v-model="seeting.allperson"></el-switch>
         </p>
-        <p>
+        <p class="mt10">
           <span class="mr5">区域显示</span><el-switch on-text="" off-text="" v-model="seeting.region"></el-switch>
           <span class="ml40 mr5">摄像显示</span><el-switch on-text="" off-text="" v-model="seeting.raido"></el-switch>
         </p>
+        <p class="mt10"><span class="mr5">事件显示</span><el-switch on-text="" off-text="" v-model="seeting.event"></el-switch></p>
       </div>
     </el-dialog>
     <!-- 人员轨迹查询 -->
@@ -146,6 +147,7 @@ export default {
       seeting: {
         dialogFormVisible: false,
         person: true,
+        allperson: true,
         raido: true,
         region: true,
         event: true
@@ -183,8 +185,8 @@ export default {
       })
     },
     stcloseCall() {
-      this.$emit('seeting', this.seeting)
       Cookies.set('seeting', this.seeting)
+      this.$emit('seeting', this.seeting)
       // console.log(123)
     },
     closeCall() {
