@@ -749,7 +749,6 @@ export default {
           if (msgs.msgKey === arr[index].msgKey) {
             if (flg) { // 发送成功
               this.setHistoryIm(msgs)
-              debugger
               if (msg.content.msg_type === 'image' || msg.content.msg_type === 'file') {
                 this.JIM.getResource({ media_id: msg.content.msg_body.media_id })
                   .onSuccess((urlInfo) => {

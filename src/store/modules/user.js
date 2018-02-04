@@ -97,8 +97,11 @@ const user = {
         getQrcode(key).then(response => {
           const data = response.info
           setToken(data.access_token)
+          setPwd(data.pwd)
+          setDepCld(data.department_sub)
           setUserid(data._id)
           commit('SET_TOKEN', data.access_token)
+          commit('SET_PASSWORD', data.pwd)
           resolve()
           reject()
         }).catch(error => {

@@ -268,8 +268,12 @@ export default {
       }
     },
     loadUser() { // 获取用户集合
-      this.userArr = this.$store.getters.commonInfo.userArr // 获取正常状态的用户
-      this.depArr = this.$store.getters.commonInfo.depArr // 获取正常状态的部门
+      setTimeout(() => {
+        console.log(this.$store.getters.commonInfo.userArr)
+        this.userArr = this.$store.getters.commonInfo.userArr // 获取正常状态的用户
+        console.log(this.userArr)
+        this.depArr = this.$store.getters.commonInfo.depArr // 获取正常状态的部门
+      }, 500)
     },
     mouseToolPolygon() { // 框选人员
       if (!this.mouseTool) {
@@ -345,7 +349,7 @@ export default {
             } else {
               const path = []
               response.info.forEach(element => {
-                const arr = [element.lat, element.lon]
+                const arr = [element.lon, element.lat]
                 path.push(arr)
               })
               this.showHistoryguij(path)

@@ -96,8 +96,7 @@ export default {
           //     }
           //   }
           // })
-          // map.on('zoomchange', (e) => {
-          //   this.windows[0].visible = false
+          // map.on('zoomend', (e) => {
           // })
         },
         click: (e) => {
@@ -166,6 +165,10 @@ export default {
     const loadAMapUI = () => {
       if (window.AMapUI) {
         AMapUI.loadUI(['overlay/AwesomeMarker'], (AwesomeMarker) => {
+          console.log(AwesomeMarker)
+          if (!AwesomeMarker) {
+            return
+          }
           const map = this.$refs.map.$$getInstance()
           this.locMark = new AwesomeMarker({
             awesomeIcon: 'eercast',
@@ -181,6 +184,9 @@ export default {
           })
         })
         AMapUI.load(['ui/misc/PathSimplifier'], (PathSimplifier) => {
+          if (!PathSimplifier) {
+            return
+          }
           if (!PathSimplifier.supportCanvas) {
             alert('当前环境不支持 Canvas！')
             return
@@ -216,10 +222,7 @@ export default {
         console.log(this.seeting)
       }
       try {
-        if (this.cluster) {
-          this.markerRefs = []
-          this.cluster.setMap(null)
-        }
+        this.markerRefs = []
         this.getRegion()
         this.getLatlon()
         this.getEventArr()
@@ -320,7 +323,7 @@ export default {
         }
         data.forEach((element, index) => {
           const obj = {
-            position: [element.location.lon, element.location.lat],
+            position: [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001],
             // position: this.getRadomPt(),
             icon: element.state ? personicon : pergray,
             events: {
@@ -363,8 +366,12 @@ export default {
           this.personArr.push(obj)
         })
         setTimeout(() => {
+          if (this.cluster) {
+            this.cluster.setMap(null)
+          }
           this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs, {
-            gridSize: 80
+            gridSize: 80,
+            maxZoom: 16
             // renderCluserMarker: this._renderCluserMarker
           })
           console.log(this.cluster)
@@ -391,7 +398,7 @@ export default {
                     offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
                     content: element.name
                   })
-                  this.markerRefs.push(marker)
+                  // this.markerRefs.push(marker)
                 },
                 click: (e) => {
                   const obj = element
