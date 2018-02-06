@@ -148,7 +148,7 @@ export default {
         name: '',
         start_time: '',
         end_time: '',
-        region_id: 1,
+        region_id: '',
         atte_type: 2,
         day_time: ''
       }
@@ -187,7 +187,7 @@ export default {
         name: '',
         start_time: '',
         end_time: '',
-        region_id: 1,
+        region_id: '',
         atte_type: 2,
         day_time: ''
       }

@@ -140,8 +140,8 @@ export default {
       workArr: [],
       dispatchArr: [],
       monthdanceArr: [],
-      start_time: new Date().getTime() - 3600 * 1000 * 24 * 7,
-      end_time: new Date().getTime()
+      start_time: new Date(new Date().getTime() - 3600 * 1000 * 24 * 7),
+      end_time: new Date()
     }
   },
   created() {
@@ -151,6 +151,15 @@ export default {
   methods: {
     loadArr() { // 获取用户集合和事件类型集合
       this.userArr = this.$store.getters.commonInfo.userArr
+    },
+    filterName(id) {
+      const arr = this.userArr.filter(obj => {
+        return obj._id === id
+      })
+      if (arr[0]) {
+        return arr[0].name
+      }
+      return ''
     },
     handleQuery() {
       // this.pageobj.start_index = 0
