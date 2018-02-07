@@ -96,6 +96,7 @@ export default {
       isEdit: false,
       content: '请输入内容~',
       paraTypeArr: paraTypeArr,
+      fistr: true,
       postForm: {
         department_id: '',
         name: '',
@@ -164,7 +165,7 @@ export default {
             _id: Number(element)
           })
         }, this)
-        console.log(this.postForm)
+        // console.log(this.postForm)
         this.changeDepRule()
       })
     },
@@ -222,7 +223,15 @@ export default {
         }
       }
       fetchRoles(request).then(response => {
+        if (this.fistr) {
+          this.fistr = false
+        } else {
+          this.postForm.roleArr.forEach(obj => {
+            obj._id = ''
+          })
+        }
         this.fetchArr = response.info
+        console.log(response.info)
         // if (id === false && !flg) {
         //   this.postForm.role_id_access = ''
         // }
@@ -313,7 +322,7 @@ export default {
       getLawsArr({ department_id: '' }).then(response => {
         this.lawArr = response.info
       })
-      this.changeDepRule()
+      // this.changeDepRule()
     }
   }
 }
