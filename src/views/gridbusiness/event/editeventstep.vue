@@ -22,7 +22,7 @@
         </el-row>
         <el-form-item label-width="65px" label="部门:" prop="department_id" class="postInfo-container-item">
           <el-select clearable class="filter-item" style="width: 130px" filterable @change="changeDepRule" v-model="postForm.department_id" placeholder="请选择">
-            <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
+            <el-option v-for="item in  depArr" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>

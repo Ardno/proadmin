@@ -134,7 +134,7 @@
           </el-form-item>
           <el-form-item label="所属部门" prop="department_id">
             <el-select clearable class="filter-item" filterable style="width: 130px" v-model="duty.department_id" placeholder="请选择">
-              <el-option v-for="item in  depArr" :key="item._id" :label="item.name" :value="item._id">
+              <el-option v-for="item in  depArr"  :title="item.parentName" :key="item._id" :label="item.name" :value="item._id">
               </el-option>
             </el-select>
           </el-form-item>
