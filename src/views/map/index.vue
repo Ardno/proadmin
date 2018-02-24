@@ -15,7 +15,7 @@
         <!-- 经纬度: [{{ lng }}, {{ lat }}]  -->
         地址: {{ address }}
     </div>
-    <side-bar :mapobj="mapobj" :PathSimplifier='PathSimplifier' @seeting="getSetting"  @reloadMap="loadInit" @addRegion="getRegion"></side-bar>
+    <side-bar :mapobj="mapobj" :PathSimplifier='PathSimplifier' @seeting="loadInit"  @reloadMap="loadInit" @addRegion="getRegion"></side-bar>
     <!-- 区域信息 -->
     <el-dialog title="区域信息" width="600px"  :visible.sync="regionobj.dialogFormVisible"  >
       <el-form class="small-space"  label-position="top">
@@ -141,6 +141,7 @@ export default {
       markerArr: [],
       personArr: [],
       eventArr: [],
+      intetime: null,
       polygonsArr: [],
       regionobj: {
         name: '',
@@ -215,17 +216,26 @@ export default {
       return 'this.onerror=null;this.src="' + avatar + '"'
     },
     loadInit() { // 初始化加载
-      this.markerArr = []
+      if (this.intetime) {
+        clearInterval(this.intetime)
+      }
       const obj = Cookies.get('seeting')
       if (obj) {
         this.seeting = JSON.parse(obj)
         console.log(this.seeting)
       }
       try {
+        if (this.cluster) {
+          this.cluster.setMap(null)
+        }
+        this.markerArr = []
         this.markerRefs = []
         this.getRegion()
         this.getLatlon()
         this.getEventArr()
+        this.intetime = setInterval(() => {
+          this.getSetting()
+        }, 30000)
       } catch (error) {
         console.log(error)
       }
@@ -237,23 +247,15 @@ export default {
       return resultPt
     },
     getSetting(obj) {
-      this.markerArr = []
-      this.polygons = []
-      if (this.seeting.person === obj.person && this.seeting.allperson === obj.allperson) { // 判断是否改变
-      } else {
-        this.loadInit()
-        // this.markerArr.push(...this.personArr)
+      try {
+        // this.getRegion(true)
+        this.getLatlon(true)
+        this.getEventArr(true)
+      } catch (error) {
+        console.log(error)
       }
-      if (obj.event) {
-        this.markerArr.push(...this.eventArr)
-      }
-      if (obj.region) {
-        this.polygons.push(...this.polygonsArr)
-      }
-      // if (obj.raido){
-      // }
     },
-    getRegion() { // 获取区域
+    getRegion(updateFlg) { // 获取区域
       getRegionArr({ start_index: 0, length: 10000, department_id: getDepCld() }).then(response => {
         const polygons = response.info.list
         this.polygons = []
@@ -300,11 +302,57 @@ export default {
         console.log('获取区域位置出错')
       })
     },
-    getLatlon() { // 获取部门人员位置
-      // const dep = this.useinfo.department_roles.filter(function(obj) {
-      //   return obj.is_enable
-      // })
-      this.personArr = []
+    getLatlon(updateFlg) { // 获取部门人员位置
+      const addLatlon = (element) => { // 添加图标
+        const obj = {
+          position: [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001],
+          // position: this.getRadomPt(),
+          icon: element.state ? personicon : pergray,
+          events: {
+            init: (marker) => {
+              marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
+                offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
+                content: element.name
+              })
+              this.markerRefs.push(marker)
+            },
+            click: (e) => {
+              const obje = element
+              const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
+              this.windows[0].position = [obje.location.lon, obje.location.lat]
+              this.windows[0].visible = true
+              let strtip = `<span class="ml15 f12 g9">离线 </span>`
+              if (obje.state) {
+                strtip = `<span class="ml15 f12 blue">在线 </span>`
+              }
+              const ctstr = `<div class="info">
+              <div class="info-top">${obje.name}${strtip}</div>
+              <div @click="handler('1','${obje._id}')" class="info-middle" style="background-color: white;">
+              <img src="${process.env.upload_API}images/user/${obje.location.user_id}.jpg" onerror="this.onerror=null;this.src='${avatar}'">
+              地址：${obje.location.address}<br>更新时间：${uploadtime}<br>
+              <a href="javascript:" style="color:blue">点击对话</a>
+              </div></div>`
+              this.windows[0].template = ctstr
+            },
+            dragend: (e) => {
+              this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
+            }
+          },
+          title: element.name,
+          visible: true,
+          draggable: false,
+          extData: element
+        }
+        if (!this.seeting.allperson) { // 当不显示离线时
+          if (!element.state) {
+            obj.visible = false
+          }
+        }
+        if (this.seeting.person) {
+          this.markerArr.push(obj)
+        }
+      }
+      // 请求数据
       getLatlonArr({ department_id: getDepCld() }).then(res => {
         let data = null
         res.info.forEach(element => {
@@ -316,40 +364,104 @@ export default {
           }
         })
         data = res.info
-        if (!this.seeting.allperson) {
-          data = data.filter(obj => {
-            return obj.state
+        if (updateFlg) { // 是否更新
+          data.forEach(element => {
+            let flg = false
+            this.markerArr.forEach(els => {
+              if (els.extData.location && (els.extData.location.user_id === element._id)) { // 覆盖数据
+                flg = true
+                console.log('覆盖数据', flg)
+                els.position = [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001]
+                els.extData = element
+                els.icon = element.state ? personicon : pergray
+                els.title = element.name
+                els.events = {
+                  init: (marker) => {
+                    marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
+                      offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
+                      content: element.name
+                    })
+                    this.markerRefs.push(marker)
+                  },
+                  click: (e) => {
+                    const obje = element
+                    const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                    this.windows[0].position = [obje.location.lon, obje.location.lat]
+                    this.windows[0].visible = true
+                    let strtip = `<span class="ml15 f12 g9">离线 </span>`
+                    if (obje.state) {
+                      strtip = `<span class="ml15 f12 blue">在线 </span>`
+                    }
+                    const ctstr = `<div class="info">
+                    <div class="info-top">${obje.name}${strtip}</div>
+                    <div @click="handler('1','${obje._id}')" class="info-middle" style="background-color: white;">
+                    <img src="${process.env.upload_API}images/user/${obje.location.user_id}.jpg" onerror="this.onerror=null;this.src='${avatar}'">
+                    地址：${obje.location.address}<br>更新时间：${uploadtime}<br>
+                    <a href="javascript:" style="color:blue">点击对话</a>
+                    </div></div>`
+                    this.windows[0].template = ctstr
+                  },
+                  dragend: (e) => {
+                    this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
+                  }
+                }
+              }
+            })
+            if (!flg) {
+              console.log('添加新的图标', flg)
+              addLatlon(element)
+            }
+          })
+        } else {
+          data.forEach((element, index) => {
+            addLatlon(element)
           })
         }
-        data.forEach((element, index) => {
+        // setTimeout(() => {
+        //   this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs, {
+        //     gridSize: 80,
+        //     maxZoom: 16
+        //     // renderCluserMarker: this._renderCluserMarker
+        //   })
+        // }, 1000)
+      }).catch(errs => {
+        console.log('获取部门人员位置出错', errs)
+      })
+    },
+    getEventArr(updateFlg) { // 获取事件位置
+      const addEvent = (element) => {
+        if (element.lat) {
           const obj = {
-            position: [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001],
+            position: [element.lon, element.lat],
             // position: this.getRadomPt(),
-            icon: element.state ? personicon : pergray,
+            icon: eventicon,
             events: {
               init: (marker) => {
                 marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
                   offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
                   content: element.name
                 })
-                this.markerRefs.push(marker)
+                // this.markerRefs.push(marker)
               },
               click: (e) => {
-                const obje = element
-                const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                this.windows[0].position = [obje.location.lon, obje.location.lat]
-                this.windows[0].visible = true
-                let strtip = `<span class="ml15 f12 g9">离线 </span>`
-                if (obje.state) {
-                  strtip = `<span class="ml15 f12 blue">在线 </span>`
+                const obj = element
+                const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                let update_time = '暂无更新'
+                if (obj.update_time) {
+                  update_time = parseTime(obj.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                 }
+                this.windows[0].position = [element.lon, element.lat]
+                this.windows[0].visible = true
+                // <a href="javascript:" style="color:blue">点击查看事件</a>
                 const ctstr = `<div class="info">
-                 <div class="info-top">${obje.name}${strtip}</div>
-                 <div @click="handler('1','${obje._id}')" class="info-middle" style="background-color: white;">
-                 <img src="${process.env.upload_API}images/user/${obje.location.user_id}.jpg" onerror="this.onerror=null;this.src='${avatar}'">
-                 地址：${obje.location.address}<br>更新时间：${uploadtime}<br>
-                 <a href="javascript:" style="color:blue">点击对话</a>
-                 </div></div>`
+                <div class="info-top">${obj.name}</div>
+                <div class="info-middle"  style="background-color: white;">
+                状态：<span class="g6">进行中...</span><br>
+                地址：<span class="g6">${obj.address}</span><br>
+                处理人：<span class="g6">${obj.username}</span> <br>
+                发生时间：<span class="g6">${happen_time}</span><br>
+                更新时间：<span class="g6">${update_time}</span><br>
+                </div></div>`
                 this.windows[0].template = ctstr
               },
               dragend: (e) => {
@@ -358,49 +470,28 @@ export default {
             },
             title: element.name,
             visible: true,
-            draggable: false
+            draggable: false,
+            extData: element
           }
-          if (this.seeting.person) {
+          if (this.seeting.event) {
             this.markerArr.push(obj)
           }
-          this.personArr.push(obj)
-        })
-        setTimeout(() => {
-          if (this.cluster) {
-            this.cluster.setMap(null)
-          }
-          this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs, {
-            gridSize: 80,
-            maxZoom: 16
-            // renderCluserMarker: this._renderCluserMarker
-          })
-          console.log(this.cluster)
-        }, 1000)
-      }).catch(errs => {
-        console.log('获取部门人员位置出错')
-      })
-    },
-    getEventArr() { // 获取事件位置
-      this.eventArr = []
+        }
+      }
       getEventArr({ start_index: 0, length: 10000, department_id: getDepCld() }).then(res => {
         const data = res.info.list.filter((obj) => {
           return !obj.status
         })
-        data.forEach((element, index) => {
-          if (element.lat) {
-            const obj = {
-              position: [element.lon, element.lat],
-              // position: this.getRadomPt(),
-              icon: eventicon,
-              events: {
-                init: (marker) => {
-                  marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
-                    offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
-                    content: element.name
-                  })
-                  // this.markerRefs.push(marker)
-                },
-                click: (e) => {
+        if (updateFlg) { // 是否更新
+          data.forEach(element => {
+            let flg = false
+            this.markerArr.forEach(els => {
+              if (els.extData._id === data._id) { // 覆盖数据
+                flg = true
+                els.position = [element.lon, element.lat]
+                els.extData = element
+                els.title = element.name
+                els.events.click = (e) => {
                   const obj = element
                   const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                   let update_time = '暂无更新'
@@ -420,21 +511,21 @@ export default {
                   更新时间：<span class="g6">${update_time}</span><br>
                   </div></div>`
                   this.windows[0].template = ctstr
-                },
-                dragend: (e) => {
+                }
+                els.events.dragend = (e) => {
                   this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
                 }
-              },
-              title: element.name,
-              visible: true,
-              draggable: false
+              }
+            })
+            if (!flg) {
+              addEvent(element)
             }
-            if (this.seeting.event) {
-              this.markerArr.push(obj)
-            }
-            this.eventArr.push(obj)
-          }
-        })
+          })
+        } else {
+          data.forEach((element, index) => {
+            addEvent(element)
+          })
+        }
       }).catch(errs => {
         console.log('获取事件位置出错')
       })
