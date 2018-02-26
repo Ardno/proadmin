@@ -67,7 +67,6 @@
       </div>
     </el-dialog>
   </div>
-  </div>
 </template>
 
 <script>

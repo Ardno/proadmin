@@ -132,9 +132,12 @@
 import Tinymce from '@/components/Tinymce'
 import { mapGetters } from 'vuex'
 import { getEventStep } from '@/api/depevent'
+import { verifypassword } from '@/api/platform'
+import store from '@/store/index'
 import { getEventArr, getEventTypeArr, updateEvent, auditEventStep, getSteps, getCaseStepinfo } from '@/api/depevent'
 import { isAccess, getDepCld } from '@/utils/auth'
 import { deepClone, TreeUtil, removeTreeArr } from '@/utils/index'
+
 export default {
   components: { Tinymce },
   data() {
@@ -271,33 +274,53 @@ export default {
         })
         return
       }
-
-      getEventStep({ event_id: this.verifyitem.id }).then(res => {
-        const requst = {
-          step_id: res.info.step_id,
-          event_id: res.info.event_id,
-          user_id: this.userInfo._id,
-          role_id: this.userInfo.role_id,
-          status: type,
-          user_msg: this.verifyitem.user_msg
+      this.$prompt('请输入密码验证你的身份', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputPattern: /^[a-zA-Z0-9]{6,}$/,
+        inputErrorMessage: '输入你的登录密码'
+      }).then(({ value }) => {
+        const parm = {
+          _id: store.getters.useinfo._id,
+          pwd: value
         }
-        auditEventStep(requst).then(res => {
-          this.dialogVisible = false
-          this.caseStepInfo.dialogVisible = false
-          this.getEventsArr()
+        verifypassword(parm).then(response => {
+          getEventStep({ event_id: this.verifyitem.id }).then(res => {
+            const requst = {
+              step_id: res.info.step_id,
+              event_id: res.info.event_id,
+              user_id: this.userInfo._id,
+              role_id: this.userInfo.role_id,
+              status: type,
+              user_msg: this.verifyitem.user_msg
+            }
+            auditEventStep(requst).then(res => {
+              this.dialogVisible = false
+              this.caseStepInfo.dialogVisible = false
+              this.getEventsArr()
+              this.$message({
+                message: '操作成功',
+                type: 'success',
+                duration: 4 * 1000
+              })
+            })
+          }).catch(errs => {
+            this.dialogVisible = false
+            this.$message({
+              message: '操作失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
+          })
+        }).catch(() => {
           this.$message({
-            message: '操作成功',
-            type: 'success',
+            message: '密码验证失败，请重新再试',
+            type: 'error',
             duration: 4 * 1000
           })
         })
-      }).catch(errs => {
-        this.dialogVisible = false
-        this.$message({
-          message: '操作失败，请稍后再试',
-          type: 'error',
-          duration: 4 * 1000
-        })
+      }).catch(() => {
+        console.log('取消修改')
       })
     },
     showStepInfo(item) { //  显示步骤信息

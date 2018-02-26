@@ -51,6 +51,7 @@ import { mapGetters } from 'vuex'
 import { getRegionArr, updateRegion, getLatlonArr } from '@/api/grid'
 import { parseTime } from '@/utils/index'
 import { getEventArr } from '@/api/depevent'
+import { uploadCurLoc } from '@/api/platform'
 import { isAccess, getDepCld } from '@/utils/auth'
 import personicon from '@/assets/icon/personicon.png'
 import pergray from '@/assets/icon/pergray.png'
@@ -75,19 +76,26 @@ export default {
       locMark: '',
       PathSimplifier: '',
       geocoder: '',
+      geolocations: null,
       mapobj: null,
       seeting: {
         person: true,
-        allperson: true,
+        allperson: false,
         raido: true,
         region: true,
         event: true
+      },
+      locationPostion: {
+        oldloc: [],
+        newloc: [],
+        address: '未知'
       },
       cluster: null,
       markerRefs: [],
       events: {
         init: (map) => {
           this.mapobj = this.$refs.map
+          this.getGeolocation()
           // this.geocoder.getAddress([map.getCenter().lng, map.getCenter().lat], (status, result) => {
           //   if (status === 'complete' && result.info === 'OK') {
           //     if (result && result.regeocode) {
@@ -166,7 +174,6 @@ export default {
     const loadAMapUI = () => {
       if (window.AMapUI) {
         AMapUI.loadUI(['overlay/AwesomeMarker'], (AwesomeMarker) => {
-          console.log(AwesomeMarker)
           if (!AwesomeMarker) {
             return
           }
@@ -215,6 +222,71 @@ export default {
     defaultImg() {
       return 'this.onerror=null;this.src="' + avatar + '"'
     },
+    getGeolocation() { // 定位当前位置
+      this.geolocations = new AMap.Geolocation({
+        enableHighAccuracy: true, // 是否使用高精度定位,默认:true
+        timeout: 10000, // 超过10秒后停止定位,默认：无穷大
+        GeoLocationFirst: true,
+        showButton: false,
+        buttonOffset: new AMap.Pixel(10, 30), // 定位按钮与设置的停靠位置的偏移量,默认：Pixel(10, 20)
+        showCircle: true, // 定位成功后用圆圈表示定位精度范围,默认：true
+        panToLocation: false, // 定位成功后将定位到的位置作为地图中心点,默认：true
+        buttonPosition: 'LB'
+      })
+      this.mapobj.addMapControls(this.geolocations)
+      this.geolocations.getCurrentPosition()
+      let countTimes = 0
+      this.timeer = setInterval(() => { // 上传位置信息
+        countTimes++
+        const newloc = this.locationPostion.newloc.toString()
+        const oldloc = this.locationPostion.oldloc.toString()
+        if (newloc !== oldloc || countTimes > 28) { // 位置不变则4分钟上传一次,
+          countTimes = 0
+          this.locationPostion.oldloc = this.locationPostion.newloc
+          this.uploadCurLoc(this.locationPostion.newloc, this.locationPostion.address)
+        }
+      }, 10000)
+      AMap.event.addListener(this.geolocations, 'complete', (data) => {
+        setTimeout(() => { // 定时查询当前位置
+          this.geolocations.getCurrentPosition()
+        }, 5000)
+        if (!this.locationPostion.newloc) {
+          this.locationPostion.newloc = [data.position.lng, data.position.lat]
+          this.mapobj.setZoomAndCenter(16, data.position)
+        } else {
+          this.locationPostion.newloc = [data.position.lng, data.position.lat]
+        }
+        // 通过经纬度进行转码
+        this.geocoder.getAddress(this.locationPostion.newloc, (status, result) => {
+          if (status === 'complete' && result.info === 'OK') {
+            this.locationPostion.address = result.regeocode.formattedAddress
+          }
+        })
+      }) // 返回定位信息
+      AMap.event.addListener(this.geolocations, 'error', (data) => {
+        console.log(data)
+        this.$message({
+          message: '定位用户失败~',
+          type: 'error',
+          duration: 4 * 1000
+        })
+      }) // 返回定位出错信息
+    },
+    uploadCurLoc(loc, address) { // 上传用户当前位置
+      const reqinfo = {
+        url: 'locations/add',
+        bind_id: this.$store.getters.useinfo._id,
+        bind_type: '0',
+        address: address,
+        lat: loc[1],
+        lon: loc[0],
+        create_time: Math.round(new Date().getTime() / 1000),
+        hideloading: true
+      }
+      uploadCurLoc(reqinfo).then(response => {
+        console.log('上传当前用户位置', response)
+      })
+    },
     loadInit() { // 初始化加载
       if (this.intetime) {
         clearInterval(this.intetime)
@@ -222,7 +294,6 @@ export default {
       const obj = Cookies.get('seeting')
       if (obj) {
         this.seeting = JSON.parse(obj)
-        console.log(this.seeting)
       }
       try {
         if (this.cluster) {
@@ -370,7 +441,6 @@ export default {
             this.markerArr.forEach(els => {
               if (els.extData.location && (els.extData.location.user_id === element._id)) { // 覆盖数据
                 flg = true
-                console.log('覆盖数据', flg)
                 els.position = [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001]
                 els.extData = element
                 els.icon = element.state ? personicon : pergray

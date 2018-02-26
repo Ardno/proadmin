@@ -269,9 +269,7 @@ export default {
     },
     loadUser() { // 获取用户集合
       setTimeout(() => {
-        console.log(this.$store.getters.commonInfo.userArr)
         this.userArr = this.$store.getters.commonInfo.userArr // 获取正常状态的用户
-        console.log(this.userArr)
         this.depArr = this.$store.getters.commonInfo.depArr // 获取正常状态的部门
       }, 500)
     },

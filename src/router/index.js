@@ -87,6 +87,16 @@ export const asyncRouterMap = [
     ]
   },
   {
+    path: '/statistics',
+    component: Layout,
+    redirect: 'noredirect',
+    name: '统计分析',
+    meta: { icon: 'chart', title: '统计分析' },
+    children: [
+      { path: 'index', component: _import('statistics/index'), name: '用户统计', meta: { title: '用户统计' }}
+    ]
+  },
+  {
     path: '/gridbusiness',
     component: Layout,
     redirect: 'noredirect',
