@@ -56,6 +56,11 @@
           </el-tag>
         </template>
       </el-table-column>
+      <el-table-column width="180" label="当前步骤">
+        <template slot-scope="scope">
+          <span>{{scope.row.dangqname}}</span>
+        </template>
+      </el-table-column>
       <el-table-column width="180" label="发生时间">
         <template slot-scope="scope">
           <span>{{scope.row.happen_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
@@ -134,7 +139,7 @@ import { mapGetters } from 'vuex'
 import { getEventStep } from '@/api/depevent'
 import { verifypassword } from '@/api/platform'
 import store from '@/store/index'
-import { getEventArr, getEventTypeArr, updateEvent, auditEventStep, getSteps, getCaseStepinfo } from '@/api/depevent'
+import { getEventArr, getEventTypeArr, updateEvent, auditEventStep, getSteps, getCaseStepinfo, getStepsArr } from '@/api/depevent'
 import { isAccess, getDepCld } from '@/utils/auth'
 import { deepClone, TreeUtil, removeTreeArr } from '@/utils/index'
 
@@ -175,6 +180,7 @@ export default {
         content: '',
         isAudit: false
       },
+      allStepsArr: [],
       activeitem: null,
       verifyitem: {
         user_msg: '',
@@ -217,6 +223,23 @@ export default {
         this.pageobj.departmvalent_id = this.userInfo.department_id
       }
       // this.pageobj.department_id = val
+    },
+    filterArrbuzou(item) {
+      if (item.status !== 0) {
+        item.dangqname = ''
+      } else {
+        getEventStep({ event_id: item._id }).then(res => {
+          const resl = res.info
+          if (resl.step_id) {
+            this.allStepsArr.forEach(element => {
+              if (element._id === Number(resl.step_id)) {
+                item.dangqname = element.name
+                console.log(item.dangqname)
+              }
+            })
+          }
+        })
+      }
     },
     handleQuery() {
       this.pageobj.start_index = 0
@@ -396,9 +419,15 @@ export default {
     getEventsArr() {
       this.listLoading = true
       getEventArr(this.pageobj).then(res => {
+        res.info.list.forEach(element => {
+          element.dangqname = ''
+        })
         this.eventArr = res.info.list
         this.pageobj.totalPages = res.info.count
         this.listLoading = false
+        this.eventArr.forEach(element => {
+          this.filterArrbuzou(element)
+        })
       }).catch(() => {
         this.listLoading = false
         this.$message({
@@ -413,6 +442,11 @@ export default {
         this.typeArr = res.info.filter(obj => {
           return !obj.status
         })
+      })
+      getStepsArr({// 获取所有步骤
+        start_index: 0,
+        length: 10000 }).then(res => {
+        this.allStepsArr = res.info.list
       })
     },
     markComplete(item) { // 标记完成

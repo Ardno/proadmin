@@ -14,6 +14,7 @@
 
 <script>
 import echarts from 'echarts'
+import { getUserStatist } from '@/api/statistics'
 export default {
   data() {
     return {
@@ -86,6 +87,14 @@ export default {
             }
           }
         ]
+      })
+      const request = {
+
+      }
+      getUserStatist(request).then(response => {
+        console.log(response)
+      }).catch(errs => {
+        console.log('errs')
       })
     }
   }

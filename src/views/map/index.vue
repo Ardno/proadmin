@@ -235,16 +235,18 @@ export default {
       })
       this.mapobj.addMapControls(this.geolocations)
       this.geolocations.getCurrentPosition()
-      let countTimes = 0
+      // let countTimes = 0
       this.timeer = setInterval(() => { // 上传位置信息
-        countTimes++
-        const newloc = this.locationPostion.newloc.toString()
-        const oldloc = this.locationPostion.oldloc.toString()
-        if (newloc !== oldloc || countTimes > 28) { // 位置不变则4分钟上传一次,
-          countTimes = 0
-          this.locationPostion.oldloc = this.locationPostion.newloc
+        // countTimes++
+        // const newloc = this.locationPostion.newloc.toString()
+        // const oldloc = this.locationPostion.oldloc.toString()
+        // if (newloc !== oldloc || countTimes > 28) { // 位置不变则4分钟上传一次,
+        // countTimes = 0
+        this.locationPostion.oldloc = this.locationPostion.newloc
+        if (this.locationPostion.newloc.length) {
           this.uploadCurLoc(this.locationPostion.newloc, this.locationPostion.address)
         }
+        // }
       }, 10000)
       AMap.event.addListener(this.geolocations, 'complete', (data) => {
         setTimeout(() => { // 定时查询当前位置
