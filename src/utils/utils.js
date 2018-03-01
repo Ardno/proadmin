@@ -218,3 +218,11 @@ export function fileReaderBase64(file, callback) {
     console.log('Promise Rejected')
   })
 }
+// var now = new Date('2018-02-26')
+// var nowTime = now.getTime()
+// var day = now.getDay();
+// var oneDayLong = 24*60*60*1000
+// var MondayTime = nowTime - (day-1)*oneDayLong
+// var SundayTime =  nowTime + (7-day)*oneDayLong
+// var monday = new Date(MondayTime)
+// var sunday = new Date(SundayTime)
