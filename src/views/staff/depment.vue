@@ -27,8 +27,9 @@
               </el-form-item>
               <el-form-item label="上级部门">
                 <span v-if="infoupdate" class="g6">{{depFilter(depInfo.parent)}}</span>
-                <el-select v-else class="filter-item" v-model="depInfo.parent" placeholder="请选择">
-                  <el-option v-for="item in  depmenArr" :key="item._id" :label="item.name" :value="item._id">
+                <!-- <el-cascader v-else placeholder="请选择" :options="mydepArr" v-model="depInfo.parentArr" @change="val=>changeDep(depInfo.parent,val)" filterable change-on-select></el-cascader> -->
+                <el-select v-else class="filter-item" filterable v-model="depInfo.parent" placeholder="请选择">
+                  <el-option v-for="item in  depmenArr" :title="item.parentName" :key="item._id" :label="item.name" :value="item._id">
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -96,10 +97,11 @@
     <el-dialog title="添加部门" :visible.sync="dialogFormVisible" width="600px" >
       <el-form class="small-space" :model="depmentinfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="80px">
         <el-form-item label="上级部门">
-          <el-select class="filter-item" v-model="depmentinfo.parent" placeholder="请选择">
-            <el-option v-for="item in  restaurants" :key="item._id" :label="item.name" :value="item._id">
+          <el-cascader placeholder="请选择" :options="mydepArr" v-model="depmentinfo.parentArr" @change="val=>changeDep(depmentinfo,val)" filterable change-on-select></el-cascader>
+          <!-- <el-select class="filter-item" filterable v-model="depmentinfo.parent" placeholder="请选择">
+            <el-option v-for="item in  restaurants"  :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
             </el-option>
-          </el-select>
+          </el-select> -->
         </el-form-item>
         <el-form-item label="考勤规则">
           <el-select class="filter-item" v-model="depmentinfo.dance_config_id" placeholder="请选择">
@@ -142,10 +144,11 @@
     <el-dialog title="用户部门" :visible.sync="dialogFormVisiblee" width="600px" >
       <el-form class="small-space" :model="depInfodep.department" :rules="infoRulese" ref="infoForme" label-position="right" label-width="100px">
         <el-form-item label="部门" prop="department_id">
-          <el-select class="filter-item" filterable v-model="depInfodep.department.department_id" placeholder="请选择" @visible-change="changeDepRule">
+          <el-cascader placeholder="请选择" :options="mydepArr" v-model="depInfodep.department.seltectArr" @change="userchangeDep" @visible-change="changeDepRule" filterable change-on-select></el-cascader>
+          <!-- <el-select class="filter-item" filterable v-model="depInfodep.department.department_id" placeholder="请选择" @visible-change="changeDepRule">
             <el-option v-for="item in  restaurants" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
             </el-option>
-          </el-select>
+          </el-select> -->
         </el-form-item>
         <el-form-item label="职务" prop="role_id">
           <el-select class="filter-item" filterable  v-model="depInfodep.department.role_id" placeholder="请选择">
@@ -153,7 +156,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="设为主部门" >
+        <el-form-item v-show="depInfodep.depArr.length>1" label="设为主部门" >
           <el-radio class="radio" v-model="depInfodep.department.is_enable"  :label="1">是</el-radio>
           <el-radio class="radio" v-model="depInfodep.department.is_enable" :label="0">否</el-radio>
         </el-form-item>
@@ -168,7 +171,7 @@
 
 <script>
 import { fetchDepartments, createDep, fetchList, updateDep, addDepRoles, fetchRoles, queryDepRoles, updateDepRoles, deleteDepRoles } from '@/api/department'
-import { TreeUtil, deepClone, sortBy, findParentTop } from '@/utils/index'
+import { TreeUtil, deepClone, sortBy, findParentTop, removeTreeArr } from '@/utils/index'
 import { isAccess } from '@/utils/auth'
 import { getadcArr } from '@/api/schedule'
 import axios from 'axios'
@@ -209,8 +212,10 @@ export default {
       dialogFormVisibled: false,
       dialogFormVisiblee: false,
       fetchArr: [],
+      mydepArr: [],
       depmentinfo: {
         parent: '',
+        parentArr: [],
         name: '',
         info: '',
         infoLink: '',
@@ -220,6 +225,7 @@ export default {
         _id: '',
         dance_config_id: ''
       },
+      timeout: null,
       kaoqingArr: [],
       firstflg: false,
       infoupdate: true,
@@ -234,12 +240,13 @@ export default {
         name: [{ required: true, trigger: 'blur', validator: validatedepname }]
       },
       infoRulese: {
-        department_id: [{ type: 'number', required: true, trigger: 'change', message: '请选择部门' }],
+        department_id: [{ required: true, trigger: 'change', message: '请选择部门' }],
         role_id: [{ type: 'number', required: true, trigger: 'change', message: '请选择职务' }]
       },
       depInfoclone: null,
       depInfo: {
         test: '',
+        parentArr: [],
         parent: '',
         name: '',
         info: '',
@@ -250,6 +257,7 @@ export default {
       },
       depInfodep: {
         department: {
+          seltectArr: [],
           user_id: '',
           department_id: '',
           role_id: '',
@@ -268,6 +276,26 @@ export default {
   },
   methods: {
     isAccess: isAccess,
+    cloneMydepArr(depArr) {
+      const array = deepClone(depArr)
+      const map = { name: 'label', _id: 'value' }
+      array.forEach(element => {
+        element.parentid = element.parent
+      })
+      try {
+        const tree1 = new TreeUtil(array, '_id', 'parent', map)
+        const mydepArr = tree1.toTree()
+        removeTreeArr(mydepArr)
+        this.mydepArr = mydepArr
+        console.log(this.mydepArr)
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    changeDep(deoart, val) { // 修改el-cascader
+      deoart.parent = val[val.length - 1]
+      console.log(deoart, val)
+    },
     handleUpdatePeInfo(type, item, index) { // 修改人员部门
       if (type === '2') { // 删除
         this.$confirm('确定要删除当前部门？', '用户部门', {
@@ -294,6 +322,8 @@ export default {
       } else if (type === '1') { // 修改
         this.dialogFormVisiblee = true
         this.depInfodep.department = deepClone(item)
+        this.depInfodep.department.seltectArr = []
+        this.depInfodep.department.role_id = ''
         this.depInfodep.index = index
         this.changeDepRule('', true)
       } else if (type === '0') { // 新增
@@ -301,6 +331,7 @@ export default {
         this.depInfodep.index = index
         this.depInfodep.department = {
           user_id: item.user_id,
+          seltectArr: [],
           department_id: '',
           role_id: '',
           is_enable: 0
@@ -311,6 +342,7 @@ export default {
             if (this.depInfodep.department._id) {
               updateDepRoles(this.depInfodep.department).then(response => {
                 this.loadDps()
+                this.queryDepRoles()
                 this.dialogFormVisiblee = false
                 this.depInfodep.department = response.info
                 this.$set(this.depInfodep.depArr, this.depInfodep.index, this.depInfodep.department)
@@ -485,13 +517,6 @@ export default {
       queryDepRoles({ 'user_id': this.depInfo.cid }).then(response => {
         this.depInfodep.depArr = response.info
         this.depInfodep.restaurants = []
-        // this.restaurants.forEach(function(element1) {
-        //   this.depInfodep.depArr.forEach(function(element2) {
-        //     if (element1['_id'] !== element2['department_id']) {
-        //       this.depInfodep.restaurants.push(element1)
-        //     }
-        //   }, this)
-        // }, this)
       })
     },
     toview(store, data) {
@@ -585,11 +610,23 @@ export default {
         .then(axios.spread((acct, perms) => {
           var data = deepClone(perms.info.list)
           this.restaurants = []
+          acct.info.forEach(element => {
+            acct.info.forEach(sle => {
+              if (element.parent === sle._id) {
+                element.parentName = '隶属-' + sle.name
+              } else {
+                if (!element.parent) {
+                  element.parentName = ''
+                }
+              }
+            })
+          })
           acct.info.forEach(function(element) {
             if (!element.status) {
               this.restaurants.push(element)
             }
           }, this)
+          this.cloneMydepArr(this.restaurants)
           const perpArr = []
           data.forEach(function(element) { // 将用户对象修改成带parent的对象以便和部门对象数组合并
             element.department_roles.forEach(function(cls) {
@@ -618,6 +655,7 @@ export default {
           } catch (error) {
             console.log(error)
           }
+          this.depArr = this.$store.getters.commonInfo.depArr
         })).catch(() => {
           this.$message({
             message: '获取部门结构失败，请稍后再试',
@@ -672,6 +710,7 @@ export default {
       this.dialogFormVisibled = true
     },
     handleCreate() { // 创建部门
+      console.log(this.depmentinfo)
       this.$refs.infoForm.validate(valid => {
         if (valid) {
           createDep(this.depmentinfo).then(response => {
@@ -694,6 +733,22 @@ export default {
           return false
         }
       })
+    },
+    userchangeDep(val) {
+      this.depInfodep.department.department_id = val[val.length - 1]
+      if (this.timeout) {
+        clearTimeout(this.timeout)
+      }
+      const request = {
+        start_index: 0,
+        length: 10000,
+        department_id: val[0]
+      }
+      this.timeout = setTimeout(() => {
+        fetchRoles(request).then(response => {
+          this.fetchArr = response.info
+        })
+      }, 400)
     },
     changeDepRule(id, flg) {
       const request = {

@@ -92,8 +92,8 @@
     created() {
       const d = this.dataObj
       const m_days = [31, 28 + this.is_leap(d.ynow), 31, 30, 31, 31, 30, 31, 30, 31, 30, 31] // 每个月的天数
-      this.pageobj.start_time = new Date(d.ynow, d.mnow, 1)
-      this.pageobj.end_time = new Date(d.ynow, d.mnow, m_days[d.mnow])
+      this.pageobj.start_time = Math.round(new Date(d.ynow, d.mnow, 1).getTime() / 1000)
+      this.pageobj.end_time = Math.round(new Date(d.ynow, d.mnow, m_days[d.mnow]).getTime() / 1000)
       getMonthdance(this.pageobj).then(res => {
         const arr = {}
         if (res.leave) { // 循环请假对象
