@@ -1,15 +1,44 @@
 <template>
-  <div class='app-container bgf2'>
-    <el-row :gutter="20">
-      <el-col :span="12">
-        <div class='chart-container chat-pie pt30'>
-          <div class="chat"  id="pie1" ></div>
-        </div>
-      </el-col>
-      <el-col :span="12">
-      </el-col>
-    </el-row>
+  <div class='app-container'>
+    <div class="layui-elem-quote">
+      <el-select v-model="pageobj.user_id" filterable placeholder="请选择用户">
+        <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
+        </el-option>
+      </el-select>
+      <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
+    </div>
+    <el-table :data="tableData" border style="width: 100%">
+      <el-table-column fixed prop="UserName" label="用户名称"width="150">
+      </el-table-column>
+      <el-table-column prop="name" label="里程" width="120"></el-table-column>
+      <el-table-column prop="name" label="填报事件数量" width="120"></el-table-column>
+      <el-table-column prop="name" label="审核事件数量" width="120"></el-table-column>
+      <el-table-column prop="name" label="发送消息数量" width="120"></el-table-column>
+      <el-table-column prop="name" label="发送图片消息数量" width="120"></el-table-column>
+      <el-table-column prop="name" label="发送文字消息数量" width="120"></el-table-column>
+      <el-table-column prop="name" label="发送视频消息数量" width="120"></el-table-column>
+      <el-table-column prop="name" label="发送音频消息数量" width="120"></el-table-column>
+      <el-table-column prop="name" label="迟到次数" width="120"></el-table-column>
+      <el-table-column prop="name" label="早退次数" width="120"></el-table-column>
+      <el-table-column prop="name" label="换班次数" width="120"></el-table-column>
+      <el-table-column prop="name" label="正常上岗次数" width="120"></el-table-column>
+      <el-table-column prop="name" label="在网格区域总时间" width="120"></el-table-column>
+      <el-table-column prop="name" label="在网格区域总里程" width="120"></el-table-column>
+      <el-table-column prop="name" label="总里程" width="120"></el-table-column>
+      <el-table-column prop="name" label="巡逻的网格区域数量" width="120"></el-table-column>
+      <el-table-column prop="name" label="所属部门" width="120"></el-table-column>
+      <el-table-column prop="name" label="上级领导" width="120"></el-table-column>
+      <el-table-column fixed="right" label="操作"width="100">
+        <template slot-scope="scope">
+          <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
+          <el-button type="text" size="small">编辑</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
   </div>
+    <!-- <div class='chart-container chat-pie pt30'>
+    <div class="chat"  id="pie1" ></div>
+  </div> -->
 </template>
 
 <script>
@@ -19,14 +48,37 @@ export default {
   data() {
     return {
       chart1: null,
-      dataInfo: {
-        all_event: 0,
-        all_region: 0,
-        all_user: 0,
-        implement_user: 0,
-        today: 0,
-        treatment_day: 0
-      }
+      userArr: [],
+      pageobj: {
+        user_id: '',
+        min_time: Math.round(new Date().getTime() / 1000),
+        max_time: Math.round(new Date().getTime() / 1000)
+      },
+      tableData: [{
+        user_id: 2,
+        eventUp: 0,
+        eventNew: 0,
+        eventSave: 0,
+        eventVerify: 0,
+        imText: 0,
+        imImg: 0,
+        imVideo: 0,
+        imAudio: 0,
+        workLate: 0,
+        workLeave: 0,
+        wrokAbsence: 0,
+        workShift: 0,
+        workSuccess: 0,
+        regionTime: 0,
+        regionMileage: 0,
+        regionNum: 0,
+        department_id: 1,
+        create_time: 0,
+        sex: 0,
+        birthday: 0,
+        UserName: '',
+        DeptName: ''
+      }]
     }
   },
   mounted() {
@@ -46,6 +98,10 @@ export default {
     // 测试啊
     this.chart1.dispose()
     this.chart1 = null
+  },
+  created() {
+    this.pageobj.user_id = this.$store.getters.useinfo._id
+    this.userArr = this.$store.getters.commonInfo.userArr
   },
   methods: {
     initChart() {
@@ -88,11 +144,11 @@ export default {
           }
         ]
       })
-      const request = {
-
-      }
-      getUserStatist(request).then(response => {
-        console.log(response)
+    },
+    handleQuery() {
+      console.log(this.pageobj)
+      getUserStatist(this.pageobj).then(response => {
+        this.tableData = response.info.list
       }).catch(errs => {
         console.log('errs')
       })

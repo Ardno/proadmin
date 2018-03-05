@@ -16,7 +16,7 @@
           7：地图选择控件 -->
           <el-input v-if="item.para_type == 0" v-model="item.para_value"></el-input>
           <el-input v-if="item.para_type == 1" type="textarea" autosize :rows="2" v-model="item.para_value"></el-input>
-          <el-date-picker v-if="item.para_type == 2" v-model="item.para_value" value-format="yyyy年MM月dd日" type="date" placeholder="选择日期"> </el-date-picker>
+          <el-date-picker v-if="item.para_type == 2" v-model="item.para_value" value-format="yyyy年MM月dd日 HH点mm分" type="datetime" placeholder="选择日期"> </el-date-picker>
           <el-upload v-if="item.para_type == 3"
             class="upload-demo"
             action=""
