@@ -6,32 +6,34 @@
         </el-option>
       </el-select>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
+      <el-button class="filter-item r" type="primary" icon="search" @click="handleChanle">{{typeDate?'查看用户本周统计':'查看用户今日统计'}}</el-button>
     </div>
     <el-table :data="tableData" border style="width: 100%">
-      <el-table-column fixed prop="UserName" label="用户名称"width="150">
+      <el-table-column fixed prop="UserName" label="用户名称">
       </el-table-column>
-      <el-table-column prop="name" label="里程" width="120"></el-table-column>
-      <el-table-column prop="name" label="填报事件数量" width="120"></el-table-column>
-      <el-table-column prop="name" label="审核事件数量" width="120"></el-table-column>
-      <el-table-column prop="name" label="发送消息数量" width="120"></el-table-column>
-      <el-table-column prop="name" label="发送图片消息数量" width="120"></el-table-column>
-      <el-table-column prop="name" label="发送文字消息数量" width="120"></el-table-column>
-      <el-table-column prop="name" label="发送视频消息数量" width="120"></el-table-column>
-      <el-table-column prop="name" label="发送音频消息数量" width="120"></el-table-column>
-      <el-table-column prop="name" label="迟到次数" width="120"></el-table-column>
-      <el-table-column prop="name" label="早退次数" width="120"></el-table-column>
-      <el-table-column prop="name" label="换班次数" width="120"></el-table-column>
-      <el-table-column prop="name" label="正常上岗次数" width="120"></el-table-column>
-      <el-table-column prop="name" label="在网格区域总时间" width="120"></el-table-column>
-      <el-table-column prop="name" label="在网格区域总里程" width="120"></el-table-column>
-      <el-table-column prop="name" label="总里程" width="120"></el-table-column>
-      <el-table-column prop="name" label="巡逻的网格区域数量" width="120"></el-table-column>
-      <el-table-column prop="name" label="所属部门" width="120"></el-table-column>
-      <el-table-column prop="name" label="上级领导" width="120"></el-table-column>
-      <el-table-column fixed="right" label="操作"width="100">
+      <el-table-column prop="eventNew" label="填报事件数量" ></el-table-column>
+      <el-table-column prop="eventVerify" label="审核事件数量" ></el-table-column>
+      <el-table-column prop="eventUp" label="提交事件数量" ></el-table-column>
+      <el-table-column prop="name" label="发送消息数量" ></el-table-column>
+      <el-table-column prop="imImg" label="发送图片消息数量" ></el-table-column>
+      <el-table-column prop="imText" label="发送文字消息数量" ></el-table-column>
+      <el-table-column prop="imVideo" label="发送视频消息数量" ></el-table-column>
+      <el-table-column prop="imAudio" label="发送音频消息数量" ></el-table-column>
+      <el-table-column prop="workLate" label="迟到次数" ></el-table-column>
+      <el-table-column prop="workLeave" label="早退次数" ></el-table-column>
+      <el-table-column prop="wrokAbsence" label="换班次数" ></el-table-column>
+      <el-table-column prop="workSuccess" label="正常上岗次数" ></el-table-column>
+      <el-table-column prop="regionTime" label="在网格区域总时间" ></el-table-column>
+      <el-table-column prop="regionMileage" label="在网格区域总里程" ></el-table-column>
+      <el-table-column prop="regionNum" label="巡逻的网格区域数量" ></el-table-column>
+      <el-table-column label="所属部门" >
         <template slot-scope="scope">
-          <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
-          <el-button type="text" size="small">编辑</el-button>
+          {{filterDepRose(scope.row.department_id)}}
+        </template>
+      </el-table-column>
+      <el-table-column fixed="right" label="操作">
+        <template slot-scope="scope">
+          <el-button @click="handleClick(scope.row)" type="text" size="small">查看统计</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -44,41 +46,20 @@
 <script>
 import echarts from 'echarts'
 import { getUserStatist } from '@/api/statistics'
+import { getWeekDate } from '@/utils/utils'
 export default {
   data() {
     return {
       chart1: null,
       userArr: [],
+      depArr: [],
+      typeDate: true,
       pageobj: {
         user_id: '',
         min_time: Math.round(new Date().getTime() / 1000),
         max_time: Math.round(new Date().getTime() / 1000)
       },
-      tableData: [{
-        user_id: 2,
-        eventUp: 0,
-        eventNew: 0,
-        eventSave: 0,
-        eventVerify: 0,
-        imText: 0,
-        imImg: 0,
-        imVideo: 0,
-        imAudio: 0,
-        workLate: 0,
-        workLeave: 0,
-        wrokAbsence: 0,
-        workShift: 0,
-        workSuccess: 0,
-        regionTime: 0,
-        regionMileage: 0,
-        regionNum: 0,
-        department_id: 1,
-        create_time: 0,
-        sex: 0,
-        birthday: 0,
-        UserName: '',
-        DeptName: ''
-      }]
+      tableData: []
     }
   },
   mounted() {
@@ -102,10 +83,21 @@ export default {
   created() {
     this.pageobj.user_id = this.$store.getters.useinfo._id
     this.userArr = this.$store.getters.commonInfo.userArr
+    this.depArr = this.$store.getters.commonInfo.depArr
   },
   methods: {
     initChart() {
-      this.userChart1()
+      // this.userChart1()
+      this.handleQuery()
+    },
+    filterDepRose(department_id) { // 转换部门和集合
+      let name = ''
+      this.depArr.forEach(function(els) {
+        if (Number(department_id) === els._id) {
+          name = els.name
+        }
+      }, this)
+      return name
     },
     userChart1() {
       this.chart1 = echarts.init(document.getElementById('pie1'))
@@ -147,11 +139,25 @@ export default {
     },
     handleQuery() {
       console.log(this.pageobj)
+      if (!this.typeDate) {
+        const obj = getWeekDate()
+        // this.pageobj.min_time = Math.round(new Date(obj.monday).getTime() / 1000)
+        this.pageobj.min_time = Math.round(new Date('2018-02-28').getTime() / 1000)
+        this.pageobj.max_time = Math.round(new Date(obj.sunday).getTime() / 1000)
+        console.log(obj)
+      } else {
+        this.pageobj.min_time = Math.round(new Date().getTime() / 1000)
+        this.pageobj.max_time = Math.round(new Date().getTime() / 1000)
+      }
       getUserStatist(this.pageobj).then(response => {
-        this.tableData = response.info.list
+        this.tableData = [response.info.list]
       }).catch(errs => {
         console.log('errs')
       })
+    },
+    handleChanle() {
+      this.typeDate = !this.typeDate
+      this.handleQuery()
     }
   }
 }

@@ -218,11 +218,23 @@ export function fileReaderBase64(file, callback) {
     console.log('Promise Rejected')
   })
 }
-// var now = new Date('2018-02-26')
-// var nowTime = now.getTime()
-// var day = now.getDay();
-// var oneDayLong = 24*60*60*1000
-// var MondayTime = nowTime - (day-1)*oneDayLong
-// var SundayTime =  nowTime + (7-day)*oneDayLong
-// var monday = new Date(MondayTime)
-// var sunday = new Date(SundayTime)
+/**
+ * 把文件转换成base64
+ * @param file: Object, input file 对象
+ * @param callback: function 回调函数
+ */
+export function getWeekDate() {
+  const now = new Date('2018-02-26')
+  const nowTime = now.getTime()
+  const day = now.getDay()
+  const oneDayLong = 24 * 60 * 60 * 1000
+  const MondayTime = nowTime - (day - 1) * oneDayLong
+  const SundayTime = nowTime + (7 - day) * oneDayLong
+  const monday = new Date(MondayTime)
+  const sunday = new Date(SundayTime)
+  return {
+    monday,
+    sunday
+  }
+}
+
