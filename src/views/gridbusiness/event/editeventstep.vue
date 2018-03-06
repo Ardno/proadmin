@@ -20,12 +20,26 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label-width="65px" label="部门:" prop="department_id" class="postInfo-container-item">
-          <el-select clearable class="filter-item" style="width: 130px" filterable @change="changeDepRule" v-model="postForm.department_id" placeholder="请选择">
-            <el-option v-for="item in  depArr" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
-            </el-option>
-          </el-select>
-        </el-form-item>
+        <el-row>
+          <el-col :span="11">
+            <el-form-item label-width="65px" label="部门:" prop="department_id" class="postInfo-container-item">
+              <el-select clearable class="filter-item" style="width: 130px" filterable @change="changeDepRule" v-model="postForm.department_id" placeholder="请选择">
+                <el-option v-for="item in  depArr" :key="item._id" :title="item.parentName" :label="item.name" :value="item._id">
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="11">
+            <el-form-item label-width="85px" label="法律法规:" prop="department_id" class="postInfo-container-item">
+              <el-cascader :options="myLawArr" :props="props" @change="handleItemChange2" @active-item-change="handleItemChange"></el-cascader>
+              <!-- <el-select clearable class="filter-item" style="width: 130px" filterable v-model="cur_lawArr" placeholder="请选择">
+                <el-option v-for="item in  lawArr" :key="item._id" :label="item.name" :value="item.name">
+                </el-option>
+              </el-select> -->
+              <el-button @click.prevent="insertRole_html()">插入</el-button>
+            </el-form-item>
+          </el-col>
+        </el-row>
         <div class="postInfo-container">
           <el-row>
             <el-col :span="11">
@@ -117,7 +131,10 @@ export default {
       },
       depArr: [],
       fetchArr: [],
-      lawArr: []
+      lawArr: [],
+      myLawArr: [],
+      props: { value: 'value', children: 'children' },
+      cur_lawArr: ''
     }
   },
   computed: {
@@ -140,6 +157,9 @@ export default {
     insertRole(id) {
       const strHtml = `{{${id}}}`
       window.tinymce.get('tinymce').insertContent(strHtml)
+    },
+    insertRole_html() {
+      window.tinymce.get('tinymce').insertContent(this.cur_lawArr)
     },
     insertContent(para) {
       const str = para.para_name
@@ -206,6 +226,50 @@ export default {
       this.postForm.roleArr.push({
         _id: ''
       })
+    },
+    s_up(model, val, index, callback) {
+      model.forEach(item_f => {
+        if (item_f.value === val[index]) {
+          index++
+          if (val.length > index) {
+            this.s_up(item_f.children, val, index, callback)
+          } else {
+            callback(item_f)
+          }
+        }
+      })
+    },
+    handleItemChange2(val) {
+      this.lawArr.forEach(item_f => {
+        if (item_f._id === val[val.length - 1]) {
+          this.cur_lawArr = item_f.name
+          return false
+        }
+      })
+    },
+    handleItemChange(val) {
+      var _self = this
+      setTimeout(_ => {
+        this.s_up(this.myLawArr, val, 0, function(item, _id) {
+          item.children = []
+          _self.lawArr.forEach(item_f => {
+            if (item_f.regu_id === item.value) {
+              var xxitem = {
+                label: item_f.name,
+                value: item_f._id
+              }
+              _self.lawArr.forEach(item_f => {
+                if (item_f.regu_id === item_f._id) {
+                  xxitem.children = []
+                  return false
+                }
+              })
+              item.children.push(xxitem)
+            }
+          })
+          console.log(item)
+        })
+      }, 300)
     },
     changeDepRule(id, flg) { // 根据部门查询职务
       const request = {
@@ -321,8 +385,24 @@ export default {
       this.depArr = this.$store.getters.commonInfo.depArr
       getLawsArr({ department_id: '' }).then(response => {
         this.lawArr = response.info
+        response.info.forEach(item => {
+          if (item.regu_id === 0) {
+            // this.myLawArr.push({
+            //   label: item.name,
+            //   value: item._id,
+            //   children: []
+            // })
+            var xxxitem = { label: item.name, value: item._id }
+            this.lawArr.forEach(item_x => {
+              if (item_x.regu_id === item._id) {
+                xxxitem.children = []
+                return false
+              }
+            })
+            this.myLawArr.push(xxxitem)
+          }
+        })
       })
-      // this.changeDepRule()
     }
   }
 }
