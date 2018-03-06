@@ -219,12 +219,16 @@ export function fileReaderBase64(file, callback) {
   })
 }
 /**
- * 把文件转换成base64
- * @param file: Object, input file 对象
- * @param callback: function 回调函数
+ * 获取本周起始时间
+ *
+ *
  */
 export function getWeekDate() {
-  const now = new Date('2018-02-26')
+  const now = new Date()
+  now.setHours(0)
+  now.setMinutes(0)
+  now.setSeconds(0)
+  now.setMilliseconds(0)
   const nowTime = now.getTime()
   const day = now.getDay()
   const oneDayLong = 24 * 60 * 60 * 1000
@@ -238,3 +242,29 @@ export function getWeekDate() {
   }
 }
 
+/**
+ * 获取当日零点时间戳
+ *
+ *
+ */
+export function getDayDate() {
+  const date = new Date()
+  date.setHours(0)
+  date.setMinutes(0)
+  date.setSeconds(0)
+  date.setMilliseconds(0)
+  const timestamp = date.getTime()
+  const unix_timestamp = Math.floor(timestamp / 1000)
+  return unix_timestamp
+}
+/**
+ * 获取当日时间戳
+ *
+ *
+ */
+export function getDaytimes() {
+  const date = new Date()
+  const timestamp = date.getTime()
+  const unix_timestamp = Math.floor(timestamp / 1000)
+  return unix_timestamp
+}
