@@ -140,7 +140,6 @@ export default {
   },
   methods: {
     getEventTypeArr() { // 获取事件类型集合
-      debugger
       const alldepArr = deepClone(this.$store.getters.commonInfo.alldepArr)
       const arr = alldepArr.filter(obj => {
         return obj._id === this.$store.getters.useinfo.department_id

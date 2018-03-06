@@ -7,7 +7,7 @@ export function getUserStatist(data) { // 获取用户统计
     data: data
   })
 }
-export function getRegionStatist(data) { // 获取用户统计
+export function getRegionStatist(data) { // 获取区域统计
   return fetch({
     url: 'statistics/region_list',
     method: 'post',
