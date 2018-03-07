@@ -121,6 +121,14 @@ export default {
     })
     this.depArr = this.$store.getters.commonInfo.depArr
     this.handleQuery()
+    try {
+      console.log(AMap.GeometryUtil)
+      const asd = [[107.677, 29.5807], [107.699, 29.6136], [107.7319, 29.5862], [107.7649, 29.6027], [107.7759, 29.5807], [107.7759, 29.5752]]
+      var area = AMap.GeometryUtil.ringArea(asd)
+      console.log(area)
+    } catch (error) {
+      console.log(error)
+    }
   },
   methods: {
     initChart() {

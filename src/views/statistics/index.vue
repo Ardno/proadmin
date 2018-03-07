@@ -1,15 +1,16 @@
 <template>
   <div class='app-container'>
     <div class="layui-elem-quote">
-      <el-select v-model="pageobj.user_id" filterable placeholder="请选择用户">
+      <el-select v-if="typeDate" v-model="pageobj.user_id" filterable placeholder="请选择用户">
         <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
+      <el-cascader v-else placeholder="试试搜索：部门" :options="mydepArr" v-model="pageobj.department" @change="changeDep" filterable change-on-select></el-cascader>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
-      <el-button class="filter-item r" type="primary" icon="search" @click="handleChanle">{{typeDate?'查看用户本周统计':'查看用户今日统计'}}</el-button>
+      <el-button class="filter-item r" type="primary" icon="search" @click="handleChanle">{{typeDate?'查看部门本周统计':'查看用户今日统计'}}</el-button>
     </div>
-    <p class="mt10 mb10 g9 f14">{{typeDate?'今日统计数据':'本周统计数据'}}</p>
-    <el-table :data="tableData" border style="width: 100%">
+    <p class="mt20 mb20 g6 f20">{{typeDate?'用户今日统计数据':'部门本周统计数据'}}</p>
+    <el-table :key='tableKey' :data="tableData" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column fixed prop="UserName" label="用户名称">
       </el-table-column>
       <el-table-column prop="eventNew" label="填报事件数量" ></el-table-column>
@@ -24,21 +25,29 @@
       <el-table-column prop="workLeave" label="早退次数" ></el-table-column>
       <el-table-column prop="wrokAbsence" label="换班次数" ></el-table-column>
       <el-table-column prop="workSuccess" label="正常上岗次数" ></el-table-column>
-      <el-table-column prop="regionTime" label="在网格区域总时间" ></el-table-column>
-      <el-table-column prop="regionMileage" label="在网格区域总里程" ></el-table-column>
+      <el-table-column  label="在网格区域总时间" >
+        <template slot-scope="scope">
+          {{scope.row.regionTime}}分钟
+        </template>
+      </el-table-column>
+      <el-table-column label="在网格区域总里程" >
+        <template slot-scope="scope">
+          {{scope.row.regionMileage}} km
+        </template>
+      </el-table-column>
       <el-table-column prop="regionNum" label="巡逻的网格区域数量" ></el-table-column>
       <el-table-column label="所属部门" >
         <template slot-scope="scope">
-          {{filterDepRose(scope.row.department_id)}}
+          {{scope.row.DeptName}}
         </template>
       </el-table-column>
-      <el-table-column fixed="right" label="操作">
+      <!-- <el-table-column fixed="right" label="操作">
         <template slot-scope="scope">
           <el-button @click="handleClick(scope.row)" type="text" size="small">查看统计</el-button>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
-    <el-dialog title="统计显示" width="1000px" :visible.sync="dialogVisible" >
+    <!-- <el-dialog title="统计显示" width="1000px" :visible.sync="dialogVisible" >
       <el-row>
         <el-col :span="8">
           <div class='chart-container chat-pie pt30'>
@@ -67,7 +76,35 @@
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
       </span>
-    </el-dialog>
+    </el-dialog> -->
+    <div class="can-ct" v-loading="listLoading">
+      <div v-if="tableData.length">
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <div class='chart-container chat-pie pt30'>
+              <div class="chat"  id="pie1" ></div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class='chart-container chat-pie pt30'>
+              <div class="chat"  id="pie2" ></div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class='chart-container chat-pie pt30'>
+              <div class="chat"  id="pie3" ></div>
+            </div>
+          </el-col>
+        </el-row>
+        <el-row class="mt20" :gutter="20">
+          <el-col :span="12">
+            <div class='chart-container chat-pie pt30'>
+              <div class="chat"  id="pie4" ></div>
+            </div>
+          </el-col>
+        </el-row>
+      </div>
+    </div>
   </div>
     
 </template>
@@ -75,6 +112,7 @@
 <script>
 import echarts from 'echarts'
 import { getUserStatist } from '@/api/statistics'
+import { deepClone, TreeUtil, removeTreeArr } from '@/utils/index'
 import { getWeekDate, getDayDate, getDaytimes } from '@/utils/utils'
 export default {
   data() {
@@ -85,12 +123,17 @@ export default {
       chart4: null,
       userArr: [],
       depArr: [],
+      mydepArr: [],
       typeDate: true,
+      tableKey: 0,
+      listLoading: false,
       dialogVisible: false,
       pageobj: {
         user_id: '',
         min_time: getDayDate(),
-        max_time: getDaytimes()
+        max_time: getDaytimes(),
+        department_id: '',
+        department: []
       },
       tableData: []
     }
@@ -123,10 +166,27 @@ export default {
     this.pageobj.user_id = this.$store.getters.useinfo._id
     this.userArr = this.$store.getters.commonInfo.userArr
     this.depArr = this.$store.getters.commonInfo.depArr
+    const array = deepClone(this.$store.getters.commonInfo.depArr)
+    // this.depArr = array
+    const map = { name: 'label', _id: 'value' }
+    array.forEach(element => {
+      element.parentid = element.parent
+    })
+    try {
+      const tree1 = new TreeUtil(array, '_id', 'parent', map)
+      const mydepArr = tree1.toTree()
+      removeTreeArr(mydepArr)
+      this.mydepArr = mydepArr
+    } catch (error) {
+      console.log(error)
+    }
     this.handleQuery()
   },
   methods: {
     initChart() {
+    },
+    changeDep(val) { // 部门联动选择数组结果 取最后一个值
+      this.pageobj.department_id = val[val.length - 1]
     },
     filterDepRose(department_id) { // 转换部门和集合
       let name = ''
@@ -138,7 +198,7 @@ export default {
       return name
     },
     handleClick(row) { // 查看统计
-      this.dialogVisible = true
+      // this.dialogVisible = true
       setTimeout(() => {
         this.userChart1(row)
       }, 500)
@@ -341,43 +401,65 @@ export default {
       })
     },
     handleQuery() {
-      console.log(this.pageobj)
       if (!this.typeDate) {
         const obj = getWeekDate()
         this.pageobj.min_time = Math.round(new Date(obj.monday).getTime() / 1000)
         // this.pageobj.min_time = Math.round(new Date('2018-02-28').getTime() / 1000)
         this.pageobj.max_time = Math.round(new Date(obj.sunday).getTime() / 1000)
-        console.log(obj)
       } else {
         this.pageobj.min_time = getDayDate()
         this.pageobj.max_time = getDaytimes()
       }
       this.tableData = []
+      this.listLoading = true
       getUserStatist(this.pageobj).then(response => {
+        this.listLoading = false
         const data = response.info.list
         const obj = {}
-        console.log(data)
+        const arrsobj = {}
         data.forEach(element => {
-          element.regionTime = element.regionTime / 60
-          element.regionMileage = element.regionMileage / 100
+          element.regionTime = Number(parseFloat(element.regionTime / 60).toFixed(2))
+          element.regionMileage = Number(parseFloat(element.regionMileage / 100).toFixed(2))
+          if (!arrsobj[element.user_id]) { // 统计该用户本周的数据
+            arrsobj[element.user_id] = element
+          }
           for (const key in element) {
-            if (obj[key]) {
-              if (!isNaN(element[key])) {
+            if (obj[key]) { // 统计所有数据
+              if (!isNaN(element[key]) && key !== 'user_id' && key !== 'department_id') {
                 obj[key] += element[key]
+                console.log(element.user_id)
+                arrsobj[element.user_id][key] += element[key]
               }
             } else {
               obj[key] = element[key]
             }
           }
         })
-        console.log(obj)
-        this.tableData = [obj]
+        console.log(arrsobj)
+        if (data.length) {
+          const arr = []
+          for (const key in arrsobj) {
+            arr.push(arrsobj[key])
+          }
+          this.tableData = arr
+          this.handleClick(obj)
+        } else {
+          this.tableData = []
+        }
       }).catch(errs => {
-        console.log('errs')
+        this.listLoading = false
+        console.log(errs)
       })
     },
     handleChanle() {
       this.typeDate = !this.typeDate
+      if (this.typeDate) {
+        this.pageobj.user_id = this.$store.getters.useinfo._id
+        this.pageobj.department_id = ''
+      } else {
+        this.pageobj.user_id = ''
+        this.pageobj.department_id = this.$store.getters.useinfo.department_id
+      }
       this.handleQuery()
     }
   }
@@ -443,5 +525,10 @@ export default {
       padding: 0;
       color: #c6cad6;
     }
+  }
+  .can-ct{
+    background-color: #f2f2f2;
+    padding: 10px;
+    margin-top: 10px;
   }
 </style>
