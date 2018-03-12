@@ -1,19 +1,20 @@
 <template>
   <div class='app-container'>
     <div class="layui-elem-quote">
-      <el-select v-model="pageobj.region_id" filterable placeholder="请选择区域">
+      <el-select v-model="pageobj.region_id" clearable filterable placeholder="请选择区域">
         <el-option v-for="item in regionArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
-      <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
-      <!-- <el-button class="filter-item r" type="primary" icon="search" @click="handleChanle">{{typeDate?'查看用户本周统计':'查看用户今日统计'}}</el-button> -->
+      <el-button  class="filter-item" type="primary" icon="search" @click="handleQuery">查看</el-button>
+      <el-button class="filter-item r" type="primary" icon="search" @click="handleChanle">{{typeDate?'查看网格本周统计':'查看网格今日统计'}}</el-button>
     </div>
-    <p class="mt10 mb10 g9 f14">{{typeDate?'今日统计数据':'本周统计数据'}}</p>
-    <el-table :data="tableData" border style="width: 100%">
+    <p class="mt10 mb10 g9 f20">{{typeDate?'今日统计数据':'本周统计数据'}}</p>
+    <el-table v-loading="listLoading" :data="tableData" border style="width: 100%">
       <el-table-column prop="regionname" label="网格名称">
       </el-table-column>
       <el-table-column prop="area" label="面积(km²)" ></el-table-column>
-      <el-table-column label="本日事件数量" >
+      <el-table-column prop="user_num" label="值班人数" ></el-table-column>
+      <el-table-column label="事件数量" >
         <template slot-scope="scope">
           <el-popover trigger="hover" placement="top">
             <p v-for="(item,index) in scope.row.typenum_list" :key="index">{{item.name}}事件数量: {{item.num}}</p>
@@ -27,36 +28,34 @@
       <el-table-column prop="areaperb" label="每平方公里每日事件" ></el-table-column>
       <el-table-column prop="areaperc" label="本网格人均每日事件数量" ></el-table-column>
     </el-table>
-    <el-dialog title="统计显示" width="1000px" :visible.sync="dialogVisible" >
-      <el-row>
-        <el-col :span="8">
-          <div class='chart-container chat-pie pt30'>
-            <div class="chat"  id="pie1" ></div>
-          </div>
-        </el-col>
-        <el-col :span="8">
-          <div class='chart-container chat-pie pt30'>
-            <div class="chat"  id="pie2" ></div>
-          </div>
-        </el-col>
-        <el-col :span="8">
-          <div class='chart-container chat-pie pt30'>
-            <div class="chat"  id="pie3" ></div>
-          </div>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col :span="24">
-          <div class='chart-container chat-pie pt30'>
-            <div class="chat"  id="pie4" ></div>
-          </div>
-        </el-col>
-      </el-row>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-      </span>
-    </el-dialog>
+    <div class="can-ct" v-loading="listLoading">
+      <div v-if="tableData.length">
+        <el-row :gutter="20">
+          <el-col :span="8">
+            <div class='chart-container chat-pie pt30'>
+              <div class="chat"  id="pie1" ></div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class='chart-container chat-pie pt30'>
+              <div class="chat"  id="pie2" ></div>
+            </div>
+          </el-col>
+          <el-col :span="8">
+            <div class='chart-container chat-pie pt30'>
+              <div class="chat"  id="pie3" ></div>
+            </div>
+          </el-col>
+        </el-row>
+        <el-row class="mt20" :gutter="20">
+          <el-col :span="12">
+            <div class='chart-container chat-pie pt30'>
+              <div class="chat"  id="pie4" ></div>
+            </div>
+          </el-col>
+        </el-row>
+      </div>
+    </div>
   </div>
     
 </template>
@@ -78,11 +77,12 @@ export default {
       typeArr: [],
       depArr: [],
       typeDate: true,
+      listLoading: false,
       dialogVisible: false,
       pageobj: {
         region_id: '',
-        min_time: getDayDate(),
-        max_time: getDaytimes()
+        min_time: '',
+        max_time: ''
       },
       tableData: []
     }
@@ -139,17 +139,17 @@ export default {
       return name
     },
     handleClick(row) { // 查看统计
-      this.dialogVisible = true
+      // this.dialogVisible = true
       setTimeout(() => {
         this.userChart1(row)
       }, 500)
     },
     userChart1(row) {
-      // 工作统计
+      // 网格事件统计
       this.chart1 = echarts.init(document.getElementById('pie1'))
       this.chart1.setOption({
         title: {
-          text: '工作统计',
+          text: '网格事件数量统计',
           x: 'center'
         },
         label: {
@@ -169,7 +169,13 @@ export default {
         legend: {
           orient: 'vertical',
           left: 'left',
-          data: ['上报事件', '审核案件', '提交案件']
+          data: (() => {
+            const arr = []
+            row.forEach(element => {
+              arr.push(element.regionname)
+            })
+            return arr
+          })()
         },
         series: [
           {
@@ -177,11 +183,16 @@ export default {
             type: 'pie',
             radius: '55%',
             center: ['50%', '60%'],
-            data: [
-              { value: row.eventNew, name: '上报事件' },
-              { value: row.eventVerify, name: '审核案件' },
-              { value: row.eventUp, name: '提交案件' }
-            ],
+            data: (() => {
+              const arr = []
+              row.forEach(element => {
+                const obj = {}
+                obj.value = element.eventNum
+                obj.name = element.regionname
+                arr.push(obj)
+              })
+              return arr
+            })(),
             itemStyle: {
               emphasis: {
                 shadowBlur: 10,
@@ -192,11 +203,11 @@ export default {
           }
         ]
       })
-      // 考勤统计
+      // 网格值班人员统计
       this.chart2 = echarts.init(document.getElementById('pie2'))
       this.chart2.setOption({
         title: {
-          text: '考勤统计',
+          text: '网格值班人员统计',
           x: 'center'
         },
         label: {
@@ -205,7 +216,7 @@ export default {
               fontSize: 14
             },
             formatter: function(param) {
-              return param.name + ':\n' + Math.round(param.value) + '次'
+              return param.name + ':\n' + Math.round(param.value) + '人'
             }
           }
         },
@@ -216,7 +227,14 @@ export default {
         legend: {
           orient: 'vertical',
           left: 'left',
-          data: ['迟到', '早退', '换班', '正常上岗']
+          data: (() => {
+            const arr = []
+            row.forEach(element => {
+              arr.push(element.regionname)
+            })
+            console.log(arr)
+            return arr
+          })()
         },
         series: [
           {
@@ -224,12 +242,16 @@ export default {
             type: 'pie',
             radius: '55%',
             center: ['50%', '60%'],
-            data: [
-              { value: row.workLate, name: '迟到' },
-              { value: row.workLeave, name: '早退' },
-              { value: row.wrokAbsence, name: '换班' },
-              { value: row.workSuccess, name: '正常上岗' }
-            ],
+            data: (() => {
+              const arr = []
+              row.forEach(element => {
+                const obj = {}
+                obj.value = element.user_num
+                obj.name = element.regionname
+                arr.push(obj)
+              })
+              return arr
+            })(),
             itemStyle: {
               emphasis: {
                 shadowBlur: 10,
@@ -240,11 +262,11 @@ export default {
           }
         ]
       })
-      // 工作消息统计
+      // 网格面积统计
       this.chart3 = echarts.init(document.getElementById('pie3'))
       this.chart3.setOption({
         title: {
-          text: '工作消息统计',
+          text: '网格面积统计',
           x: 'center'
         },
         label: {
@@ -253,7 +275,7 @@ export default {
               fontSize: 14
             },
             formatter: function(param) {
-              return param.name + ':\n' + Math.round(param.value) + '条'
+              return param.name + ':\n' + Math.round(param.value) + 'km²'
             }
           }
         },
@@ -264,7 +286,14 @@ export default {
         legend: {
           orient: 'vertical',
           left: 'left',
-          data: ['图片消息', '文字消息', '视频消息', '音频消息']
+          data: (() => {
+            const arr = []
+            row.forEach(element => {
+              arr.push(element.regionname)
+            })
+            console.log(arr)
+            return arr
+          })()
         },
         series: [
           {
@@ -272,12 +301,16 @@ export default {
             type: 'pie',
             radius: '55%',
             center: ['50%', '60%'],
-            data: [
-              { value: row.imImg, name: '图片消息' },
-              { value: row.imText, name: '文字消息' },
-              { value: row.imVideo, name: '视频消息' },
-              { value: row.imAudio, name: '音频消息' }
-            ],
+            data: (() => {
+              const arr = []
+              row.forEach(element => {
+                const obj = {}
+                obj.value = element.area
+                obj.name = element.regionname
+                arr.push(obj)
+              })
+              return arr
+            })(),
             itemStyle: {
               emphasis: {
                 shadowBlur: 10,
@@ -288,15 +321,11 @@ export default {
           }
         ]
       })
-      // 巡视工作量统计
-      let strtip = '今日'
-      if (!this.typeDate) {
-        strtip = '本周'
-      }
+      // 工作情况分析
       this.chart4 = echarts.init(document.getElementById('pie4'))
       this.chart4.setOption({
         title: {
-          text: '巡视工作量统计'
+          text: '工作情况分析'
         },
         tooltip: {
           trigger: 'axis',
@@ -305,7 +334,7 @@ export default {
           }
         },
         legend: {
-          data: ['网格区域总时间', '网格区域总里程', '网格区域数量'],
+          data: ['每平方公里每日值班人员', '每平方公里每日事件', '人均每日事件数量'],
           align: 'right',
           right: 10
         },
@@ -317,7 +346,14 @@ export default {
         },
         xAxis: [{
           type: 'category',
-          data: [strtip]
+          data: (() => {
+            const arr = []
+            row.forEach(element => {
+              arr.push(element.regionname)
+            })
+            console.log(arr)
+            return arr
+          })()
         }],
         yAxis: [{
           type: 'value',
@@ -326,19 +362,29 @@ export default {
             formatter: '{value}'
           }
         }],
-        series: [{
-          name: '网格区域总时间',
-          type: 'bar',
-          data: [row.regionTime]
-        }, {
-          name: '网格区域总里程',
-          type: 'bar',
-          data: [row.regionMileage]
-        }, {
-          name: '网格区域数量',
-          type: 'bar',
-          data: [row.regionNum]
-        }]
+        series: (() => {
+          const obj1 = {
+            name: '每平方公里每日值班人员',
+            type: 'bar',
+            data: []
+          }
+          const obj2 = {
+            name: '每平方公里每日事件',
+            type: 'bar',
+            data: []
+          }
+          const obj3 = {
+            name: '人均每日事件数量',
+            type: 'bar',
+            data: []
+          }
+          row.forEach(element => {
+            obj1.data.push(element.areapera)
+            obj2.data.push(element.areaperb)
+            obj3.data.push(element.areaperc)
+          })
+          return [obj1, obj2, obj3]
+        })()
       })
     },
     handleQuery() {
@@ -347,16 +393,20 @@ export default {
         const obj = getWeekDate()
         this.pageobj.min_time = Math.round(new Date(obj.monday).getTime() / 1000)
         this.pageobj.max_time = Math.round(new Date(obj.sunday).getTime() / 1000)
+        // this.pageobj.min_time = ''
+        // this.pageobj.max_time = ''
       } else {
         this.pageobj.min_time = getDayDate()
         this.pageobj.max_time = getDaytimes()
       }
+      this.listLoading = true
       this.tableData = []
       getRegionStatist(this.pageobj).then(response => {
         this.listLoading = false
         const data = response.info.list
         this.randomData(data)
       }).catch(errs => {
+        this.listLoading = false
         console.log(errs)
       })
     },
@@ -365,6 +415,32 @@ export default {
       this.handleQuery()
     },
     randomData(data) {
+      const arrsobj = {}
+      data.forEach(element => { // 将查询到的数据，同一区域不同时间的合并为一条
+        const val = arrsobj[element.region_id]
+        if (!val) {
+          arrsobj[element.region_id] = element
+        } else {
+          arrsobj[element.region_id].user_num += element.user_num
+          element.typenum_list.forEach(cls => {
+            let flg = false
+            arrsobj[element.region_id].typenum_list.forEach(els => {
+              if (els.event_type === cls.event_type) {
+                flg = true
+                els.num += cls.num
+              }
+            })
+            if (!flg) {
+              arrsobj[element.region_id].typenum_list.push(cls)
+            }
+          })
+        }
+      })
+      const arr = []
+      for (const key in arrsobj) {
+        arr.push(arrsobj[key])
+      }
+      data = arr
       this.regionArr.forEach(element => {
         data.forEach(els => {
           if (els.region_id === element._id) {
@@ -373,17 +449,16 @@ export default {
             els.areapera = 0 // 每平方公里每日值班人员
             els.areaperb = 0 // 每平方公里每日事件
             els.areaperc = 0 // 本网格人均每日事件数量
-            // if (element.latlon_list.length) {
-            try {
-              const losdArr = [[109.15660708714857, 18.401102839749022], [109.16225435747671, 18.40750769163901], [109.16263464504094, 18.40714686124571], [109.16670372197774, 18.41481434437171], [109.17491080297232, 18.414290034714423], [109.17476344154134, 18.410678456196393], [109.1650661086546, 18.40455562576992], [109.1619643882092, 18.40140955639704], [109.16021268861661, 18.402581163858503], [109.15660708714857, 18.401102839749022]]
-              els.area = AMap.GeometryUtil.ringArea(losdArr) / 1000000
-              // els.area = AMap.GeometryUtil.ringArea(element.latlon_list)
-              els.areapera = els.user_num / els.area // 每平方公里每日值班人员
-              console.log(els.area)
-            } catch (error) {
-              console.log(error)
+            if (element.latlon_list.length) {
+              try {
+                // const losdArr = [[109.15660708714857, 18.401102839749022], [109.16225435747671, 18.40750769163901], [109.16263464504094, 18.40714686124571], [109.16670372197774, 18.41481434437171], [109.17491080297232, 18.414290034714423], [109.17476344154134, 18.410678456196393], [109.1650661086546, 18.40455562576992], [109.1619643882092, 18.40140955639704], [109.16021268861661, 18.402581163858503], [109.15660708714857, 18.401102839749022]]
+                // els.area = AMap.GeometryUtil.ringArea(losdArr) / 1000000
+                els.area = AMap.GeometryUtil.ringArea(element.latlon_list) / 1000000
+                els.areapera = els.area / els.user_num // 每平方公里每日值班人员
+              } catch (error) {
+                console.log(error)
+              }
             }
-            // }
             els.typenum_list.forEach(cls => {
               els.eventNum += cls.num
               this.typeArr.forEach(dls => {
@@ -392,14 +467,19 @@ export default {
                 }
               })
             })
+            console.log(els.eventNum)
             if (els.area) {
               els.areaperb = els.eventNum / els.area // 每平方公里每日事件
             }
+            console.log(els.areaperb)
             els.areaperc = els.eventNum / els.user_num // 本网格人均每日事件数量
+            console.log(els.areaperc)
           }
         })
       })
+      console.log(data)
       this.tableData = data
+      this.handleClick(data)
     }
   }
 }
@@ -464,5 +544,10 @@ export default {
       padding: 0;
       color: #c6cad6;
     }
+  }
+  .can-ct{
+    background-color: #f2f2f2;
+    padding: 10px;
+    margin-top: 10px;
   }
 </style>
