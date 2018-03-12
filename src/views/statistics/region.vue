@@ -10,25 +10,22 @@
     </div>
     <p class="mt10 mb10 g9 f14">{{typeDate?'今日统计数据':'本周统计数据'}}</p>
     <el-table :data="tableData" border style="width: 100%">
-      <el-table-column fixed prop="UserName" label="网格名称">
+      <el-table-column prop="regionname" label="网格名称">
       </el-table-column>
-      <el-table-column prop="eventNew" label="面积" ></el-table-column>
-      <el-table-column v-for="(item,index) in [0,1,2,3]" :key="index" prop="eventVerify" label="本日值班人员" ></el-table-column>
-      <el-table-column prop="eventUp" label="本日事件数量" ></el-table-column>
-      <el-table-column prop="name" label="每平方公里每日值班人员" ></el-table-column>
-      <el-table-column prop="name" label="每平方公里每日事件" ></el-table-column>
-      <el-table-column prop="name" label="本网格人均每日事件数量" ></el-table-column>
-      <el-table-column prop="name" label="发送消息数量" ></el-table-column>
-      <el-table-column label="所属部门" >
+      <el-table-column prop="area" label="面积(km²)" ></el-table-column>
+      <el-table-column label="本日事件数量" >
         <template slot-scope="scope">
-          {{filterDepRose(scope.row.department_id)}}
+          <el-popover trigger="hover" placement="top">
+            <p v-for="(item,index) in scope.row.typenum_list" :key="index">{{item.name}}事件数量: {{item.num}}</p>
+            <div slot="reference" class="name-wrapper">
+              <el-tag size="medium">{{ scope.row.eventNum }}</el-tag>
+            </div>
+          </el-popover>
         </template>
       </el-table-column>
-      <el-table-column fixed="right" label="操作">
-        <template slot-scope="scope">
-          <!-- <el-button @click="handleClick(scope.row)" type="text" size="small">查看统计</el-button> -->
-        </template>
-      </el-table-column>
+      <el-table-column prop="areapera" label="每平方公里每日值班人员" ></el-table-column>
+      <el-table-column prop="areaperb" label="每平方公里每日事件" ></el-table-column>
+      <el-table-column prop="areaperc" label="本网格人均每日事件数量" ></el-table-column>
     </el-table>
     <el-dialog title="统计显示" width="1000px" :visible.sync="dialogVisible" >
       <el-row>
@@ -67,6 +64,7 @@
 <script>
 import echarts from 'echarts'
 import { getRegionArr } from '@/api/grid'
+import { getEventTypeArr } from '@/api/depevent'
 import { getRegionStatist } from '@/api/statistics'
 import { getWeekDate, getDayDate, getDaytimes } from '@/utils/utils'
 export default {
@@ -77,6 +75,7 @@ export default {
       chart3: null,
       chart4: null,
       regionArr: [],
+      typeArr: [],
       depArr: [],
       typeDate: true,
       dialogVisible: false,
@@ -113,22 +112,19 @@ export default {
     this.chart3 = null
   },
   created() {
-    getRegionArr({ start_index: 0, length: 10000, status: 0 }).then(response => {
+    getRegionArr({ start_index: 0, length: 10000, status: 0 }).then(response => { // 获取网格区域
       const arr = response.info.list.filter(function(element) {
         return element.status === 0
       }, this)
       this.regionArr = arr
+      this.handleQuery()
+    })
+    getEventTypeArr({ dept_id: '' }).then(res => { // 获取网格区域
+      this.typeArr = res.info.filter(obj => {
+        return !obj.status
+      })
     })
     this.depArr = this.$store.getters.commonInfo.depArr
-    this.handleQuery()
-    try {
-      console.log(AMap.GeometryUtil)
-      const asd = [[107.677, 29.5807], [107.699, 29.6136], [107.7319, 29.5862], [107.7649, 29.6027], [107.7759, 29.5807], [107.7759, 29.5752]]
-      var area = AMap.GeometryUtil.ringArea(asd)
-      console.log(area)
-    } catch (error) {
-      console.log(error)
-    }
   },
   methods: {
     initChart() {
@@ -350,40 +346,60 @@ export default {
       if (!this.typeDate) {
         const obj = getWeekDate()
         this.pageobj.min_time = Math.round(new Date(obj.monday).getTime() / 1000)
-        // this.pageobj.min_time = Math.round(new Date('2018-02-28').getTime() / 1000)
         this.pageobj.max_time = Math.round(new Date(obj.sunday).getTime() / 1000)
-        console.log(obj)
       } else {
         this.pageobj.min_time = getDayDate()
         this.pageobj.max_time = getDaytimes()
       }
       this.tableData = []
       getRegionStatist(this.pageobj).then(response => {
+        this.listLoading = false
         const data = response.info.list
-        const obj = {}
-        console.log(data)
-        data.forEach(element => {
-          element.regionTime = element.regionTime / 60
-          element.regionMileage = element.regionMileage / 100
-          for (const key in element) {
-            if (obj[key]) {
-              if (!isNaN(element[key])) {
-                obj[key] += element[key]
-              }
-            } else {
-              obj[key] = element[key]
-            }
-          }
-        })
-        console.log(obj)
-        this.tableData = [obj]
+        this.randomData(data)
       }).catch(errs => {
-        console.log('errs')
+        console.log(errs)
       })
     },
     handleChanle() {
       this.typeDate = !this.typeDate
       this.handleQuery()
+    },
+    randomData(data) {
+      this.regionArr.forEach(element => {
+        data.forEach(els => {
+          if (els.region_id === element._id) {
+            els.area = 0
+            els.eventNum = 0
+            els.areapera = 0 // 每平方公里每日值班人员
+            els.areaperb = 0 // 每平方公里每日事件
+            els.areaperc = 0 // 本网格人均每日事件数量
+            // if (element.latlon_list.length) {
+            try {
+              const losdArr = [[109.15660708714857, 18.401102839749022], [109.16225435747671, 18.40750769163901], [109.16263464504094, 18.40714686124571], [109.16670372197774, 18.41481434437171], [109.17491080297232, 18.414290034714423], [109.17476344154134, 18.410678456196393], [109.1650661086546, 18.40455562576992], [109.1619643882092, 18.40140955639704], [109.16021268861661, 18.402581163858503], [109.15660708714857, 18.401102839749022]]
+              els.area = AMap.GeometryUtil.ringArea(losdArr) / 1000000
+              // els.area = AMap.GeometryUtil.ringArea(element.latlon_list)
+              els.areapera = els.user_num / els.area // 每平方公里每日值班人员
+              console.log(els.area)
+            } catch (error) {
+              console.log(error)
+            }
+            // }
+            els.typenum_list.forEach(cls => {
+              els.eventNum += cls.num
+              this.typeArr.forEach(dls => {
+                if (cls.event_type === dls._id) {
+                  cls.name = dls.name
+                }
+              })
+            })
+            if (els.area) {
+              els.areaperb = els.eventNum / els.area // 每平方公里每日事件
+            }
+            els.areaperc = els.eventNum / els.user_num // 本网格人均每日事件数量
+          }
+        })
+      })
+      this.tableData = data
     }
   }
 }
