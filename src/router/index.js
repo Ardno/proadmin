@@ -148,6 +148,19 @@ export const asyncRouterMap = [
     ]
   },
   {
+    path: '/facilities',
+    component: Layout,
+    redirect: '/facilities/index',
+    name: '人员设施管理',
+    meta: { icon: 'chart', title: '人员设施管理' },
+    children: [
+      { path: 'areaperson', component: _import('facilities/areaperson'), name: '区域人员管理', meta: { title: '区域人员管理' }},
+      { path: 'facilities', component: _import('facilities/facilities'), name: '区域设施管理', meta: { title: '区域设施管理' }},
+      { path: 'record', hidden: true, component: _import('facilities/record'), name: '记录列表', meta: { title: '记录列表' }},
+      { path: 'table', component: _import('facilities/complexTable'), name: 'table', meta: { title: 'table' }}
+    ]
+  },
+  {
     path: '/seal',
     component: Layout,
     redirect: 'noredirect',
