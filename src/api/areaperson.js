@@ -1,45 +1,75 @@
 import fetch from '@/utils/fetch'
 
-export function addAdc(query) { // 添加考勤规则配置
+export function addPerson(query) { // 添加区域人员
   return fetch({
-    url: 'areaperson/add',
+    url: 'personfacilities/addPerson',
     method: 'post',
     data: query
   })
 }
-export function getAdc(query) { // 获取考勤规则信息
+export function GetPersonForId(query) { // 获取区域人员管理信息集合
   return fetch({
-    url: 'attendance_config/get',
+    url: 'personfacilities/GetPersonForId',
     method: 'post',
     data: query
   })
 }
-export function getadcArr(query) { // 获取区域人员管理信息集合
+export function addUpdatePersonInfo(query) { // 添加修改人员信息记录
   return fetch({
-    url: 'areaperson/GetList',
+    url: 'personfacilities/addUpdatePersonInfo',
     method: 'post',
     data: query
   })
 }
-export function addUpdateInfo(query) {
+export function GetpersonlogsList(query) { // 获取一条人员记录
   return fetch({
-    url: 'areaperson/addUpdateInfo',
+    url: 'personfacilities/GetpersonlogsList',
     method: 'post',
     data: query
   })
 }
-export function GetpersonlogsList(query) {
+export function updatePerson(query) { // 修改人员信息
   return fetch({
-    url: 'areaperson/GetpersonlogsList',
+    url: 'personfacilities/updatePerson',
     method: 'post',
     data: query
   })
 }
-export function updateAdc(query) { // 修改考勤规则信息
+/**
+ * 下面是区域设施的请求接口地址
+ */
+export function addFacilities(query) { // 添加区域设施信息
   return fetch({
-    url: 'areaperson/updatePerson',
+    url: 'personfacilities/addFacilities',
     method: 'post',
     data: query
   })
 }
-
+export function updateFacilities(query) { // 修改区域设施信息
+  return fetch({
+    url: 'personfacilities/updateFacilities',
+    method: 'post',
+    data: query
+  })
+}
+export function GetFacilitiesForId(query) { // 获取所有区域设施的信息
+  return fetch({
+    url: 'personfacilities/GetFacilitiesForId',
+    method: 'post',
+    data: query
+  })
+}
+export function addUpdateFacilitiesInfo(query) { // 添加修改区域设施的信息记录
+  return fetch({
+    url: 'personfacilities/addUpdateFacilitiesInfo',
+    method: 'post',
+    data: query
+  })
+}
+export function GetfacilitieslogsList(query) { // 获取一条区域设施的所有更新记录
+  return fetch({
+    url: 'personfacilities/GetfacilitieslogsList',
+    method: 'post',
+    data: query
+  })
+}
