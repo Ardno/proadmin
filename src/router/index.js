@@ -94,7 +94,8 @@ export const asyncRouterMap = [
     meta: { icon: 'chart', title: '统计分析' },
     children: [
       { path: 'index', component: _import('statistics/index'), name: '用户统计', meta: { title: '用户统计' }},
-      { path: 'region', component: _import('statistics/region'), name: '网格统计', meta: { title: '网格统计' }}
+      { path: 'region', component: _import('statistics/region'), name: '网格统计', meta: { title: '网格统计' }},
+      { path: 'department', component: _import('statistics/department'), name: '部门统计', meta: { title: '部门统计' }}
     ]
   },
   {
