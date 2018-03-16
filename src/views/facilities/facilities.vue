@@ -2,71 +2,100 @@
   <div class="app-container">
     <div class="layui-elem-quote">
       <span class="f16">区域设施管理</span>
-      <el-button class="filter-item" type="primary"  @click="addShift" >添加</el-button>
     </div>
+    <!-- 筛选 -->
     <div class="mb10">
-      <el-select clearable v-if="isAccess('83')"  v-model="pageobj.user_id" filterable placeholder="请选择用户">
-        <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
+      <el-select clearable v-if="isAccess('83')" v-model="pageobj.user_id" filterable placeholder="所属区域">
+        <el-option v-for="item in  adclist" :key="item._id" :label="item._id" :value="item._id">
         </el-option>
       </el-select>
-      <el-select class="filter-item" clearable   v-model="pageobj.change_state" placeholder="状态">
-        <el-option v-for="item in  stateArr" :key="item.id" :label="item.name" :value="item.id">
+      <el-select class="filter-item" clearable filterable v-model="pageobj.to_user_id" placeholder="设施类型">
+        <el-option v-for="item in  adclist" :key="item._id" :label="item._id" :value="item._id">
         </el-option>
       </el-select>
-      <el-select class="filter-item" clearable  filterable v-model="pageobj.to_user_id" placeholder="换班人">
-        <el-option v-for="item in  userArr" :key="item._id" :label="item.name" :value="item._id">
+      <el-select class="filter-item" clearable v-model="pageobj.change_state" placeholder="状态">
+        <el-option v-for="item in  adclist" :key="item._id" :label="item._id" :value="item._id">
         </el-option>
       </el-select>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
+      <el-button class="filter-item" type="primary" icon="plus" @click="addruleadc" v-if="isAccess('31')">添加</el-button>
     </div>
-    <el-table :key='tableKey' :data="shiftArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
-      <el-table-column width="180" label="申请时间">
+    <!-- 主要内容 -->
+    <el-table :key='tableKey' :data="adclist" v-loading="listLoading" element-loading-text="给我一点时间" border fit
+              highlight-current-row>
+      <el-table-column align="center" label="编号" width="65">
+        <template slot-scope="scope">
+          <span>{{scope.row._id}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="创建时间" width="150">
         <template slot-scope="scope">
           <span>{{scope.row.create_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="username" label="申请用户" width="180">
-      </el-table-column>
-      <el-table-column width="120" label="申请结果">
+      <el-table-column align="center" label="名称" width="120">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.change_state == '1'" type="primary">同意</el-tag>
-          <el-tag v-if="scope.row.change_state == '0'" type="info">待确认</el-tag>
-          <el-tag v-if="scope.row.change_state == '2'" type="warning">拒绝</el-tag>
+          <!--<span>{{scope.row.name}}</span>-->
+          <el-tooltip placement="bottom" effect="light">
+            <div slot="content" effect="light">
+              <img v-bind:src="'http://120.76.228.172:83/images/other/'+scope.row.facilities_img"
+                   style="max-width:100px;max-height: 100px;"/></div>
+            <el-button>{{scope.row.name}}</el-button>
+          </el-tooltip>
         </template>
       </el-table-column>
-      <el-table-column  label="换班用户" width="100">
+      <el-table-column align="center" label="所在区域" width="100">
         <template slot-scope="scope">
-          <span>{{scope.row.tousername || '无'}}</span>
+          <span>{{scope.row.area_name}}</span>
         </template>
       </el-table-column>
-      <el-table-column width="180" label="开始时间">
+      <el-table-column align="center" label="状态" width="80">
         <template slot-scope="scope">
-          <span>{{scope.row.start_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+          <el-tag v-if="scope.row.status == '0'" type="info">删除</el-tag>
+          <el-tag v-if="scope.row.status == '1'" type="primary">正常</el-tag>
+          <el-tag v-if="scope.row.status == '2'" type="danger">完全损坏</el-tag>
+          <el-tag v-if="scope.row.status == '3'" type="info">部分损坏</el-tag>
+          <el-tag v-if="scope.row.status == '4'" type="warning">丢失</el-tag>
         </template>
       </el-table-column>
-      <el-table-column width="180" label="结束时间">
+      <el-table-column align="center" label="负责人电话" width="150">
         <template slot-scope="scope">
-          <span>{{scope.row.end_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+          <span>{{scope.row.mobile}}</span>
         </template>
       </el-table-column>
-      <el-table-column width="180" label="换班区域">
+      <el-table-column align="center" label="设施地址" width="230">
         <template slot-scope="scope">
-          <span>{{scope.row.regionname }}</span>
+          <span>{{scope.row.address}}</span>
         </template>
       </el-table-column>
-      <el-table-column  min-width="180" label="申请理由">
+      <el-table-column align="center" label="设施类型">
         <template slot-scope="scope">
-          <span>{{scope.row.change_content}}</span>
+          <span v-if="scope.row.facilities_class == '0'">贫困户</span>
+          <span v-if="scope.row.facilities_class == '1'">孤寡老人</span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="操作" width="180">
+      <el-table-column align="center" label="负责人">
         <template slot-scope="scope">
-          <!-- <el-button size="small" type="primary" v-if="scope.row.change_state == '0'"  @click="updateshift(scope.row)">修改
-          </el-button> -->
-          <el-button size="small" type="info" v-if="scope.row.change_state == '0' && isUser(scope.row.to_user_id)"  @click="updateStatus(scope.row,true)">同意
+          <span>{{scope.row.user_id}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="更新日期" width="150">
+        <template slot-scope="scope">
+          <span>{{scope.row.update_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="操作" width="290">
+        <template slot-scope="scope">
+          <el-button size="small" type="primary" v-if="isAccess('32')" @click="handleUpdateDa(scope.row)">修改</el-button>
+          <el-button size="small" type="primary" v-if="isAccess('32')" @click="addUpdateInfo(scope.row)">更新</el-button>
+          <el-button size="small" type="success" v-if="isAccess('32')" @click="goOtherPage(scope.row._id)">记录
           </el-button>
-          <el-button size="small" type="warning" v-if="scope.row.change_state == '0' && isUser(scope.row.to_user_id)"  @click="updateStatus(scope.row,false)">拒绝
+          <el-button size="small" type="danger" v-if="isAccess('33')" v-show="scope.row.status"
+                     @click="updateStaus(scope.row)">删除
           </el-button>
+          <el-button size="small" type="info" v-if="isAccess('33')" v-show="!scope.row.status"
+                     @click="updateStaus(scope.row)">还原
+          </el-button>、
         </template>
       </el-table-column>
     </el-table>
@@ -77,297 +106,517 @@
         @current-change="handleCurrentChange"
         :current-page.sync="currentPage"
         :page-size="pageobj.pagesize"
-        :page-sizes="[10, 20, 30, 40, 50]"
+        :page-sizes="[10, 15, 20, 25]"
         layout="total, sizes, prev, pager, next, jumper"
         :total="totalPages">
       </el-pagination>
     </div>
-    <!-- 分页 -->
-    <!-- 新增换班 -->
-    <el-dialog :title="shiftobj.title" @close="closeCall" :visible.sync="shiftobj.dialogFormVisible">
-      <el-form class="small-space" :model="requset" :rules="shiftobj.infoRules" ref="infoForm" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
-        <el-form-item label="工作名称" prop="work_id">
-          <el-select class="pct100" v-model="requset.work_id" filterable placeholder="请选择" @change="handleWorkClick">
-            <el-option v-for="item in workArr" :key="item._id" :label="item.regionname+' '+parseTime(item.start_time,'{m}-{d} {h}:{i}', true)+'~'+parseTime(item.end_time,'{m}-{d} {h}:{i}', true)" :value="item._id">
+    <!-- 新建或编辑一条 -->
+    <el-dialog :title="titlea" @close="closeCalla" :visible.sync="dialogFormVisiblea">
+      <el-form class="small-space" :model="dataa" :rules="infoRulesa" ref="infoForma" label-position="right"
+               label-width="120px" style='width:90%; margin-left:30px;'>
+        <el-form-item label="设施照片">
+          <el-upload class="upload-demo"
+                     action=""
+                     :http-request="data => handleFileUpload(data,dataa)"
+                     :file-list="dataa.fileList"
+                     :on-exceed="handleExceed"
+                     multiple
+                     list-type="picture" :limit="1">
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">最多只能上传1张图片</div>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="设施名称" prop="name">
+          <el-input v-model="dataa.name"></el-input>
+        </el-form-item>
+        <el-form-item label="设施类型">
+          <el-radio-group v-model="dataa.sex">
+            <el-radio :label="0">水文设施</el-radio>
+            <el-radio :label="1">路政设施</el-radio>
+            <el-radio :label="2">环卫设施</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="设施状态">
+          <el-select v-model="dataa.status" placeholder="请选择">
+            <el-option v-for="item in statusArr" :key="item.id" :label="item.text" :value="item.id">
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="换班用户" prop="to_user_id">
-          <el-select class="pct100" v-model="requset.to_user_id" filterable placeholder="请选择">
-            <el-option v-for="item in userArr" :key="item._id" :label="item.name" :value="item._id">
+        <el-form-item label="设施地址" prop="residence">
+          <!--<el-input v-model="dataa.sex"></el-input>-->
+          <input class="el-input__inner" v-model="dataa.residence" placeholder="选择位置"/>
+          <span class="blue poi" @click="selectLoc(dataa)"><i class="el-icon-location"></i>选择地点</span>
+        </el-form-item>
+        <el-form-item label="负责人电话" prop="mobile">
+          <el-input v-model="dataa.mobile" :value="dataa.mobile"></el-input>
+        </el-form-item>
+        <el-form-item label="所在区域">
+          <el-select v-model="dataa.area_id" placeholder="请选择">
+            <el-option v-for="item in regionArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
-        </el-form-item>
-        <el-form-item label="换班原因" prop="change_content">
-          <el-input type="textarea" v-model="requset.change_content"></el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="shiftobj.dialogFormVisible = false">取 消</el-button>
+        <el-button @click="dialogFormVisiblea = false">取 消</el-button>
         <el-button type="primary" @click="handleAddUpdate">确 定</el-button>
       </div>
+    </el-dialog>
+    <!-- 更新一条状态 -->
+    <el-dialog :title="titlea" @close="closeCalla" :visible.sync="updateFormVisiblea">
+      <el-form class="small-space" :model="updatedataa" :rules="infoRulesa" ref="infoForma" label-position="right"
+               label-width="120px" style='width:90%; margin-left:30px;'>
+        <el-form-item label="记录照片">
+          <el-upload class="upload-demo"
+                     action=""
+                     :http-request="data => handleFileUpload(data,updatedataa)"
+                     :file-list="updatedataa.fileList"
+                     :on-exceed="handleExceed"
+                     multiple
+                     list-type="picture" :limit="1">
+            <el-button size="small" type="primary">点击上传</el-button>
+            <div slot="tip" class="el-upload__tip">最多只能上传1张图片</div>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="设施状态">
+          <el-select v-model="updatedataa.status" placeholder="请选择">
+            <el-option v-for="item in statusArr" :key="item.id" :label="item.text" :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="updateFormVisiblea = false">取 消</el-button>
+        <el-button type="primary" @click="handleAddUpdate">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- </el-tab-pane>
+    <el-tab-pane label="配置管理" name="second">配置管理</el-tab-pane>
+  </el-tabs> -->
+    <el-dialog title="选择地点" :visible.sync="dialogVisible1" width="800px">
+      <div class="mb5">
+        <p class="mb5">经纬度: {{positionObj.lnglat}}</p>
+        <p class="mb5">地址: {{positionObj.address}}</p>
+      </div>
+      <div class="bdf" style="height:400px;">
+        <el-amap vid="amapDemo" ref="map" :center="center" :map-manager="amapManager" :zoom="zoom" :plugin="plugin"
+                 :events="events" class="amap-demo">
+        </el-amap>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="comfirmLoc">确 定</el-button>
+      </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
-import { getShiftsArr, updateShifts, addShifts, getWorksArr } from '@/api/levelshift'
-import { getRegionArr } from '@/api/grid'
-import { fetchList } from '@/api/department'
-import { isAccess, isUser, getDepCld } from '@/utils/auth'
-import store from '@/store'
-import { parseTime } from '@/utils/index'
-export default {
-  data() {
-    return {
-      totalPages: 0,
-      currentPage: 1,
-      pageobj: {
-        user_id: '',
-        to_user_id: '',
-        change_state: '',
-        start_index: 0,
-        length: 10,
-        pagesize: 10,
-        department_id: getDepCld()
-      },
-      listLoading: false,
-      tableKey: 0,
-      stateArr: [
-        {
-          id: 0,
-          name: '待确认'
-        }, {
-          id: 1,
-          name: '同意'
-        }, {
-          id: 2,
-          name: '拒绝'
-        }
-      ],
-      requset: {
-        work_id: '',
-        region_id: '',
-        to_user_id: '',
-        change_content: ''
-      },
-      shiftobj: {
-        title: '申请换班',
-        dialogFormVisible: false,
-        infoRules: {
-          work_id: [{ type: 'number', required: true, message: '请选择工作', trigger: 'blur' }],
-          region_id: [{ type: 'number', required: true, message: '请选择区域', trigger: 'blur' }],
-          to_user_id: [{ type: 'number', required: true, message: '请选择换班人', trigger: 'blur' }],
-          change_content: [{ required: true, message: '请输入换班原因', trigger: 'blur' }]
-        }
-      },
-      pickerOptions: {
-        disabledDate(time) {
-          return time.getTime() < Date.now() - 8.64e7
-        }
-      },
-      requesetUser: {
-        start_index: 0,
-        length: 10000,
-        user_id: store.getters.useinfo._id,
-        department_id: getDepCld(),
-        isHandle: 0
-      },
-      shiftArr: [],
-      depArr: [],
-      userArr: [],
-      workArr: [],
-      regionArr: []
-    }
-  },
-  methods: {
-    isUser: isUser,
-    isAccess: isAccess,
-    parseTime: parseTime,
-    updateshift(item) { // 修改弹框
-      this.shiftobj = Object.assign(this.shiftobj, {
-        title: '修改换班信息',
-        dialogFormVisible: true
-      })
-      this.requset = item
-    },
-    addShift() { // 换班弹框
-      this.shiftobj = Object.assign(this.shiftobj, {
-        title: '申请换班',
-        dialogFormVisible: true
-      })
-      this.requset = {
-        work_id: '',
-        region_id: '',
-        to_user_id: '',
-        change_content: ''
-      }
-    },
-    handleWorkClick() { // 选择工作
-      this.workArr.forEach(element => {
-        if (this.requset.work_id === element._id) {
-          this.requset.region_id = element.region_id
-        }
-      })
-    },
-    updateStatus(item, flg) { // 换班审核
-      let tipStr = ''
-      let status = 0
-      if (flg) { // 同意
-        tipStr = '你将同意该用户的换班！'
-        status = 1
-      } else { // 拒绝
-        tipStr = '你确定拒绝该用户的换班？'
-        status = 2
-      }
-      this.$confirm(tipStr, '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        updateShifts({ _id: item._id, change_state: status }).then(response => {
-          item.change_state = status
-          this.$message({
-            message: '操作成功',
-            type: 'success',
-            duration: 4 * 1000
-          })
-        }).catch(() => {
-          this.$message({
-            message: '操作失败，请稍后再试',
-            type: 'error',
-            duration: 4 * 1000
-          })
-        })
-      }).catch(() => {
-      })
-    },
-    handleQuery() { // 查询换班集合
-      this.pageobj.start_index = 0
-      this.pageobj.length = 10
-      this.loadshiftsArr()
-    },
-    closeCall() {
-      this.$refs.infoForm.resetFields()
-    },
-    loadDep() { // 获取用户部门和用户 区域
-      this.depArr = this.$store.getters.commonInfo.depArr
-      const dep = this.$store.getters.useinfo.department_roles
-      const arr = []
-      dep.forEach(element => {
-        arr.push(element.department_id)
-      })
-      fetchList({ start_index: 0, length: 10000, department_id: arr.join(',') }).then(response => {
-        const userArr = response.info.list.filter(obj => {
-          return !obj.status
-        })
-        this.userArr = userArr
-      })
-      getRegionArr(this.requesetUser).then(response => {
-        this.regionArr = response.info.list.filter(obj => {
-          return !obj.status
-        })
-      })
-      getWorksArr(this.requesetUser).then(response => {
-        this.workArr = response.info.list.filter(obj => {
-          return !obj.work_state
-        })
-        console.log(this.workArr)
-      })
-    },
-    loadshiftsArr() { // 获取换班列表
-      if (!this.isAccess('83')) {
-        this.pageobj.user_id = this.userInfo._id
-      }
-      getShiftsArr(this.pageobj).then(response => {
-        const lsArr = response.info.list
-        lsArr.forEach(function(element) {
-          element.start_time = Number(element.start_time) * 1000
-          element.end_time = Number(element.end_time) * 1000
-        }, this)
-        this.shiftArr = lsArr
-        this.totalPages = response.info.count
-      }).catch(errs => {
-        console.log(errs)
-      })
-    },
-    handleSizeChange(val) {
-      this.pageobj.pagesize = val
-      this.currentPage = 1
-      this.pageobj.start_index = (this.currentPage - 1) * val
-      this.pageobj.length = val
-      this.loadshiftsArr()
-    },
-    handleCurrentChange(val) {
-      this.currentPage = val
-      this.pageobj.start_index = (this.currentPage - 1) * this.pageobj.pagesize
-      this.pageobj.length = this.pageobj.pagesize
-      this.loadshiftsArr()
-    },
-    handleAddUpdate() { // 换班修改删除
-      this.$refs.infoForm.validate(valid => {
-        if (valid) {
-          if (this.shiftobj.title === '申请换班') {
-            addShifts(this.requset).then(response => {
-              this.shiftobj.dialogFormVisible = false
-              this.$message({
-                message: '申请成功！',
-                type: 'success',
-                duration: 4 * 1000
+  import { mapGetters } from 'vuex'
+  import VueAMap from 'vue-amap'
+  import { deepClone, parseTime } from '@/utils/index'
+  import { addPerson, GetFacilitiesForId, addUpdatePersonInfo, updatePerson } from '@/api/areaperson'
+  import { getRegionArr } from '@/api/grid'
+  import { isAccess } from '@/utils/auth'
+  import { fileReaderBase64 } from '@/utils/utils'
+  import { imgUpLoad } from '@/api/upload'
+
+  const amapManager = new VueAMap.AMapManager()
+  export default {
+    data() {
+      return {
+        totalPages: 0,
+        currentPage: 1,
+        regionArr: [],
+        pageobj: {
+          start_index: 0,
+          length: 10,
+          pagesize: 10
+        },
+        activeName: 'first',
+        adclist: null,
+        listLoading: false,
+        tableKey: 0,
+        titlea: '',
+        dialogVisible1: false,
+        positionObj: {
+          lnglat: '',
+          address: ''
+        },
+        userAll: [],
+        amapManager,
+        zoom: 13,
+        center: [114.085947, 22.54702],
+        dialogFormVisiblea: false,
+        updateFormVisiblea: false,
+        dataa: {
+          name: '',
+          area_id: '',
+          sex: 0
+        },
+        updatedataa: {},
+        infoRulesa: {
+          name: [{ required: true, message: '请输入名字', trigger: 'blur' }],
+          residence: [{ required: true, message: '请选择正确地址', trigger: 'blur' }],
+          idNum: [
+            { required: true, message: '请输入身份证', trigger: 'blur' },
+            {
+              pattern: /(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$)/,
+              message: '证件号码格式有误！',
+              trigger: 'blur'
+            }],
+          mobile: [
+            { required: true, message: '请输入身份证', trigger: 'blur' },
+            { pattern: /^1[3|4|5|7|8][0-9]{9}$/, message: '手机号输入有误！', trigger: 'blur' }]
+        },
+        statusArr: [{ id: 1, text: '正常' }, { id: 2, text: '完全损坏' }, { id: 3, text: '部分损坏' }, { id: 4, text: '丢失' }],
+        classArr: [{ id: 0, text: '水文设施' }, { id: 1, text: '路政设施' },{ id: 2, text: '环卫设施' }],
+        events: {
+          init: (map) => {
+            const geolocation = new AMap.Geolocation({
+              enableHighAccuracy: true, // 是否使用高精度定位，默认:true
+              timeout: 10000, // 超过10秒后停止定位，默认：无穷大
+              buttonOffset: new AMap.Pixel(10, 20), // 定位按钮与设置的停靠位置的偏移量，默认：Pixel(10, 20)
+              zoomToAccuracy: true, // 定位成功后调整地图视野范围使定位位置及精度范围视野内可见，默认：false
+              buttonPosition: 'RB'
+            })
+            map.addControl(geolocation)
+            geolocation.getCurrentPosition()
+            AMap.event.addListener(geolocation, 'complete', (data) => {
+              console.log(data)
+            })
+            AMap.event.addListener(geolocation, 'error', (data) => {
+            })
+            AMapUI.loadUI(['misc/PositionPicker'], (PositionPicker) => {
+              const positionPicker = new PositionPicker({
+                mode: 'dragMap', // 设定为拖拽地图模式，可选'dragMap'、'dragMarker'，默认为'dragMap'
+                map: map // 依赖地图对象
               })
-              setTimeout(() => {
-                this.loadshiftsArr()
-              }, 500)
-            }).catch(() => {
-              this.$message({
-                message: '申请失败，请稍后再试',
-                type: 'error',
-                duration: 4 * 1000
+              positionPicker.start()
+              positionPicker.on('success', (positionResult) => {
+                this.positionObj = {
+                  lnglat: [positionResult.position.lng, positionResult.position.lat],
+                  address: positionResult.address
+                }
+                // this.eventForm.address = positionResult.address
+                // this.eventForm.lon = positionResult.position.lng
+                // this.eventForm.lat = positionResult.position.lat
+              })
+              positionPicker.on('fail', (positionResult) => {
+                this.positionObj = {
+                  lnglat: '',
+                  address: ''
+                }
               })
             })
-          } else {
-            this.$confirm('确认修改？').then(() => {
-              updateShifts(this.requset).then(response => {
-                this.shiftobj.dialogFormVisible = false
+          },
+          click: (e) => {
+          }
+        },
+        plugin: ['ToolBar', {
+          pName: 'MapType',
+          defaultType: 0,
+          events: {
+            init(o) {
+            }
+          }
+        }],
+        item: ''
+      }
+    },
+    filters: {
+      statusFilter(status, time) {
+        const statusMap = ['', '每天', '工作日', '指定日期']
+        if (status === 3) {
+          const timearr = time.split(',')
+          const arr = []
+          timearr.forEach(function(element) {
+            element = parseTime(Number(element), '{y}-{m}-{d}', true)
+            arr.push(element)
+          }, this)
+          return arr.join(',')
+        }
+        return statusMap[status]
+      }
+    },
+    created() {
+      this.getadcArray()
+      getRegionArr({ start_index: 0, length: 10000, status: 0 }).then(response => {
+        const arr = response.info.list.filter(function(element) {
+          return element.status === 0
+        }, this)
+        this.regionArr = arr
+      })
+    },
+
+    methods: {
+      isAccess: isAccess,
+      selectareaforid(areaid) { // 遍历所有区域id，把id改为中文名
+        var namecc
+        this.regionArr.forEach(e => {
+          if (areaid === e._id) {
+            namecc = e.name
+            return
+          }
+        })
+        return namecc
+      },
+      selectuserid(user) { // 遍历所有用户，把录入人员的id改为中文名
+        this.userArr = this.$store.getters.commonInfo.userArr
+        var namecc
+        this.userArr.forEach(usera => {
+          if (usera._id === user) {
+            namecc = usera.name
+            return
+          }
+        })
+        return namecc
+      },
+      addruleadc() {
+        this.dialogFormVisiblea = true
+        this.titlea = '添加人员'
+        this.dataa = {
+          name: '',
+          sex: 0,
+          area_id: '',
+          create_time: '',
+          residence: '', // 住址
+          recorder_id: '',
+          areaperson_img: '',
+          idNum: 140702199602107111,
+          mobile: 18335410222
+        }
+      },
+      handleClick(tab, event) { // tab切换
+        console.log(tab, event)
+      },
+      addUpdateInfo(item) {
+        console.log(item)
+        console.log('添加修改信息')
+        this.titlea = '添加修改信息记录'
+        this.updatedataa.user_id = item._id
+        this.updateFormVisiblea = true
+      },
+      handleUpdateDa(item) { // 修改人员信息
+        this.titlea = '修改人员信息'
+        this.dataa = deepClone(item)
+        console.log(this.dataa)
+        if (this.dataa.areaperson_img) {
+          var els = this.dataa.areaperson_img
+          var obj = {
+            name: els,
+            url: `${process.env.upload_API}images/other/${els}`
+          }
+          this.dataa.fileList = []
+          this.dataa.fileList.push(obj)
+          console.log(this.dataa)
+        }
+        this.dialogFormVisiblea = true
+      },
+      handleAddUpdate() { // 添加修改人员信息
+        this.$refs.infoForma.validate(valid => {
+          if (valid) {
+            if (this.titlea === '添加人员') {
+              this.dataa.recorder_id = this.userInfo._id
+              console.log('添加人员')
+              console.log(this.dataa)
+              addPerson(this.dataa).then(response => {
+                this.dialogFormVisiblea = false
                 this.$message({
-                  message: '修改信息成功！',
+                  message: '添加规则成功！',
                   type: 'success',
                   duration: 4 * 1000
                 })
-                setTimeout(() => {
-                  this.loadshiftsArr()
-                }, 500)
+                this.handleQuery()
               }).catch(() => {
                 this.$message({
-                  message: '修改信息失败，请稍后再试',
+                  message: '添加规则失败，请稍后再试',
                   type: 'error',
                   duration: 4 * 1000
                 })
               })
-            }).catch(() => { console.log('取消修改') })
+            } else if (this.titlea === '修改人员信息') {
+              console.log('修改人员信息')
+              console.log(this.dataa)
+              this.$confirm('确认修改？').then(() => {
+                updatePerson(this.dataa).then(response => {
+                  this.dialogFormVisiblea = false
+                  this.$message({
+                    message: '修改规则成功！',
+                    type: 'success',
+                    duration: 4 * 1000
+                  })
+                  this.handleQuery()
+                }).catch(() => {
+                  this.$message({
+                    message: '修改规则失败，请稍后再试',
+                    type: 'error',
+                    duration: 4 * 1000
+                  })
+                })
+              }).catch(() => {
+                console.log('取消修改')
+              })
+            } else if (this.titlea === '添加修改信息记录') {
+              this.updatedataa.recorder_id = this.userInfo._id
+              console.log(this.updatedataa)
+              this.$confirm('确认添加？').then(() => {
+                addUpdatePersonInfo(this.updatedataa).then(response => {
+                  this.updateFormVisiblea = false
+                  this.$message({
+                    message: '修改规则成功！',
+                    type: 'success',
+                    duration: 4 * 1000
+                  })
+                  this.handleQuery()
+                }).catch(() => {
+                  this.$message({
+                    message: '修改规则失败，请稍后再试',
+                    type: 'error',
+                    duration: 4 * 1000
+                  })
+                })
+              }).catch(() => {
+                console.log('取消修改')
+              })
+            }
+          } else {
+            console.log('error submit!!')
+            return false
           }
-        } else {
-          console.log('error submit!!')
-          return false
+        })
+      },
+      updateStaus(item) { // 修改人员状态
+        let tipStr = ''
+        let status = 0
+        if (item.status) { // 恢复
+          tipStr = '你确定要恢复当前人员？'
+        } else { // 设置失效
+          tipStr = '你确定要删除当前人员？'
+          status = 1
         }
+        this.$confirm(tipStr, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          updatePerson({ _id: item._id, status: status }).then(response => {
+            item.status = status
+            this.$message({
+              message: '修改成功',
+              type: 'success',
+              duration: 4 * 1000
+            })
+          }).catch(() => {
+            this.$message({
+              message: '修改失败，请稍后再试',
+              type: 'error',
+              duration: 4 * 1000
+            })
+          })
+        }).catch(() => {
+        })
+      },
+      selectLoc(item) {
+        this.dataa = item
+        this.dialogVisible1 = true
+      },
+      comfirmLoc() {
+        this.dialogVisible1 = false
+        this.dataa.residence = this.positionObj.address
+        this.$refs.infoForma.validate(valid => {
+          console.log(this.dataa)
+        })
+      },
+      closeCalla() {
+        this.$refs.infoForma.resetFields()
+      }, //
+      handleQuery() { // 查询所有数据集合
+        this.pageobj.start_index = 0
+        this.pageobj.length = 10
+        this.getadcArray()
+      },
+      getadcArray() { // 获取数据集合
+        this.listLoading = true
+        if (!this.isAccess('31')) {
+          console.log(this.userInfo)
+          this.pageobj._id = this.userInfo._id
+        }
+        //  this.pageobj
+        GetFacilitiesForId().then(response => {
+          console.log(response)
+          this.adclist = response.info.list
+          this.totalPages = response.info.count
+          // this.adclist.reverse()
+          this.listLoading = false
+        }).catch(() => {
+          this.listLoading = false
+        })
+      },
+      handleSizeChange(val) {
+        this.pageobj.pagesize = val
+        this.currentPage = 1
+        this.pageobj.start_index = (this.currentPage - 1) * val
+        this.pageobj.length = val
+        this.getadcArray()
+      },
+      handleCurrentChange(val) {
+        this.currentPage = val
+        this.pageobj.start_index = (this.currentPage - 1) * this.pageobj.pagesize
+        this.pageobj.length = this.pageobj.pagesize
+        this.getadcArray()
+      },
+      // 图片上传
+      handleFileUpload(data, item) {
+        console.log('handleFileUpload')
+        fileReaderBase64(data.file).then(obj => {
+          imgUpLoad({ FileData: obj.data, filetype: obj.postf, type: 1 }).then(res => {
+            if (res.code === 200) {
+              const obj = {
+                'name': res.info,
+                'status': 'success',
+                'uid': data.file.uid,
+                'url': `${process.env.upload_API}images/other/${res.info}`
+              }
+              console.log(obj)
+              item.areaperson_img = obj.name
+              data.onSuccess()
+            } else {
+              data.onError()
+            }
+          })
+        })
+      },
+      handleRemove(file, fileList, item) {
+        let cunt = ''
+        item.fileList.forEach((element, index) => {
+          console.log(index)
+          if (file.uid === element.uid) {
+            cunt = index
+          }
+        })
+        item.fileList.splice(cunt, 1)
+      },
+      handlePreview(file) {
+        console.log('file')
+      },
+      handleExceed(files, fileList) {
+        this.$message.warning(`当前限制选择 1 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`)
+      },
+      goOtherPage(val) {
+        this.$store.dispatch('setCaseId', val)
+        this.$router.push({ path: '/facilities/record' })
+      }
+    },
+    computed: {
+      ...mapGetters({
+        userInfo: 'useinfo'
       })
     }
-  },
-  created() {
-    this.loadDep()
-    this.loadshiftsArr()
-    this.pageobj.user_id = this.userInfo._id
-  },
-  computed: {
-    ...mapGetters({
-      userInfo: 'useinfo'
-    })
   }
-}
 </script>
-
-<style rel="stylesheet/scss" lang="scss" scoped>
-
-
+<style rel="stylesheet/scss" lang="css">
+  .el-button{
+    border:1px solid #fff;
+  }
 </style>

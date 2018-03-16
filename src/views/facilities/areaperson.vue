@@ -46,7 +46,7 @@
       </el-table-column>
       <el-table-column align="center" label="所在区域" width="100">
         <template slot-scope="scope">
-          <span>{{selectareaforid(scope.row.area_id)}}</span>
+          <span>{{scope.row.area_name}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="状态" width="80">
@@ -98,7 +98,7 @@
       <el-table-column align="center" label="操作" width="290">
         <template slot-scope="scope">
           <el-button size="small" type="primary" v-if="isAccess('32')" @click="handleUpdateDa(scope.row)">修改</el-button>
-          <el-button size="small" type="primary" v-if="isAccess('32')" @click="addUpdateinfo(scope.row)">更新</el-button>
+          <el-button size="small" type="primary" v-if="isAccess('32')" @click="addUpdateInfo(scope.row)">更新</el-button>
           <el-button size="small" type="success" v-if="isAccess('32')" @click="goOtherPage(scope.row._id)">记录
           </el-button>
           <el-button size="small" type="danger" v-if="isAccess('33')" v-show="scope.row.status"
@@ -235,7 +235,7 @@
   import { mapGetters } from 'vuex'
   import VueAMap from 'vue-amap'
   import { deepClone, parseTime } from '@/utils/index'
-  import { addAdc, getadcArr, addUpdateInfo, updateAdc } from '@/api/areaperson'
+  import { addPerson, GetPersonForId, addUpdatePersonInfo, updatePerson } from '@/api/areaperson'
   import { getRegionArr } from '@/api/grid'
   import { isAccess } from '@/utils/auth'
   import { fileReaderBase64 } from '@/utils/utils'
@@ -410,7 +410,7 @@
       handleClick(tab, event) { // tab切换
         console.log(tab, event)
       },
-      addUpdateinfo(item) {
+      addUpdateInfo(item) {
         console.log(item)
         console.log('添加修改信息')
         this.titlea = '添加修改信息记录'
@@ -440,7 +440,7 @@
               this.dataa.recorder_id = this.userInfo._id
               console.log('添加人员')
               console.log(this.dataa)
-              addAdc(this.dataa).then(response => {
+              addPerson(this.dataa).then(response => {
                 this.dialogFormVisiblea = false
                 this.$message({
                   message: '添加规则成功！',
@@ -459,7 +459,7 @@
               console.log('修改人员信息')
               console.log(this.dataa)
               this.$confirm('确认修改？').then(() => {
-                updateAdc(this.dataa).then(response => {
+                updatePerson(this.dataa).then(response => {
                   this.dialogFormVisiblea = false
                   this.$message({
                     message: '修改规则成功！',
@@ -481,7 +481,7 @@
               this.updatedataa.recorder_id = this.userInfo._id
               console.log(this.updatedataa)
               this.$confirm('确认添加？').then(() => {
-                addUpdateInfo(this.updatedataa).then(response => {
+                addUpdatePersonInfo(this.updatedataa).then(response => {
                   this.updateFormVisiblea = false
                   this.$message({
                     message: '修改规则成功！',
@@ -520,7 +520,7 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          updateAdc({ _id: item._id, status: status }).then(response => {
+          updatePerson({ _id: item._id, status: status }).then(response => {
             item.status = status
             this.$message({
               message: '修改成功',
@@ -563,7 +563,8 @@
           this.pageobj._id = this.userInfo._id
         }
         //  this.pageobj
-        getadcArr().then(response => {
+        GetPersonForId().then(response => {
+          console.log(response)
           this.adclist = response.info.list
           this.totalPages = response.info.count
           // this.adclist.reverse()
