@@ -70,8 +70,9 @@
       </el-table-column>
       <el-table-column align="center" label="设施类型">
         <template slot-scope="scope">
-          <span v-if="scope.row.facilities_class == '0'">贫困户</span>
-          <span v-if="scope.row.facilities_class == '1'">孤寡老人</span>
+          <span v-if="scope.row.facilities_class == '0'">水文设施</span>
+          <span v-if="scope.row.facilities_class == '1'">路政设施</span>
+          <span v-if="scope.row.facilities_class == '2'">环卫设施</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="负责人">
@@ -131,7 +132,7 @@
           <el-input v-model="dataa.name"></el-input>
         </el-form-item>
         <el-form-item label="设施类型">
-          <el-radio-group v-model="dataa.sex">
+          <el-radio-group v-model="dataa.facilities_class">
             <el-radio :label="0">水文设施</el-radio>
             <el-radio :label="1">路政设施</el-radio>
             <el-radio :label="2">环卫设施</el-radio>
@@ -143,9 +144,8 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="设施地址" prop="residence">
-          <!--<el-input v-model="dataa.sex"></el-input>-->
-          <input class="el-input__inner" v-model="dataa.residence" placeholder="选择位置"/>
+        <el-form-item label="设施地址" prop="address">
+          <input class="el-input__inner" v-model="dataa.address" placeholder="选择位置"/>
           <span class="blue poi" @click="selectLoc(dataa)"><i class="el-icon-location"></i>选择地点</span>
         </el-form-item>
         <el-form-item label="负责人电话" prop="mobile">
@@ -252,25 +252,18 @@
         dataa: {
           name: '',
           area_id: '',
-          sex: 0
+          facilities_class:null
         },
         updatedataa: {},
         infoRulesa: {
           name: [{ required: true, message: '请输入名字', trigger: 'blur' }],
-          residence: [{ required: true, message: '请选择正确地址', trigger: 'blur' }],
-          idNum: [
-            { required: true, message: '请输入身份证', trigger: 'blur' },
-            {
-              pattern: /(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$)/,
-              message: '证件号码格式有误！',
-              trigger: 'blur'
-            }],
+          address: [{ required: true, message: '请选择正确地址', trigger: 'blur' }],
           mobile: [
             { required: true, message: '请输入身份证', trigger: 'blur' },
             { pattern: /^1[3|4|5|7|8][0-9]{9}$/, message: '手机号输入有误！', trigger: 'blur' }]
         },
         statusArr: [{ id: 1, text: '正常' }, { id: 2, text: '完全损坏' }, { id: 3, text: '部分损坏' }, { id: 4, text: '丢失' }],
-        classArr: [{ id: 0, text: '水文设施' }, { id: 1, text: '路政设施' },{ id: 2, text: '环卫设施' }],
+        classArr: [{ id: 0, text: '水文设施' }, { id: 1, text: '路政设施' }, { id: 2, text: '环卫设施' }],
         events: {
           init: (map) => {
             const geolocation = new AMap.Geolocation({
@@ -351,40 +344,19 @@
 
     methods: {
       isAccess: isAccess,
-      selectareaforid(areaid) { // 遍历所有区域id，把id改为中文名
-        var namecc
-        this.regionArr.forEach(e => {
-          if (areaid === e._id) {
-            namecc = e.name
-            return
-          }
-        })
-        return namecc
-      },
-      selectuserid(user) { // 遍历所有用户，把录入人员的id改为中文名
-        this.userArr = this.$store.getters.commonInfo.userArr
-        var namecc
-        this.userArr.forEach(usera => {
-          if (usera._id === user) {
-            namecc = usera.name
-            return
-          }
-        })
-        return namecc
-      },
       addruleadc() {
         this.dialogFormVisiblea = true
-        this.titlea = '添加人员'
+        this.titlea = '添加区域'
         this.dataa = {
           name: '',
-          sex: 0,
           area_id: '',
-          create_time: '',
-          residence: '', // 住址
-          recorder_id: '',
-          areaperson_img: '',
-          idNum: 140702199602107111,
-          mobile: 18335410222
+          address: '', // 地址
+          facilities_num: '',
+          facilities_img: '',
+          facilities_class:'',
+          status:null,
+          mobile: 18335410222,
+          user_id:''
         }
       },
       handleClick(tab, event) { // tab切换
@@ -401,8 +373,8 @@
         this.titlea = '修改人员信息'
         this.dataa = deepClone(item)
         console.log(this.dataa)
-        if (this.dataa.areaperson_img) {
-          var els = this.dataa.areaperson_img
+        if (this.dataa.facilities_img) {
+          var els = this.dataa.facilities_img
           var obj = {
             name: els,
             url: `${process.env.upload_API}images/other/${els}`
@@ -523,7 +495,7 @@
       },
       comfirmLoc() {
         this.dialogVisible1 = false
-        this.dataa.residence = this.positionObj.address
+        this.dataa.address = this.positionObj.address
         this.$refs.infoForma.validate(valid => {
           console.log(this.dataa)
         })
@@ -579,7 +551,7 @@
                 'url': `${process.env.upload_API}images/other/${res.info}`
               }
               console.log(obj)
-              item.areaperson_img = obj.name
+              item.facilities_img = obj.name
               data.onSuccess()
             } else {
               data.onError()
