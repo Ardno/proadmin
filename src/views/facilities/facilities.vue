@@ -5,16 +5,16 @@
     </div>
     <!-- 筛选 -->
     <div class="mb10">
-      <el-select clearable v-if="isAccess('83')" v-model="pageobj.user_id" filterable placeholder="所属区域">
-        <el-option v-for="item in  adclist" :key="item._id" :label="item._id" :value="item._id">
+      <el-select clearable v-if="isAccess('83')" v-model="pageobj.area_id" filterable placeholder="所属区域">
+        <el-option v-for="item in  regionArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
-      <el-select class="filter-item" clearable filterable v-model="pageobj.to_user_id" placeholder="设施类型">
-        <el-option v-for="item in  adclist" :key="item._id" :label="item._id" :value="item._id">
+      <el-select class="filter-item" clearable filterable v-model="pageobj.facilities_class" placeholder="设施类型">
+        <el-option v-for="item in  classArr" :key="item.id" :label="item.text" :value="item.id">
         </el-option>
       </el-select>
-      <el-select class="filter-item" clearable v-model="pageobj.change_state" placeholder="状态">
-        <el-option v-for="item in  adclist" :key="item._id" :label="item._id" :value="item._id">
+      <el-select class="filter-item" clearable v-model="pageobj.status" placeholder="状态">
+        <el-option v-for="item in  statusArr" :key="item.id" :label="item.text" :value="item.id">
         </el-option>
       </el-select>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
@@ -51,11 +51,11 @@
       </el-table-column>
       <el-table-column align="center" label="状态" width="80">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.status == '0'" type="info">删除</el-tag>
-          <el-tag v-if="scope.row.status == '1'" type="primary">正常</el-tag>
-          <el-tag v-if="scope.row.status == '2'" type="danger">完全损坏</el-tag>
-          <el-tag v-if="scope.row.status == '3'" type="info">部分损坏</el-tag>
-          <el-tag v-if="scope.row.status == '4'" type="warning">丢失</el-tag>
+          <el-tag v-if="scope.row.status == 0" type="info">删除</el-tag>
+          <el-tag v-if="scope.row.status == 1" type="primary">正常</el-tag>
+          <el-tag v-if="scope.row.status == 2" type="danger">完全损坏</el-tag>
+          <el-tag v-if="scope.row.status == 3" type="info">部分损坏</el-tag>
+          <el-tag v-if="scope.row.status == 4" type="warning">丢失</el-tag>
         </template>
       </el-table-column>
       <el-table-column align="center" label="负责人电话" width="150">
@@ -70,14 +70,14 @@
       </el-table-column>
       <el-table-column align="center" label="设施类型">
         <template slot-scope="scope">
-          <span v-if="scope.row.facilities_class == '0'">水文设施</span>
-          <span v-if="scope.row.facilities_class == '1'">路政设施</span>
-          <span v-if="scope.row.facilities_class == '2'">环卫设施</span>
+          <span v-if="scope.row.facilities_class === 0">水文设施</span>
+          <span v-if="scope.row.facilities_class === 1">路政设施</span>
+          <span v-if="scope.row.facilities_class === 2">环卫设施</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="负责人">
         <template slot-scope="scope">
-          <span>{{scope.row.user_id}}</span>
+          <span>{{selectuserid(scope.row.user_id)}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="更新日期" width="150">
@@ -89,14 +89,9 @@
         <template slot-scope="scope">
           <el-button size="small" type="primary" v-if="isAccess('32')" @click="handleUpdateDa(scope.row)">修改</el-button>
           <el-button size="small" type="primary" v-if="isAccess('32')" @click="addUpdateInfo(scope.row)">更新</el-button>
-          <el-button size="small" type="success" v-if="isAccess('32')" @click="goOtherPage(scope.row._id)">记录
-          </el-button>
-          <el-button size="small" type="danger" v-if="isAccess('33')" v-show="scope.row.status"
-                     @click="updateStaus(scope.row)">删除
-          </el-button>
-          <el-button size="small" type="info" v-if="isAccess('33')" v-show="!scope.row.status"
-                     @click="updateStaus(scope.row)">还原
-          </el-button>、
+          <el-button size="small" type="success" v-if="isAccess('32')" @click="goOtherPage(scope.row._id)">记录</el-button>
+          <el-button size="small" type="danger" v-if="isAccess('33')" v-show="scope.row.status" @click="updateStaus(scope.row)">删除</el-button>
+          <el-button size="small" type="info" v-if="isAccess('33')" v-show="!scope.row.status" @click="updateStaus(scope.row)">还原</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -148,12 +143,18 @@
           <input class="el-input__inner" v-model="dataa.address" placeholder="选择位置"/>
           <span class="blue poi" @click="selectLoc(dataa)"><i class="el-icon-location"></i>选择地点</span>
         </el-form-item>
+        <el-form-item label="负责人">
+          <el-select v-model="dataa.area_id" placeholder="请选择">
+            <el-option v-for="varea in regionArr" :key="varea._id" :label="varea.name" :value="varea._id">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="负责人电话" prop="mobile">
           <el-input v-model="dataa.mobile" :value="dataa.mobile"></el-input>
         </el-form-item>
         <el-form-item label="所在区域">
           <el-select v-model="dataa.area_id" placeholder="请选择">
-            <el-option v-for="item in regionArr" :key="item._id" :label="item.name" :value="item._id">
+            <el-option v-for="varea in regionArr" :key="varea._id" :label="varea.name" :value="varea._id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -215,7 +216,7 @@
   import { mapGetters } from 'vuex'
   import VueAMap from 'vue-amap'
   import { deepClone, parseTime } from '@/utils/index'
-  import { addPerson, GetFacilitiesForId, addUpdatePersonInfo, updatePerson } from '@/api/areaperson'
+  import { addFacilities, GetFacilitiesForId, addUpdateFacilitiesInfo, updateFacilities } from '@/api/areaperson'
   import { getRegionArr } from '@/api/grid'
   import { isAccess } from '@/utils/auth'
   import { fileReaderBase64 } from '@/utils/utils'
@@ -231,7 +232,10 @@
         pageobj: {
           start_index: 0,
           length: 10,
-          pagesize: 10
+          pagesize: 10,
+          area_id: null,
+          facilities_class: null,
+          status: null
         },
         activeName: 'first',
         adclist: null,
@@ -252,14 +256,14 @@
         dataa: {
           name: '',
           area_id: '',
-          facilities_class:null
+          facilities_class: 1
         },
         updatedataa: {},
         infoRulesa: {
           name: [{ required: true, message: '请输入名字', trigger: 'blur' }],
           address: [{ required: true, message: '请选择正确地址', trigger: 'blur' }],
           mobile: [
-            { required: true, message: '请输入身份证', trigger: 'blur' },
+            { required: true, message: '请输入手机号', trigger: 'blur' },
             { pattern: /^1[3|4|5|7|8][0-9]{9}$/, message: '手机号输入有误！', trigger: 'blur' }]
         },
         statusArr: [{ id: 1, text: '正常' }, { id: 2, text: '完全损坏' }, { id: 3, text: '部分损坏' }, { id: 4, text: '丢失' }],
@@ -344,19 +348,30 @@
 
     methods: {
       isAccess: isAccess,
+      selectuserid(user) { // 遍历所有用户，把录入人员的id改为中文名
+        this.userArr = this.$store.getters.commonInfo.userArr
+        var namecc
+        this.userArr.forEach(usera => {
+          if (usera._id === user) {
+            namecc = usera.name
+            return
+          }
+        })
+        return namecc
+      },
       addruleadc() {
         this.dialogFormVisiblea = true
-        this.titlea = '添加区域'
+        this.titlea = '添加区域设施'
         this.dataa = {
           name: '',
           area_id: '',
           address: '', // 地址
           facilities_num: '',
           facilities_img: '',
-          facilities_class:'',
-          status:null,
+          facilities_class: null,
+          status: null,
           mobile: 18335410222,
-          user_id:''
+          user_id: ''
         }
       },
       handleClick(tab, event) { // tab切换
@@ -366,13 +381,12 @@
         console.log(item)
         console.log('添加修改信息')
         this.titlea = '添加修改信息记录'
-        this.updatedataa.user_id = item._id
+        this.updatedataa.facilities_id = item._id
         this.updateFormVisiblea = true
       },
       handleUpdateDa(item) { // 修改人员信息
-        this.titlea = '修改人员信息'
+        this.titlea = '修改区域信息'
         this.dataa = deepClone(item)
-        console.log(this.dataa)
         if (this.dataa.facilities_img) {
           var els = this.dataa.facilities_img
           var obj = {
@@ -381,18 +395,17 @@
           }
           this.dataa.fileList = []
           this.dataa.fileList.push(obj)
-          console.log(this.dataa)
         }
         this.dialogFormVisiblea = true
       },
       handleAddUpdate() { // 添加修改人员信息
         this.$refs.infoForma.validate(valid => {
           if (valid) {
-            if (this.titlea === '添加人员') {
+            if (this.titlea === '添加区域设施') {
               this.dataa.recorder_id = this.userInfo._id
               console.log('添加人员')
               console.log(this.dataa)
-              addPerson(this.dataa).then(response => {
+              addFacilities(this.dataa).then(response => {
                 this.dialogFormVisiblea = false
                 this.$message({
                   message: '添加规则成功！',
@@ -407,21 +420,21 @@
                   duration: 4 * 1000
                 })
               })
-            } else if (this.titlea === '修改人员信息') {
+            } else if (this.titlea === '修改区域信息') {
               console.log('修改人员信息')
               console.log(this.dataa)
               this.$confirm('确认修改？').then(() => {
-                updatePerson(this.dataa).then(response => {
+                updateFacilities(this.dataa).then(response => {
                   this.dialogFormVisiblea = false
                   this.$message({
-                    message: '修改规则成功！',
+                    message: '修改区域成功！',
                     type: 'success',
                     duration: 4 * 1000
                   })
                   this.handleQuery()
                 }).catch(() => {
                   this.$message({
-                    message: '修改规则失败，请稍后再试',
+                    message: '修改区域失败，请稍后再试',
                     type: 'error',
                     duration: 4 * 1000
                   })
@@ -433,17 +446,25 @@
               this.updatedataa.recorder_id = this.userInfo._id
               console.log(this.updatedataa)
               this.$confirm('确认添加？').then(() => {
-                addUpdatePersonInfo(this.updatedataa).then(response => {
+                if (!this.updatedataa.facilities_img) {
+                  this.$message({
+                    message: '必须上传图片，请稍后再试！',
+                    type: 'error',
+                    duration: 4 * 1000
+                  })
+                  return
+                }
+                addUpdateFacilitiesInfo(this.updatedataa).then(response => {
                   this.updateFormVisiblea = false
                   this.$message({
-                    message: '修改规则成功！',
+                    message: '修改区域成功！',
                     type: 'success',
                     duration: 4 * 1000
                   })
                   this.handleQuery()
                 }).catch(() => {
                   this.$message({
-                    message: '修改规则失败，请稍后再试',
+                    message: '修改区域失败，请稍后再试',
                     type: 'error',
                     duration: 4 * 1000
                   })
@@ -462,9 +483,9 @@
         let tipStr = ''
         let status = 0
         if (item.status) { // 恢复
-          tipStr = '你确定要恢复当前人员？'
+          tipStr = '你确定要恢复当前区域？'
         } else { // 设置失效
-          tipStr = '你确定要删除当前人员？'
+          tipStr = '你确定要删除当前区域？'
           status = 1
         }
         this.$confirm(tipStr, '提示', {
@@ -472,7 +493,7 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          updatePerson({ _id: item._id, status: status }).then(response => {
+          updateFacilities({ _id: item._id, status: status }).then(response => {
             item.status = status
             this.$message({
               message: '修改成功',
@@ -508,16 +529,18 @@
         this.pageobj.length = 10
         this.getadcArray()
       },
-      getadcArray() { // 获取数据集合
+      // 获取所有数据集合，加载页面首先执行的函数
+      getadcArray() {
         this.listLoading = true
         if (!this.isAccess('31')) {
           console.log(this.userInfo)
           this.pageobj._id = this.userInfo._id
         }
+        console.log(this.pageobj)
         //  this.pageobj
-        GetFacilitiesForId().then(response => {
+        GetFacilitiesForId(this.pageobj).then(response => {
           console.log(response)
-          this.adclist = response.info.list
+          this.adclist = response.info.list.slice(this.pageobj.start_index, this.pageobj.start_index + this.pageobj.length)
           this.totalPages = response.info.count
           // this.adclist.reverse()
           this.listLoading = false
@@ -525,6 +548,7 @@
           this.listLoading = false
         })
       },
+      // 分页的东西
       handleSizeChange(val) {
         this.pageobj.pagesize = val
         this.currentPage = 1
@@ -532,6 +556,7 @@
         this.pageobj.length = val
         this.getadcArray()
       },
+      // 分页的东西
       handleCurrentChange(val) {
         this.currentPage = val
         this.pageobj.start_index = (this.currentPage - 1) * this.pageobj.pagesize
@@ -577,7 +602,7 @@
       },
       goOtherPage(val) {
         this.$store.dispatch('setCaseId', val)
-        this.$router.push({ path: '/facilities/record' })
+        this.$router.push({ path: '/facilities/frecord' })
       }
     },
     computed: {

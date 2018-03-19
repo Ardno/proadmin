@@ -157,7 +157,8 @@ export const asyncRouterMap = [
     children: [
       { path: 'areaperson', component: _import('facilities/areaperson'), name: '区域人员管理', meta: { title: '区域人员管理' }},
       { path: 'facilities', component: _import('facilities/facilities'), name: '区域设施管理', meta: { title: '区域设施管理' }},
-      { path: 'record', hidden: true, component: _import('facilities/record'), name: '记录列表', meta: { title: '记录列表' }}
+      { path: 'arecord', hidden: true, component: _import('facilities/arecord'), name: '人员记录列表', meta: { title: '人员记录列表' }},
+      { path: 'frecord', hidden: true, component: _import('facilities/frecord'), name: '设施记录列表', meta: { title: '设施记录列表' }}
     ]
   },
   {

@@ -5,16 +5,16 @@
     </div>
     <!-- 分页 -->
     <div class="mb10">
-      <el-select clearable v-if="isAccess('83')" v-model="pageobj.user_id" filterable placeholder="请选择用户">
-        <el-option v-for="item in  adclist" :key="item._id" :label="item._id" :value="item._id">
+      <el-select clearable v-if="isAccess('83')" v-model="pageobj.area_id" filterable placeholder="所属区域">
+        <el-option v-for="item in  regionArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
-      <el-select class="filter-item" clearable v-model="pageobj.change_state" placeholder="状态">
-        <el-option v-for="item in  adclist" :key="item._id" :label="item._id" :value="item._id">
+      <el-select class="filter-item" clearable v-model="pageobj.status" placeholder="状态">
+        <el-option v-for="item in  statusArr" :key="item.id" :label="item.text" :value="item.id">
         </el-option>
       </el-select>
-      <el-select class="filter-item" clearable filterable v-model="pageobj.to_user_id" placeholder="换班人">
-        <el-option v-for="item in  adclist" :key="item._id" :label="item._id" :value="item._id">
+      <el-select class="filter-item" clearable filterable v-model="pageobj.class" placeholder="人员类型">
+        <el-option v-for="item in  classArr" :key="item.id" :label="item.text" :value="item.id">
         </el-option>
       </el-select>
       <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
@@ -107,7 +107,7 @@
           <el-button size="small" type="info" v-if="isAccess('33')" v-show="!scope.row.status"
                      @click="updateStaus(scope.row)">还原
           </el-button>
-          <!--<span v-if="scope.row._id===1" class="f12 g9 ml15">默认规则</span>-->
+          <!--<span v-if="scope.row._id===1" class="f12 g9 ml15">默认人员</span>-->
         </template>
       </el-table-column>
     </el-table>
@@ -167,7 +167,7 @@
         </el-form-item>
         <el-form-item label="人员类型">
           <el-select v-model="dataa.class" placeholder="请选择">
-            <el-option v-for="item in classArr" :key="item.id" :label="item.text" :value="item.id">
+            <el-option v-for="cla in classArr" :key="cla.id" :label="cla.text" :value="cla.id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -290,7 +290,7 @@
             { pattern: /^1[3|4|5|7|8][0-9]{9}$/, message: '手机号输入有误！', trigger: 'blur' }]
         },
         statusArr: [{ id: 0, text: '已删除' }, { id: 1, text: '正常' }, { id: 2, text: '脱贫' }, { id: 3, text: '外出' }, { id: 4, text: '生病' }],
-        classArr: [{ id: 0, text: '贫困户' }, { id: 1, text: '孤寡老人' }],
+        classArr: [{ 'id': '0', 'text': '贫困户' }, { 'id': '1', 'text': '孤寡老人' }],
         events: {
           init: (map) => {
             const geolocation = new AMap.Geolocation({
@@ -443,14 +443,14 @@
               addPerson(this.dataa).then(response => {
                 this.dialogFormVisiblea = false
                 this.$message({
-                  message: '添加规则成功！',
+                  message: '添加人员成功！',
                   type: 'success',
                   duration: 4 * 1000
                 })
                 this.handleQuery()
               }).catch(() => {
                 this.$message({
-                  message: '添加规则失败，请稍后再试',
+                  message: '添加人员失败，请稍后再试',
                   type: 'error',
                   duration: 4 * 1000
                 })
@@ -462,14 +462,14 @@
                 updatePerson(this.dataa).then(response => {
                   this.dialogFormVisiblea = false
                   this.$message({
-                    message: '修改规则成功！',
+                    message: '修改人员成功！',
                     type: 'success',
                     duration: 4 * 1000
                   })
                   this.handleQuery()
                 }).catch(() => {
                   this.$message({
-                    message: '修改规则失败，请稍后再试',
+                    message: '修改人员失败，请稍后再试',
                     type: 'error',
                     duration: 4 * 1000
                   })
@@ -481,17 +481,33 @@
               this.updatedataa.recorder_id = this.userInfo._id
               console.log(this.updatedataa)
               this.$confirm('确认添加？').then(() => {
+                if (!this.updatedataa.areaperson_img) { // 判断是否有图片
+                  this.$message({
+                    message: '必须上传图片，请稍后再试！',
+                    type: 'error',
+                    duration: 4 * 1000
+                  })
+                  return
+                }
+                if (!this.updatedataa.status) { // 判断是否选择状态
+                  this.$message({
+                    message: '必须选择状态，请稍后再试！',
+                    type: 'error',
+                    duration: 4 * 1000
+                  })
+                  return
+                }
                 addUpdatePersonInfo(this.updatedataa).then(response => {
                   this.updateFormVisiblea = false
                   this.$message({
-                    message: '修改规则成功！',
+                    message: '修改人员成功！',
                     type: 'success',
                     duration: 4 * 1000
                   })
                   this.handleQuery()
                 }).catch(() => {
                   this.$message({
-                    message: '修改规则失败，请稍后再试',
+                    message: '修改人员失败，请稍后再试',
                     type: 'error',
                     duration: 4 * 1000
                   })
@@ -554,6 +570,7 @@
       handleQuery() { // 查询所有数据集合
         this.pageobj.start_index = 0
         this.pageobj.length = 10
+        console.log(this.pageobj)
         this.getadcArray()
       },
       getadcArray() { // 获取数据集合
@@ -563,9 +580,10 @@
           this.pageobj._id = this.userInfo._id
         }
         //  this.pageobj
-        GetPersonForId().then(response => {
+        console.log(this.pageobj)
+        GetPersonForId(this.pageobj).then(response => {
           console.log(response)
-          this.adclist = response.info.list
+          this.adclist = response.info.list.slice(this.pageobj.start_index, this.pageobj.start_index + this.pageobj.length)
           this.totalPages = response.info.count
           // this.adclist.reverse()
           this.listLoading = false
@@ -625,7 +643,7 @@
       },
       goOtherPage(val) {
         this.$store.dispatch('setCaseId', val)
-        this.$router.push({ path: '/facilities/record' })
+        this.$router.push({ path: '/facilities/arecord' })
       }
     },
     computed: {
