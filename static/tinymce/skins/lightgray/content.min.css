@@ -259,7 +259,8 @@ b, strong {
 }
 
 .panel-body table {
-  width: 100% !important;
+  /* width: 100% !important; */
+  width: 100%;
 }
 
 .panel-body embed {
