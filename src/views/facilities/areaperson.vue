@@ -5,19 +5,18 @@
     </div>
     <!-- 分页 -->
     <div class="mb10">
-      <el-select clearable v-if="isAccess('83')" v-model="pageobj.area_id" filterable placeholder="所属区域">
+      <el-select clearable v-if="isAccess('83')" v-model="pageobj.area_id" filterable placeholder="所属区域" @change="handleQuery">
         <el-option v-for="item in  regionArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
-      <el-select class="filter-item" clearable v-model="pageobj.status" placeholder="状态">
+      <el-select class="filter-item" clearable v-model="pageobj.status" placeholder="状态" @change="handleQuery">
         <el-option v-for="item in  statusArr" :key="item.id" :label="item.text" :value="item.id">
         </el-option>
       </el-select>
-      <el-select class="filter-item" clearable filterable v-model="pageobj.class" placeholder="人员类型">
+      <el-select class="filter-item" clearable filterable v-model="pageobj.class" placeholder="人员类型" @change="handleQuery">
         <el-option v-for="item in  classArr" :key="item.id" :label="item.text" :value="item.id">
         </el-option>
       </el-select>
-      <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
       <el-button class="filter-item" type="primary" icon="plus" @click="addruleadc" v-if="isAccess('31')">添加</el-button>
     </div>
     <!-- 主要内容 -->
@@ -38,8 +37,11 @@
           <!--<span>{{scope.row.name}}</span>-->
           <el-tooltip placement="bottom" effect="light">
             <div slot="content" effect="light">
+              <a>
               <img v-bind:src="'http://120.76.228.172:83/images/other/'+scope.row.areaperson_img"
-                   style="max-width:100px;max-height: 100px;"/></div>
+                   style="max-width:100px;max-height: 100px;" ref="showmes" @click="showImg"/>
+              </a>
+            </div>
             <el-button>{{scope.row.name}}</el-button>
           </el-tooltip>
         </template>
@@ -228,6 +230,9 @@
         <el-button type="primary" @click="comfirmLoc">确 定</el-button>
       </span>
     </el-dialog>
+    <el-dialog :visible.sync="showimgsss">
+      <img v-bind:src="currentSrc" alt="" style="max-width:100%">
+    </el-dialog>
   </div>
 </template>
 
@@ -259,6 +264,8 @@
         tableKey: 0,
         titlea: '',
         dialogVisible1: false,
+        showimgsss: false,
+        currentSrc: null,
         positionObj: {
           lnglat: '',
           address: ''
@@ -407,11 +414,11 @@
           mobile: 18335410222
         }
       },
-      handleClick(tab, event) { // tab切换
-        console.log(tab, event)
+      showImg(event) {
+        this.currentSrc = event.srcElement.currentSrc
+        this.showimgsss = true
       },
       addUpdateInfo(item) {
-        console.log(item)
         console.log('添加修改信息')
         this.titlea = '添加修改信息记录'
         this.updatedataa.user_id = item._id
@@ -420,7 +427,6 @@
       handleUpdateDa(item) { // 修改人员信息
         this.titlea = '修改人员信息'
         this.dataa = deepClone(item)
-        console.log(this.dataa)
         if (this.dataa.areaperson_img) {
           var els = this.dataa.areaperson_img
           var obj = {
@@ -429,7 +435,6 @@
           }
           this.dataa.fileList = []
           this.dataa.fileList.push(obj)
-          console.log(this.dataa)
         }
         this.dialogFormVisiblea = true
       },
@@ -439,7 +444,6 @@
             if (this.titlea === '添加人员') {
               this.dataa.recorder_id = this.userInfo._id
               console.log('添加人员')
-              console.log(this.dataa)
               addPerson(this.dataa).then(response => {
                 this.dialogFormVisiblea = false
                 this.$message({
@@ -457,7 +461,6 @@
               })
             } else if (this.titlea === '修改人员信息') {
               console.log('修改人员信息')
-              console.log(this.dataa)
               this.$confirm('确认修改？').then(() => {
                 updatePerson(this.dataa).then(response => {
                   this.dialogFormVisiblea = false
@@ -479,7 +482,6 @@
               })
             } else if (this.titlea === '添加修改信息记录') {
               this.updatedataa.recorder_id = this.userInfo._id
-              console.log(this.updatedataa)
               this.$confirm('确认添加？').then(() => {
                 if (!this.updatedataa.areaperson_img) { // 判断是否有图片
                   this.$message({
@@ -568,8 +570,6 @@
         this.$refs.infoForma.resetFields()
       }, //
       handleQuery() { // 查询所有数据集合
-        this.pageobj.start_index = 0
-        this.pageobj.length = 10
         console.log(this.pageobj)
         this.getadcArray()
       },
@@ -579,8 +579,6 @@
           console.log(this.userInfo)
           this.pageobj._id = this.userInfo._id
         }
-        //  this.pageobj
-        console.log(this.pageobj)
         GetPersonForId(this.pageobj).then(response => {
           console.log(response)
           this.adclist = response.info.list.slice(this.pageobj.start_index, this.pageobj.start_index + this.pageobj.length)

@@ -153,7 +153,7 @@ export const asyncRouterMap = [
     component: Layout,
     redirect: '/facilities/index',
     name: '人员设施管理',
-    meta: { icon: 'chart', title: '人员设施管理' },
+    meta: { icon: 'chart', title: '人员设施' },
     children: [
       { path: 'areaperson', component: _import('facilities/areaperson'), name: '区域人员管理', meta: { title: '区域人员管理' }},
       { path: 'facilities', component: _import('facilities/facilities'), name: '区域设施管理', meta: { title: '区域设施管理' }},

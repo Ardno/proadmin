@@ -5,19 +5,18 @@
     </div>
     <!-- 筛选 -->
     <div class="mb10">
-      <el-select clearable v-if="isAccess('83')" v-model="pageobj.area_id" filterable placeholder="所属区域">
+      <el-select clearable v-if="isAccess('83')" v-model="pageobj.area_id" filterable placeholder="所属区域" @change="handleQuery">
         <el-option v-for="item in  regionArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
-      <el-select class="filter-item" clearable filterable v-model="pageobj.facilities_class" placeholder="设施类型">
+      <el-select class="filter-item" clearable filterable v-model="pageobj.facilities_class" placeholder="设施类型" @change="handleQuery">
         <el-option v-for="item in  classArr" :key="item.id" :label="item.text" :value="item.id">
         </el-option>
       </el-select>
-      <el-select class="filter-item" clearable v-model="pageobj.status" placeholder="状态">
+      <el-select class="filter-item" clearable v-model="pageobj.status" placeholder="状态" @change="handleQuery">
         <el-option v-for="item in  statusArr" :key="item.id" :label="item.text" :value="item.id">
         </el-option>
       </el-select>
-      <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
       <el-button class="filter-item" type="primary" icon="plus" @click="addruleadc" v-if="isAccess('31')">添加</el-button>
     </div>
     <!-- 主要内容 -->
@@ -126,14 +125,14 @@
         <el-form-item label="设施名称" prop="name">
           <el-input v-model="dataa.name"></el-input>
         </el-form-item>
-        <el-form-item label="设施类型">
+        <el-form-item label="设施类型" prop="facilities_class">
           <el-radio-group v-model="dataa.facilities_class">
             <el-radio :label="0">水文设施</el-radio>
             <el-radio :label="1">路政设施</el-radio>
             <el-radio :label="2">环卫设施</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="设施状态">
+        <el-form-item label="设施状态" prop="status">
           <el-select v-model="dataa.status" placeholder="请选择">
             <el-option v-for="item in statusArr" :key="item.id" :label="item.text" :value="item.id">
             </el-option>
@@ -143,10 +142,22 @@
           <input class="el-input__inner" v-model="dataa.address" placeholder="选择位置"/>
           <span class="blue poi" @click="selectLoc(dataa)"><i class="el-icon-location"></i>选择地点</span>
         </el-form-item>
-        <el-form-item label="负责人">
-          <el-select v-model="dataa.area_id" placeholder="请选择">
-            <el-option v-for="varea in regionArr" :key="varea._id" :label="varea.name" :value="varea._id">
-            </el-option>
+        <el-form-item label="负责人" prop="user_id">
+          <el-select clearable v-model="dataa.user_id" filterable placeholder="请选择">
+            <!--<el-option v-for="varea in userArr" :key="varea._id" :label="varea.name" :value="varea._id">-->
+            <!--</el-option>-->
+
+            <el-option-group
+              v-for="group in userAlltodepArr"
+              :key="group.dept.name"
+              :label="group.dept.name">
+              <el-option
+                v-for="item in group.user"
+                :key="item._id"
+                :label="item.name"
+                :value="item._id">
+              </el-option>
+            </el-option-group>
           </el-select>
         </el-form-item>
         <el-form-item label="负责人电话" prop="mobile">
@@ -248,6 +259,8 @@
           address: ''
         },
         userAll: [],
+        depArr: [],
+        userAlltodepArr: [],
         amapManager,
         zoom: 13,
         center: [114.085947, 22.54702],
@@ -264,7 +277,10 @@
           address: [{ required: true, message: '请选择正确地址', trigger: 'blur' }],
           mobile: [
             { required: true, message: '请输入手机号', trigger: 'blur' },
-            { pattern: /^1[3|4|5|7|8][0-9]{9}$/, message: '手机号输入有误！', trigger: 'blur' }]
+            { pattern: /^1[3|4|5|7|8][0-9]{9}$/, message: '手机号输入有误！', trigger: 'blur' }],
+          facilities_class: [{ required: true, message: '请填写类别', trigger: 'blur' }],
+          status: [{ required: true, message: '请填写状态', trigger: 'blur' }],
+          user_id: [{ required: true, message: '请填写负责人', trigger: 'blur' }]
         },
         statusArr: [{ id: 1, text: '正常' }, { id: 2, text: '完全损坏' }, { id: 3, text: '部分损坏' }, { id: 4, text: '丢失' }],
         classArr: [{ id: 0, text: '水文设施' }, { id: 1, text: '路政设施' }, { id: 2, text: '环卫设施' }],
@@ -344,6 +360,7 @@
         }, this)
         this.regionArr = arr
       })
+      this.dept_user()
     },
 
     methods: {
@@ -358,6 +375,33 @@
           }
         })
         return namecc
+      },
+
+      // 部门与用户数据展示处理
+      dept_user() {
+        this.depArr = this.$store.getters.commonInfo.depArr // 所有部门
+        this.userAll = this.$store.getters.commonInfo.userArr // 所有人员
+        if (this.depArr && this.depArr.length > 0 && this.userAll && this.userAll.length > 0) {
+          this.depArr.forEach(_dept => {
+            var m = {
+              dept: _dept,
+              user: []
+            }
+            this.userAll.forEach(_user => {
+              if (_user.department_id === _dept._id) {
+                m.user.push(_user)
+              }
+            })
+            this.userAlltodepArr.push(m) // 部门列表中绑定人员
+          })
+          this.isLoad = true
+          console.log(this.userAlltodepArr)
+        }
+        if (!this.isLoad) {
+          setTimeout(() => {
+            this.dept_user()
+          }, 1000)
+        }
       },
       addruleadc() {
         this.dialogFormVisiblea = true
@@ -408,14 +452,14 @@
               addFacilities(this.dataa).then(response => {
                 this.dialogFormVisiblea = false
                 this.$message({
-                  message: '添加规则成功！',
+                  message: '添加人员成功！',
                   type: 'success',
                   duration: 4 * 1000
                 })
                 this.handleQuery()
               }).catch(() => {
                 this.$message({
-                  message: '添加规则失败，请稍后再试',
+                  message: '添加人员失败，请稍后再试',
                   type: 'error',
                   duration: 4 * 1000
                 })
