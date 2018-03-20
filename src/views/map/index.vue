@@ -80,7 +80,7 @@ export default {
       mapobj: null,
       seeting: {
         person: true,
-        allperson: false,
+        allperson: true,
         raido: true,
         region: true,
         event: true
@@ -96,16 +96,6 @@ export default {
         init: (map) => {
           this.mapobj = this.$refs.map
           this.getGeolocation()
-          // this.geocoder.getAddress([map.getCenter().lng, map.getCenter().lat], (status, result) => {
-          //   if (status === 'complete' && result.info === 'OK') {
-          //     if (result && result.regeocode) {
-          //       this.address = result.regeocode.formattedAddress
-          //       this.$nextTick()
-          //     }
-          //   }
-          // })
-          // map.on('zoomend', (e) => {
-          // })
         },
         click: (e) => {
           const { lng, lat } = e.lnglat
