@@ -26,12 +26,12 @@
           <span class="oico"><svg-icon icon-class="setup" /></span>
         </el-tooltip>
       </li>
-      <li v-if="isAccess('11')"  @click="addPolygon">
+      <li v-if="isAccess('11')&&!inedit"   @click="addPolygon">
         <el-tooltip class="item" effect="dark" content="添加区域" placement="left">
           <span class="oico"><svg-icon icon-class="editor" /></span>
         </el-tooltip>
       </li>
-      <li v-if="isAccess('11')" @click="completePolygon">
+      <li v-if="isAccess('11')&&inedit" @click="completePolygon">
         <el-tooltip class="item" effect="dark" content="完成区域编辑" placement="left">
           <span class="oico"><svg-icon icon-class="success" /></span>
         </el-tooltip>
@@ -122,6 +122,7 @@ export default {
       _polygonEditor: null,
       _polygon: null,
       mouseTool: null,
+      inedit: false,
       pickerOptions1: {
         disabledDate(time) {
           return time.getTime() > Date.now()
@@ -221,6 +222,7 @@ export default {
       })
     },
     addPolygon() {
+      this.inedit = true
       const o = this.mapobj.$$getInstance()
       const center = o.getCenter()
       const _polygon = function(lat, lon) {
@@ -255,7 +257,8 @@ export default {
       this._polygonEditor.open()
     },
     completePolygon() {
-      if (this._polygonEditor) {
+      this.inedit = false
+      if (this._polygonEditor && this._polygon) {
         this._polygonEditor.close()
         this.regionobj.dialogFormVisible = true
         this.regionobj.userid = []

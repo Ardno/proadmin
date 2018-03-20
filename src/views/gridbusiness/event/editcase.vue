@@ -1,7 +1,7 @@
 <template>
   <div class="app-container">
     <div class="layui-elem-quote">
-        <span class="f28">立案</span>
+        <span class="f28">{{eventname}}</span>
     </div>
     <div class="box">
       <el-form :model="eventObj" ref="eventForm" label-width="150px" class="demo-eventForm">
@@ -73,7 +73,7 @@
 
 <script>
 import VueAMap from 'vue-amap'
-import { getEventStep, getLawsArr, updateCaseStep } from '@/api/depevent'
+import { getEventStep, getEvent, getLawsArr, updateCaseStep } from '@/api/depevent'
 import { fileReaderBase64 } from '@/utils/utils'
 import { imgUpLoad } from '@/api/upload'
 // import { getDepCld } from '@/utils/auth'
@@ -85,6 +85,7 @@ export default {
       eventObj: {
         steps: []
       },
+      eventname: '',
       requstParm: {
         step_id: '',
         event_id: '',
@@ -167,9 +168,9 @@ export default {
   },
   methods: {
     getEvent() {
-      // getEvent({ _id: this.eventid }).then(res => {
-      //   console.log(res)
-      // })
+      getEvent({ _id: this.eventid }).then(res => {
+        this.eventname = res.info.name
+      })
       getEventStep({ event_id: this.eventid }).then(res => {
         this.requstParm.step_id = res.info.step_id
         this.requstParm.event_id = res.info.event_id

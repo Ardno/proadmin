@@ -607,6 +607,7 @@ export default {
           this.totalCount += conver.unread_msg_count
         }
         this.conversations = conversations.reverse()
+        console.log(this.conversations)
         if (!flg) {
           this.initConverMsg()
         }
