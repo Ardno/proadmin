@@ -366,6 +366,7 @@ export default {
     },
     getLatlon(updateFlg) { // 获取部门人员位置
       const addLatlon = (element) => { // 添加图标
+        element.type = 'people'
         const obj = {
           position: [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001],
           label: {
@@ -425,7 +426,7 @@ export default {
           data.forEach(element => {
             let flg = false
             this.markerArr.forEach(els => {
-              if (els.extData._id === element._id && els.extData.location.uploadtime !== els.location.uploadtime) { // 覆盖数据
+              if (els.extData.type === 'people' && els.extData._id === element._id && els.extData.location.uploadtime !== element.location.uploadtime) { // 覆盖数据
                 flg = true
                 els.position = [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001]
                 els.extData = element
@@ -479,9 +480,10 @@ export default {
     },
     getEventArr(updateFlg) { // 获取事件位置
       const addEvent = (element) => {
+        element.type = 'event'
         if (element.lat) {
           const obj = {
-            position: [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001],
+            position: [element.lon + Math.random() * 0.0001, element.lat + Math.random() * 0.0001],
             label: {
               'content': element.name,
               'offset': [25, 22]
@@ -489,21 +491,21 @@ export default {
             icon: eventicon,
             events: {
               click: (e) => {
-                const obj = element
-                const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                const objc = element
+                const happen_time = parseTime(objc.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                 let update_time = '暂无更新'
-                if (obj.update_time) {
-                  update_time = parseTime(obj.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                if (objc.update_time) {
+                  update_time = parseTime(objc.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                 }
                 this.windows[0].position = [element.lon, element.lat]
                 this.windows[0].visible = true
                 // <a href="javascript:" style="color:blue">点击查看事件</a>
                 const ctstr = `<div class="info">
-                <div class="info-top">${obj.name}</div>
+                <div class="info-top">${objc.name}</div>
                 <div class="info-middle"  style="background-color: white;">
                 状态：<span class="g6">进行中...</span><br>
-                地址：<span class="g6">${obj.address}</span><br>
-                处理人：<span class="g6">${obj.username}</span> <br>
+                地址：<span class="g6">${objc.address}</span><br>
+                处理人：<span class="g6">${objc.username}</span> <br>
                 发生时间：<span class="g6">${happen_time}</span><br>
                 更新时间：<span class="g6">${update_time}</span><br>
                 </div></div>`
@@ -529,7 +531,7 @@ export default {
           data.forEach(element => {
             let flg = false
             this.markerArr.forEach(els => {
-              if (els.extData._id === element._id && els.extData.update_time !== els.update_time) { // 覆盖数据
+              if (els.extData.type === 'event' && els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
                 flg = true
                 els.position = [element.lon, element.lat]
                 els.extData = element
@@ -570,7 +572,7 @@ export default {
           console.log(this.markerArr)
         }
       }).catch(errs => {
-        console.log('获取事件位置出错')
+        console.log('获取事件位置出错', errs)
       })
     },
     handler(type, val) {
