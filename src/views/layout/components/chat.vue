@@ -403,7 +403,9 @@ export default {
               msg_type: 4
             }
           }
+          console.log('更新会话列表')
           msglist[id].msgs.push(element)
+          console.log(msglist[id])
           this.JIMgetConversation()
         }
         this.MsgList = msglist
@@ -594,6 +596,7 @@ export default {
     },
     JIMgetConversation(flg) { // 获取会话列表
       this.JIM.getConversation().onSuccess((data) => {
+        console.log('更新会话列表2', data)
         const conversations = data.conversations
         for (const conver of conversations) {
           if (conver.type === 3) {
