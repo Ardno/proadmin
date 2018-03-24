@@ -388,14 +388,17 @@ export default {
         series: [{
           name: '网格区域总时间',
           type: 'bar',
+          barMaxWidth: 35,
           data: [row.regionTime]
         }, {
           name: '网格区域总里程',
           type: 'bar',
+          barMaxWidth: 35,
           data: [row.regionMileage]
         }, {
           name: '网格区域数量',
           type: 'bar',
+          barMaxWidth: 35,
           data: [row.regionNum]
         }]
       })

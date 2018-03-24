@@ -43,7 +43,12 @@ export function parseTime(time, cFormat, flg) {
   })
   return time_str
 }
-
+export function getAges(timestamp) { // 计算年龄
+  const newTimestamp = Math.floor(new Date().getTime() / 1000)
+  const count = newTimestamp - timestamp
+  const age = Math.floor(count / 24 / 60 / 60 / 360)
+  return age
+}
 export function formatTime(time, option) {
   time = +time * 1000
   const d = new Date(time)
