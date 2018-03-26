@@ -50,11 +50,7 @@
       </el-table-column>
       <el-table-column align="center" label="状态" width="80">
         <template slot-scope="scope">
-          <el-tag v-if="scope.row.status == 0" type="info">删除</el-tag>
-          <el-tag v-if="scope.row.status == 1" type="primary">正常</el-tag>
-          <el-tag v-if="scope.row.status == 2" type="danger">完全损坏</el-tag>
-          <el-tag v-if="scope.row.status == 3" type="info">部分损坏</el-tag>
-          <el-tag v-if="scope.row.status == 4" type="warning">丢失</el-tag>
+          <span v-for="item in  statusArr" v-if="scope.row.status == item.id" type="primary">{{item.text}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="负责人电话" width="150">
@@ -69,9 +65,7 @@
       </el-table-column>
       <el-table-column align="center" label="设施类型">
         <template slot-scope="scope">
-          <span v-if="scope.row.facilities_class === 0">水文设施</span>
-          <span v-if="scope.row.facilities_class === 1">路政设施</span>
-          <span v-if="scope.row.facilities_class === 2">环卫设施</span>
+          <span v-for="item in  classArr" type="primary" v-if="scope.row.facilities_class == item.id">{{item.text}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="负责人">
@@ -127,15 +121,21 @@
         </el-form-item>
         <el-form-item label="设施类型" prop="facilities_class">
           <el-radio-group v-model="dataa.facilities_class">
-            <el-radio :label="0">水文设施</el-radio>
-            <el-radio :label="1">路政设施</el-radio>
-            <el-radio :label="2">环卫设施</el-radio>
+            <template v-for="item in  classArr">
+              <el-radio :label="item.id" :key="item.id">{{item.text}}</el-radio>
+            </template>
+            <!--<el-radio :label="1">路政设施</el-radio>-->
+            <!--<el-radio :label="2">环卫设施</el-radio>-->
+
+            <!--<span v-for="item in  classArr" type="primary" v-if="scope.row.facilities_class == item.id">{{item.text}}</span>-->
           </el-radio-group>
         </el-form-item>
         <el-form-item label="设施状态" prop="status">
           <el-select v-model="dataa.status" placeholder="请选择">
-            <el-option v-for="item in statusArr" :key="item.id" :label="item.text" :value="item.id">
-            </el-option>
+            <template v-for="item in  statusArr">
+              <el-option :key="item.id" :label="item.text" :value="item.id">
+              </el-option>
+            </template>
           </el-select>
         </el-form-item>
         <el-form-item label="设施地址" prop="address">
@@ -163,7 +163,7 @@
         <el-form-item label="负责人电话" prop="mobile">
           <el-input v-model="dataa.mobile" :value="dataa.mobile"></el-input>
         </el-form-item>
-        <el-form-item label="所在区域">
+        <el-form-item label="所在区域" prop="area_id">
           <el-select v-model="dataa.area_id" placeholder="请选择">
             <el-option v-for="varea in regionArr" :key="varea._id" :label="varea.name" :value="varea._id">
             </el-option>
@@ -193,8 +193,9 @@
         </el-form-item>
         <el-form-item label="设施状态">
           <el-select v-model="updatedataa.status" placeholder="请选择">
-            <el-option v-for="item in statusArr" :key="item.id" :label="item.text" :value="item.id">
-            </el-option>
+            <template v-for="item in statusArr">
+              <el-option :key="item.id" :label="item.text" :value="item.id"></el-option>
+            </template>
           </el-select>
         </el-form-item>
       </el-form>
@@ -226,7 +227,7 @@
 <script>
   import { mapGetters } from 'vuex'
   import VueAMap from 'vue-amap'
-  import { deepClone, parseTime } from '@/utils/index'
+  import { deepClone } from '@/utils/index'
   import { addFacilities, GetFacilitiesForId, addUpdateFacilitiesInfo, updateFacilities } from '@/api/areaperson'
   import { getRegionArr } from '@/api/grid'
   import { isAccess } from '@/utils/auth'
@@ -268,8 +269,7 @@
         updateFormVisiblea: false,
         dataa: {
           name: '',
-          area_id: '',
-          facilities_class: 1
+          area_id: ''
         },
         updatedataa: {},
         infoRulesa: {
@@ -280,10 +280,11 @@
             { pattern: /^1[3|4|5|7|8][0-9]{9}$/, message: '手机号输入有误！', trigger: 'blur' }],
           facilities_class: [{ required: true, message: '请填写类别', trigger: 'blur' }],
           status: [{ required: true, message: '请填写状态', trigger: 'blur' }],
-          user_id: [{ required: true, message: '请填写负责人', trigger: 'blur' }]
+          user_id: [{ required: true, message: '请填写负责人', trigger: 'blur' }],
+          area_id: [{ required: true, message: '请选择区域', trigger: 'blur' }]
         },
-        statusArr: [{ id: 1, text: '正常' }, { id: 2, text: '完全损坏' }, { id: 3, text: '部分损坏' }, { id: 4, text: '丢失' }],
-        classArr: [{ id: 0, text: '水文设施' }, { id: 1, text: '路政设施' }, { id: 2, text: '环卫设施' }],
+        statusArr: [],
+        classArr: [],
         events: {
           init: (map) => {
             const geolocation = new AMap.Geolocation({
@@ -337,21 +338,6 @@
         item: ''
       }
     },
-    filters: {
-      statusFilter(status, time) {
-        const statusMap = ['', '每天', '工作日', '指定日期']
-        if (status === 3) {
-          const timearr = time.split(',')
-          const arr = []
-          timearr.forEach(function(element) {
-            element = parseTime(Number(element), '{y}-{m}-{d}', true)
-            arr.push(element)
-          }, this)
-          return arr.join(',')
-        }
-        return statusMap[status]
-      }
-    },
     created() {
       this.getadcArray()
       getRegionArr({ start_index: 0, length: 10000, status: 0 }).then(response => {
@@ -365,7 +351,7 @@
 
     methods: {
       isAccess: isAccess,
-      selectuserid(user) { // 遍历所有用户，把录入人员的id改为中文名
+      selectuserid(user) { // 遍历所有用户，把录入设施的id改为中文名
         this.userArr = this.$store.getters.commonInfo.userArr
         var namecc
         this.userArr.forEach(usera => {
@@ -380,7 +366,7 @@
       // 部门与用户数据展示处理
       dept_user() {
         this.depArr = this.$store.getters.commonInfo.depArr // 所有部门
-        this.userAll = this.$store.getters.commonInfo.userArr // 所有人员
+        this.userAll = this.$store.getters.commonInfo.userArr // 所有设施
         if (this.depArr && this.depArr.length > 0 && this.userAll && this.userAll.length > 0) {
           this.depArr.forEach(_dept => {
             var m = {
@@ -392,10 +378,9 @@
                 m.user.push(_user)
               }
             })
-            this.userAlltodepArr.push(m) // 部门列表中绑定人员
+            this.userAlltodepArr.push(m) // 部门列表中绑定设施
           })
           this.isLoad = true
-          console.log(this.userAlltodepArr)
         }
         if (!this.isLoad) {
           setTimeout(() => {
@@ -428,7 +413,7 @@
         this.updatedataa.facilities_id = item._id
         this.updateFormVisiblea = true
       },
-      handleUpdateDa(item) { // 修改人员信息
+      handleUpdateDa(item) { // 修改设施信息
         this.titlea = '修改区域信息'
         this.dataa = deepClone(item)
         if (this.dataa.facilities_img) {
@@ -442,30 +427,38 @@
         }
         this.dialogFormVisiblea = true
       },
-      handleAddUpdate() { // 添加修改人员信息
+      handleAddUpdate() { // 添加修改设施信息
         this.$refs.infoForma.validate(valid => {
           if (valid) {
             if (this.titlea === '添加区域设施') {
               this.dataa.recorder_id = this.userInfo._id
-              console.log('添加人员')
+              console.log('添加设施')
               console.log(this.dataa)
+              if (!this.dataa.facilities_img) {
+                this.$message({
+                  message: '请上传图片，请稍后再试',
+                  type: 'error',
+                  duration: 4 * 1000
+                })
+                return
+              }
               addFacilities(this.dataa).then(response => {
                 this.dialogFormVisiblea = false
                 this.$message({
-                  message: '添加人员成功！',
+                  message: '添加设施成功！',
                   type: 'success',
                   duration: 4 * 1000
                 })
                 this.handleQuery()
               }).catch(() => {
                 this.$message({
-                  message: '添加人员失败，请稍后再试',
+                  message: '添加设施失败，请稍后再试',
                   type: 'error',
                   duration: 4 * 1000
                 })
               })
             } else if (this.titlea === '修改区域信息') {
-              console.log('修改人员信息')
+              console.log('修改设施信息')
               console.log(this.dataa)
               this.$confirm('确认修改？').then(() => {
                 updateFacilities(this.dataa).then(response => {
@@ -523,7 +516,7 @@
           }
         })
       },
-      updateStaus(item) { // 修改人员状态
+      updateStaus(item) { // 修改设施状态
         let tipStr = ''
         let status = 0
         if (item.status) { // 恢复
@@ -577,16 +570,23 @@
       getadcArray() {
         this.listLoading = true
         if (!this.isAccess('31')) {
-          console.log(this.userInfo)
           this.pageobj._id = this.userInfo._id
         }
-        console.log(this.pageobj)
-        //  this.pageobj
         GetFacilitiesForId(this.pageobj).then(response => {
           console.log(response)
-          this.adclist = response.info.list.slice(this.pageobj.start_index, this.pageobj.start_index + this.pageobj.length)
+          this.adclist = response.info.list
           this.totalPages = response.info.count
           // this.adclist.reverse()
+          this.classArr = []
+          this.statusArr = []
+          response.info.classname.forEach(res => {
+            if (res.class != null) {
+              this.classArr.push({ id: res.class, text: res.name }) // 类别
+            }
+            if (res.status != null) {
+              this.statusArr.push({ id: res.status, text: res.name })
+            }
+          })
           this.listLoading = false
         }).catch(() => {
           this.listLoading = false

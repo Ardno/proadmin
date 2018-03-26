@@ -85,6 +85,7 @@
         <template slot-scope="scope">
           <span v-if="scope.row.class == '0'">贫困户</span>
           <span v-if="scope.row.class == '1'">孤寡老人</span>
+          <span v-if="scope.row.class == '2'">刑满释放</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="登记人">
@@ -579,9 +580,10 @@
           console.log(this.userInfo)
           this.pageobj._id = this.userInfo._id
         }
+        console.log(this.pageobj)
         GetPersonForId(this.pageobj).then(response => {
           console.log(response)
-          this.adclist = response.info.list.slice(this.pageobj.start_index, this.pageobj.start_index + this.pageobj.length)
+          this.adclist = response.info.list
           this.totalPages = response.info.count
           // this.adclist.reverse()
           this.listLoading = false

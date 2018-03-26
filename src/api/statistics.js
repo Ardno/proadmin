@@ -21,3 +21,17 @@ export function getDepartmentStatist(data) { // 获取部门统计
     data: data
   })
 }
+export function getPeopleStatist(data) { // 获取人员统计
+  return fetch({
+    url: 'statistics/peoplemongo',
+    method: 'post',
+    data: data
+  })
+}
+export function getMongoareaStatist(data) { // 获取人员统计
+  return fetch({
+    url: 'statistics/mongoarea',
+    method: 'post',
+    data: data
+  })
+}

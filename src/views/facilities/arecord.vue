@@ -81,6 +81,7 @@
         //   console.log(res)
         // })
         GetpersonlogsList(agu).then(res => {
+          console.log(res)
           res.info.list.forEach(list => { // 遍历所有用户，把录入人员的id改为中文名
             this.userArr.forEach(usera => {
               this.userName = list.name

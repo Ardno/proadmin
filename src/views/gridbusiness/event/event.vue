@@ -25,7 +25,7 @@
         <span>-</span>
         <el-date-picker  type="datetime" v-model="end_time" placeholder="选择结束时间"></el-date-picker>
         <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
-      </p>  
+      </p>
     </div>
     <el-table :key='tableKey' :data="eventArr" v-loading="listLoading" element-loading-text="给我一点时间" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180" label="创建时间">
@@ -211,6 +211,9 @@ export default {
     } catch (error) {
       console.log(error)
     }
+    console.log(this.userInfo)
+    this.pageobj.department_ids.push(this.userInfo.department_id)
+    this.pageobj.department_id = this.userInfo.department_id
     this.loadArr()
     this.getEventsArr()
   },
@@ -234,7 +237,6 @@ export default {
             this.allStepsArr.forEach(element => {
               if (element._id === Number(resl.step_id)) {
                 item.dangqname = element.name
-                console.log(item.dangqname)
               }
             })
           }
@@ -391,7 +393,6 @@ export default {
           })
         })
       }).catch(errs => {
-        console.log(errs)
         this.caseStepInfo.loading = false
         this.$message({
           message: '查询信息失败',
@@ -418,6 +419,7 @@ export default {
     },
     getEventsArr() {
       this.listLoading = true
+      console.log(this.pageobj)
       getEventArr(this.pageobj).then(res => {
         res.info.list.forEach(element => {
           element.dangqname = ''
@@ -474,6 +476,11 @@ export default {
     goOtherPage(val) {
       this.$store.dispatch('setCaseId', val)
       this.$router.push({ path: '/reportcase/editcase' })
+    },
+    computed: {
+      ...mapGetters({
+        userInfo: 'useinfo'
+      })
     }
   }
 }
