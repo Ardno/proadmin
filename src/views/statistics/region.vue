@@ -366,16 +366,19 @@ export default {
           const obj1 = {
             name: '每平方公里每日值班人员',
             type: 'bar',
+            barMaxWidth: 35,
             data: []
           }
           const obj2 = {
             name: '每平方公里每日事件',
             type: 'bar',
+            barMaxWidth: 35,
             data: []
           }
           const obj3 = {
             name: '人均每日事件数量',
             type: 'bar',
+            barMaxWidth: 35,
             data: []
           }
           row.forEach(element => {

@@ -5,8 +5,7 @@
       <el-amap-polygon v-for="(polygon, index) in polygons" :key="index" :vid="index" :ref="`polygon_${index}`" :strokeWeight="polygon.strokeWeight" :strokeOpacity="polygon.strokeOpacity" :strokeColor="polygon.strokeColor" :fillColor="polygon.fillColor" :fillOpacity="polygon.fillOpacity" :path="polygon.path" :events="polygon.events">
       </el-amap-polygon>
       <!-- 点坐标 -->
-      <el-amap-marker v-for="(marker, index) in markerArr" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :events="marker.events" :visible="marker.visible"  :draggable="marker.draggable">
-      </el-amap-marker>
+      <el-amap-marker v-for="(marker, index) in markerArr" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :label="marker.label" :events="marker.events" :visible="marker.visible"  :draggable="marker.draggable"></el-amap-marker>
       <!-- 信息窗体 -->
       <el-amap-info-window v-for="(window, index) in windows" :closeWhenClickMap="true" :ref="`window_${index}`" :key="index" :template="window.template" :position="window.position"  :visible="window.visible" :events="window.events">
       </el-amap-info-window>
@@ -80,7 +79,7 @@ export default {
       mapobj: null,
       seeting: {
         person: true,
-        allperson: false,
+        allperson: true,
         raido: true,
         region: true,
         event: true
@@ -96,16 +95,6 @@ export default {
         init: (map) => {
           this.mapobj = this.$refs.map
           this.getGeolocation()
-          // this.geocoder.getAddress([map.getCenter().lng, map.getCenter().lat], (status, result) => {
-          //   if (status === 'complete' && result.info === 'OK') {
-          //     if (result && result.regeocode) {
-          //       this.address = result.regeocode.formattedAddress
-          //       this.$nextTick()
-          //     }
-          //   }
-          // })
-          // map.on('zoomend', (e) => {
-          // })
         },
         click: (e) => {
           const { lng, lat } = e.lnglat
@@ -377,18 +366,15 @@ export default {
     },
     getLatlon(updateFlg) { // 获取部门人员位置
       const addLatlon = (element) => { // 添加图标
+        element.type = 'people'
         const obj = {
           position: [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001],
-          // position: this.getRadomPt(),
+          label: {
+            'content': element.name,
+            'offset': [25, 22]
+          },
           icon: element.state ? personicon : pergray,
           events: {
-            init: (marker) => {
-              marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
-                offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
-                content: element.name
-              })
-              this.markerRefs.push(marker)
-            },
             click: (e) => {
               const obje = element
               const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
@@ -408,7 +394,6 @@ export default {
               this.windows[0].template = ctstr
             },
             dragend: (e) => {
-              this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
             }
           },
           title: element.name,
@@ -441,20 +426,13 @@ export default {
           data.forEach(element => {
             let flg = false
             this.markerArr.forEach(els => {
-              if (els.extData.location && (els.extData.location.user_id === element._id)) { // 覆盖数据
+              if (els.extData.type === 'people' && els.extData._id === element._id && els.extData.location.uploadtime !== element.location.uploadtime) { // 覆盖数据
                 flg = true
                 els.position = [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001]
                 els.extData = element
                 els.icon = element.state ? personicon : pergray
                 els.title = element.name
                 els.events = {
-                  init: (marker) => {
-                    marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
-                      offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
-                      content: element.name
-                    })
-                    this.markerRefs.push(marker)
-                  },
                   click: (e) => {
                     const obje = element
                     const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
@@ -474,7 +452,6 @@ export default {
                     this.windows[0].template = ctstr
                   },
                   dragend: (e) => {
-                    this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
                   }
                 }
               }
@@ -503,47 +480,42 @@ export default {
     },
     getEventArr(updateFlg) { // 获取事件位置
       const addEvent = (element) => {
+        element.type = 'event'
         if (element.lat) {
           const obj = {
-            position: [element.lon, element.lat],
-            // position: this.getRadomPt(),
+            position: [element.lon + Math.random() * 0.0001, element.lat + Math.random() * 0.0001],
+            label: {
+              'content': element.name,
+              'offset': [25, 22]
+            },
             icon: eventicon,
             events: {
-              init: (marker) => {
-                marker.setLabel({ // label默认蓝框白底左上角显示，样式className为：amap-marker-label
-                  offset: new AMap.Pixel(25, 22), // 修改label相对于maker的位置
-                  content: element.name
-                })
-                // this.markerRefs.push(marker)
-              },
               click: (e) => {
-                const obj = element
-                const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                const objc = element
+                const happen_time = parseTime(objc.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                 let update_time = '暂无更新'
-                if (obj.update_time) {
-                  update_time = parseTime(obj.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                if (objc.update_time) {
+                  update_time = parseTime(objc.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                 }
                 this.windows[0].position = [element.lon, element.lat]
                 this.windows[0].visible = true
                 // <a href="javascript:" style="color:blue">点击查看事件</a>
                 const ctstr = `<div class="info">
-                <div class="info-top">${obj.name}</div>
+                <div class="info-top">${objc.name}</div>
                 <div class="info-middle"  style="background-color: white;">
                 状态：<span class="g6">进行中...</span><br>
-                地址：<span class="g6">${obj.address}</span><br>
-                处理人：<span class="g6">${obj.username}</span> <br>
+                地址：<span class="g6">${objc.address}</span><br>
+                处理人：<span class="g6">${objc.username}</span> <br>
                 发生时间：<span class="g6">${happen_time}</span><br>
                 更新时间：<span class="g6">${update_time}</span><br>
                 </div></div>`
                 this.windows[0].template = ctstr
               },
               dragend: (e) => {
-                this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
               }
             },
             title: element.name,
             visible: true,
-            draggable: false,
             extData: element
           }
           if (this.seeting.event) {
@@ -559,7 +531,7 @@ export default {
           data.forEach(element => {
             let flg = false
             this.markerArr.forEach(els => {
-              if (els.extData._id === data._id) { // 覆盖数据
+              if (els.extData.type === 'event' && els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
                 flg = true
                 els.position = [element.lon, element.lat]
                 els.extData = element
@@ -586,7 +558,6 @@ export default {
                   this.windows[0].template = ctstr
                 }
                 els.events.dragend = (e) => {
-                  this.markers[0].position = [e.lnglat.lng, e.lnglat.lat]
                 }
               }
             })
@@ -598,9 +569,10 @@ export default {
           data.forEach((element, index) => {
             addEvent(element)
           })
+          console.log(this.markerArr)
         }
       }).catch(errs => {
-        console.log('获取事件位置出错')
+        console.log('获取事件位置出错', errs)
       })
     },
     handler(type, val) {

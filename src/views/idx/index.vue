@@ -4,7 +4,7 @@
       <el-col :span="6" class="pl15 pr15">
         <div class="panel fix">
           <div class="symbol terques">
-            <i class="fa fa-user"><svg-icon icon-class="inx-02" /></i>
+            <i class="fa"><svg-icon icon-class="inx-02" /></i>
           </div>
           <div class="value">
             <h1 class="count">{{dataInfo.today}}</h1>
@@ -15,7 +15,7 @@
       <el-col :span="6">
         <div class="panel fix">
           <div class="symbol red">
-            <i class="fa fa-user"><svg-icon icon-class="inx-04" /></i>
+            <i class="fa "><svg-icon icon-class="inx-04" /></i>
           </div>
           <div class="value">
             <h1 class="count">{{dataInfo.treatment_day}}</h1>
@@ -26,7 +26,7 @@
       <el-col :span="6">
         <div class="panel fix">
           <div class="symbol yellow">
-            <i class="fa fa-user"><svg-icon icon-class="addressbook" /></i>
+            <i class="fa "><svg-icon icon-class="addressbook" /></i>
           </div>
           <div class="value">
             <h1 class="count">{{dataInfo.implement_user}}</h1>
@@ -37,7 +37,7 @@
       <el-col :span="6">
         <div class="panel fix">
           <div class="symbol blue">
-            <i class="fa fa-user"><svg-icon icon-class="inx-03" /></i>
+            <i class="fa "><svg-icon icon-class="inx-03" /></i>
           </div>
           <div class="value">
             <h1 class="count">{{dataInfo.all_user}}</h1>
@@ -59,19 +59,21 @@
       </el-col>
     </el-row>
     <el-row class="mt20" :gutter="20">
-      <el-col :span="8">
+      <el-col :span="24">
+        <div class='chart-container chat-pie pt30'>
+          <div class="chat"  id="linechat3" ></div>
+        </div>
+      </el-col>
+    </el-row>
+    <el-row class="mt20" :gutter="20">
+      <el-col :span="12">
         <div class='chart-container chat-pie pt30'>
           <div class="chat"  id="pie1" ></div>
         </div>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="12">
         <div class='chart-container chat-pie pt30'>
           <div class="chat"  id="pie2" ></div>
-        </div>
-      </el-col>
-      <el-col :span="8">
-        <div class='chart-container chat-pie pt30'>
-          <div class="chat"  id="pie3" ></div>
         </div>
       </el-col>
     </el-row>
@@ -84,6 +86,7 @@ import { mapGetters } from 'vuex'
 import { fetchList } from '@/api/department'
 import { indexInfo } from '@/api/platform'
 import { getdepMonthdance } from '@/api/levelshift'
+import { getAges } from '@/utils/index'
 export default {
   data() {
     return {
@@ -134,7 +137,7 @@ export default {
       this.chart1 = echarts.init(document.getElementById('linechat1'))
       this.chart1.setOption({
         title: {
-          text: '案件统计分析'
+          text: '区域人统计分析'
         },
         tooltip: {
           trigger: 'axis',
@@ -143,7 +146,7 @@ export default {
           }
         },
         legend: {
-          data: ['新增', '待处理', '已处理'],
+          data: ['指派巡逻人数'],
           align: 'right',
           right: 10
         },
@@ -155,27 +158,30 @@ export default {
         },
         xAxis: [{
           type: 'category',
-          data: ['8月', '9月', '10月', '11月', '12月']
+          axisLabel: {
+            interval: 0,
+            rotate: 45,
+            show: true,
+            splitNumber: 15,
+            textStyle: {
+              fontFamily: '微软雅黑',
+              fontSize: 12
+            }
+          },
+          data: ['测试区域1', '测试区域2', '测试区域3', '测试区域4', '测试区域5', '测试区域6']
         }],
         yAxis: [{
           type: 'value',
-          name: '总数(件)',
+          name: '巡逻人数(个)',
           axisLabel: {
             formatter: '{value}'
           }
         }],
         series: [{
-          name: '新增',
+          name: '指派巡逻人数',
           type: 'bar',
-          data: [20, 12, 31, 34, 31]
-        }, {
-          name: '待处理',
-          type: 'bar',
-          data: [10, 20, 5, 9, 3]
-        }, {
-          name: '已处理',
-          type: 'bar',
-          data: [1, 1, 2, 3, 1]
+          barMaxWidth: 35,
+          data: [20, 12, 31, 34, 31, 12]
         }]
       })
       // 图表2
@@ -185,18 +191,20 @@ export default {
           text: '案件数量统计分析'
         },
         tooltip: {
-          trigger: 'item',
-          formatter: '{a} <br/>{b} : {c}'
+          trigger: 'axis',
+          axisPointer: {
+            type: 'line'
+          }
         },
-        // legend: {
-        //   left: 'right',
-        //   data: ['2的指数', '3的指数']
-        // },
+        legend: {
+          left: 'right',
+          data: ['已上报', '待审核', '已处理', '驳回待修改']
+        },
         xAxis: {
           type: 'category',
           name: '月份',
           splitLine: { show: false },
-          data: ['8', '9', '10', '11', '12']
+          data: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
         },
         grid: {
           left: '3%',
@@ -210,9 +218,24 @@ export default {
         },
         series: [
           {
-            name: '案件数',
+            name: '已上报',
             type: 'line',
-            data: [12, 24, 34, 12, 34]
+            data: [12, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+          },
+          {
+            name: '待审核',
+            type: 'line',
+            data: [2, 11, 23, 14, 35, 16, 27, 28, 49, 10, 11, 12]
+          },
+          {
+            name: '已处理',
+            type: 'line',
+            data: [22, 11, 31, 41, 15, 26, 17, 18, 29, 10, 21, 12]
+          },
+          {
+            name: '驳回待修改',
+            type: 'line',
+            data: [32, 31, 23, 14, 25, 36, 17, 28, 19, 10, 11, 12]
           }
         ]
       })
@@ -230,7 +253,7 @@ export default {
         legend: {
           orient: 'vertical',
           left: 'left',
-          data: ['男', '女']
+          data: ['青年', '中年', '老年']
         },
         series: [
           {
@@ -239,8 +262,9 @@ export default {
             radius: '55%',
             center: ['50%', '60%'],
             data: [
-              { value: 0, name: '男' },
-              { value: 0, name: '女' }
+              { value: 0, name: '青年' },
+              { value: 0, name: '中年' },
+              { value: 0, name: '老年' }
             ],
             itemStyle: {
               emphasis: {
@@ -295,79 +319,86 @@ export default {
       })
       this.getKaoqingArr()
       // 图表5
-      this.chart5 = echarts.init(document.getElementById('pie3'))
+      this.chart5 = echarts.init(document.getElementById('linechat3'))
       this.chart5.setOption({
         title: {
-          text: '当月工作分析',
-          x: 'center'
+          text: '案件类型统计分析'
         },
-        series: [{
-          type: 'pie',
-          radius: [30, '55%'],
-          center: ['50%', '50%'],
-          roseType: 'radius',
-          color: ['#f2c955', '#00a69d', '#46d185', '#ec5845'],
-          data: [{
-            value: 7,
-            name: '待处理'
-          }, {
-            value: 4,
-            name: '进行中'
-          }, {
-            value: 35,
-            name: '已完成'
-          }, {
-            value: 53,
-            name: '其他'
-          }],
-          label: {
-            normal: {
-              textStyle: {
-                fontSize: 14
-              },
-              formatter: function(param) {
-                return param.name + ':\n' + Math.round(param.percent) + '%'
-              }
-            }
-          },
-          labelLine: {
-            normal: {
-              smooth: true,
-              lineStyle: {
-                width: 2
-              }
-            }
-          },
-          itemStyle: {
-            normal: {
-              shadowBlur: 30,
-              shadowColor: 'rgba(0, 0, 0, 0.4)'
-            }
-          },
-          animationType: 'scale',
-          animationEasing: 'elasticOut',
-          animationDelay: function(idx) {
-            return Math.random() * 200
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'line'
           }
-        }]
+        },
+        legend: {
+          width: 600,
+          type: 'scroll',
+          left: 'right',
+          data: ['生猪屠宰', '无事生非', '有理有据', '无故抢道']
+        },
+        xAxis: {
+          type: 'category',
+          name: '月份',
+          splitLine: { show: false },
+          data: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+        },
+        grid: {
+          left: '3%',
+          right: '6%',
+          bottom: '3%',
+          containLabel: true
+        },
+        yAxis: {
+          type: 'value',
+          name: '数量（件）'
+        },
+        series: [
+          {
+            name: '生猪屠宰',
+            type: 'line',
+            data: [12, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+          },
+          {
+            name: '无事生非',
+            type: 'line',
+            data: [2, 11, 23, 14, 35, 16, 27, 28, 49, 10, 11, 12]
+          },
+          {
+            name: '有理有据',
+            type: 'line',
+            data: [22, 11, 31, 41, 15, 26, 17, 18, 29, 10, 21, 12]
+          },
+          {
+            name: '无故抢道',
+            type: 'line',
+            data: [32, 31, 23, 14, 25, 36, 17, 28, 19, 10, 11, 12]
+          }
+        ]
       })
     },
     // end
     getDepUserInfo() { // 获取部门人员比例
       fetchList({ start_index: 0, length: 10000, department_id: this.useinfo.department_id }).then(res => {
         const arr = res.info.list
-        const nan_arr = arr.filter(obj => { // 性别男集合
-          return !obj.sex
-        })
-        const nv_arr = arr.filter(obj => { // 性别女集合
-          return obj.sex
-        })
+        const a1 = arr.filter(obj => { // 青年集合
+          const age = getAges(obj.birthday)
+          return age <= 44
+        }).length
+        const a2 = arr.filter(obj => { // 中年年集合
+          const age = getAges(obj.birthday)
+          return age < 60 && age > 45
+        }).length
+        const a3 = arr.filter(obj => { // 老年集合
+          const age = getAges(obj.birthday)
+          return age >= 60
+        }).length
         this.chart3.setOption({
           series: [
             {
               data: [
-                { value: nan_arr.length, name: '男' },
-                { value: nv_arr.length, name: '女' }
+                { value: a1, name: '青年' },
+                { value: a2, name: '中年' },
+                { value: a3, name: '老年' }
               ]
             }
           ]
