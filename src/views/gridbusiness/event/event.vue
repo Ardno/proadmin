@@ -424,7 +424,9 @@ export default {
         res.info.list.forEach(element => {
           element.dangqname = ''
         })
-        this.eventArr = res.info.list
+        this.eventArr = res.info.list.filter(element => { // 过滤掉已删除的事件
+          return element.status !== 2
+        })
         this.pageobj.totalPages = res.info.count
         this.listLoading = false
         this.eventArr.forEach(element => {

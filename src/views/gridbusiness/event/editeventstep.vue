@@ -31,7 +31,7 @@
           </el-col>
           <el-col :span="11">
             <el-form-item label-width="85px" label="法律法规:" prop="department_id" class="postInfo-container-item">
-              <el-cascader :options="myLawArr" :props="props" @change="handleItemChange2" @active-item-change="handleItemChange"></el-cascader>
+              <el-cascader :options="myLawArr" @change="handleItemChange2" filterable change-on-select></el-cascader>
               <!-- <el-select clearable class="filter-item" style="width: 130px" filterable v-model="cur_lawArr" placeholder="请选择">
                 <el-option v-for="item in  lawArr" :key="item._id" :label="item.name" :value="item.name">
                 </el-option>
@@ -92,6 +92,7 @@ import MDinput from '@/components/MDinput'
 import { fetchRoles } from '@/api/department'
 import { findParentTop } from '@/utils/index'
 import { getSteps, addSteps, updateSteps, getLawsArr } from '@/api/depevent'
+import { deepClone, TreeUtil, removeTreeArr } from '@/utils/index'
 const paraTypeArr = [
   { _id: '0', name: '文本控件' },
   { _id: '1', name: '多行文本控件' },
@@ -240,11 +241,17 @@ export default {
       })
     },
     handleItemChange2(val) {
-      this.lawArr.forEach(item_f => {
-        if (item_f._id === val[val.length - 1]) {
-          this.cur_lawArr = item_f.name
-          return false
-        }
+      this.cur_lawArr = ''
+      val.forEach(element => { // 读取章节目录以及最后选中内容
+        this.lawArr.forEach(item_f => {
+          if (element === item_f._id) {
+            this.cur_lawArr += item_f.name + ' '
+            if (item_f.content && item_f._id === val[val.length - 1]) {
+              this.cur_lawArr = this.cur_lawArr + ' ' + item_f.content
+            }
+            return false
+          }
+        })
       })
     },
     handleItemChange(val) {
@@ -385,6 +392,21 @@ export default {
       this.depArr = this.$store.getters.commonInfo.depArr
       getLawsArr({ department_id: '' }).then(response => {
         this.lawArr = response.info
+        const array = deepClone(response.info)
+        // this.depArr = array
+        const map = { name: 'label', _id: 'value' }
+        array.forEach(element => {
+          element.parent = element.regu_id
+        })
+        try {
+          const tree1 = new TreeUtil(array, '_id', 'parent', map)
+          const myLawArr = tree1.toTree()
+          removeTreeArr(myLawArr)
+          this.myLawArr = myLawArr
+          console.log(this.myLawArr)
+        } catch (error) {
+          console.log(error)
+        }
         response.info.forEach(item => {
           if (item.regu_id === 0) {
             // this.myLawArr.push({
@@ -392,14 +414,14 @@ export default {
             //   value: item._id,
             //   children: []
             // })
-            var xxxitem = { label: item.name, value: item._id }
-            this.lawArr.forEach(item_x => {
-              if (item_x.regu_id === item._id) {
-                xxxitem.children = []
-                return false
-              }
-            })
-            this.myLawArr.push(xxxitem)
+            // var xxxitem = { label: item.name, value: item._id }
+            // this.lawArr.forEach(item_x => {
+            //   if (item_x.regu_id === item._id) {
+            //     xxxitem.children = []
+            //     return false
+            //   }
+            // })
+            // this.myLawArr.push(xxxitem)
           }
         })
       })
