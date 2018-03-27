@@ -86,3 +86,10 @@ export function getdepMonthdance(data) { // 获取部门考勤集合
     data: data
   })
 }
+export function getdepStatistics(data) { // 获取部门考勤集合
+  return fetch({
+    url: 'statistics/list',
+    method: 'post',
+    data: data
+  })
+}

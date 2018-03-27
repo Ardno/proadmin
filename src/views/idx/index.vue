@@ -85,7 +85,8 @@ import echarts from 'echarts'
 import { mapGetters } from 'vuex'
 import { fetchList } from '@/api/department'
 import { indexInfo } from '@/api/platform'
-import { getdepMonthdance } from '@/api/levelshift'
+import { getdepStatistics } from '@/api/levelshift'
+import { getDepCld } from '@/utils/auth'
 import { getAges } from '@/utils/index'
 export default {
   data() {
@@ -243,7 +244,7 @@ export default {
       this.chart3 = echarts.init(document.getElementById('pie1'))
       this.chart3.setOption({
         title: {
-          text: '部门人员数',
+          text: '部门人员结构',
           x: 'center'
         },
         tooltip: {
@@ -281,7 +282,7 @@ export default {
       this.chart4 = echarts.init(document.getElementById('pie2'))
       this.chart4.setOption({
         title: {
-          text: '上月部门考勤分析',
+          text: '昨日部门考勤分析',
           x: 'center'
         },
         tooltip: {
@@ -291,21 +292,19 @@ export default {
         legend: {
           orient: 'vertical',
           left: 'left',
-          data: ['缺勤', '早退', '迟到', '正常', '调派', '请假']
+          data: ['迟到', '早退', '缺勤', '正常']
         },
         series: [
           {
-            name: '访问来源',
+            name: '考勤',
             type: 'pie',
             radius: '55%',
             center: ['50%', '60%'],
             data: [
-              { value: 0, name: '缺勤' },
-              { value: 0, name: '早退' },
               { value: 0, name: '迟到' },
-              { value: 0, name: '正常' },
-              { value: 0, name: '调派' },
-              { value: 0, name: '请假' }
+              { value: 0, name: '早退' },
+              { value: 0, name: '缺勤' },
+              { value: 0, name: '正常' }
             ],
             itemStyle: {
               emphasis: {
@@ -406,52 +405,91 @@ export default {
       })
     },
     getKaoqingArr() {
-      var nowdays = new Date()
-      var year = nowdays.getFullYear()
-      var month = nowdays.getMonth()
-      if (month === 0) {
-        month = 12
-        year = year - 1
+      // var nowdays = new Date()
+      // var year = nowdays.getFullYear()
+      // var month = nowdays.getMonth()
+      // if (month === 0) {
+      //   month = 12
+      //   year = year - 1
+      // }
+      // if (month < 10) {
+      //   month = '0' + month
+      // }
+      // var firstDay = year + '-' + month + '-' + '01' // 上个月的第一天
+      // var myDate = new Date(year, month, 0)
+      // var lastDay = year + '-' + month + '-' + myDate.getDate() // 上个月的最后一天
+      // const request = {
+      //   start_time: new Date(firstDay).getTime() / 1000,
+      //   end_time: new Date(lastDay).getTime() / 1000,
+      //   department_id: this.useinfo.department_id
+      // }
+      // getdepMonthdance(request).then(res => {
+      //   // 1:正常；2：迟到 3：早退；4：缺勤 5：调派
+      //   const arrlen1 = res.info.work.filter(obj => {
+      //     return obj.work_state === 1
+      //   }).length
+      //   const arrlen2 = res.info.work.filter(obj => {
+      //     return obj.work_state === 2
+      //   }).length
+      //   const arrlen3 = res.info.work.filter(obj => {
+      //     return obj.work_state === 3
+      //   }).length
+      //   const arrlen4 = res.info.work.filter(obj => {
+      //     return obj.work_state === 4
+      //   }).length
+      //   const arrlen5 = res.info.work.filter(obj => {
+      //     return obj.work_state === 5
+      //   }).length
+      //   const arrlen6 = res.info.leave.length //  '请假'
+      //   this.chart4.setOption({
+      //     series: [
+      //       {
+      //         data: [
+      //           { value: arrlen4, name: '缺勤' },
+      //           { value: arrlen3, name: '早退' },
+      //           { value: arrlen2, name: '迟到' },
+      //           { value: arrlen1, name: '正常' },
+      //           { value: arrlen5, name: '调派' },
+      //           { value: arrlen6, name: '请假' }
+      //         ]
+      //       }
+      //     ]
+      //   })
+      // })
+      const requestInfo = {
+        min_time: 0,
+        max_time: 0,
+        type: 0,
+        department_id: getDepCld()
       }
-      if (month < 10) {
-        month = '0' + month
-      }
-      var firstDay = year + '-' + month + '-' + '01' // 上个月的第一天
-      var myDate = new Date(year, month, 0)
-      var lastDay = year + '-' + month + '-' + myDate.getDate() // 上个月的最后一天
-      const request = {
-        start_time: new Date(firstDay).getTime() / 1000,
-        end_time: new Date(lastDay).getTime() / 1000,
-        department_id: this.useinfo.department_id
-      }
-      getdepMonthdance(request).then(res => {
-        // 1:正常；2：迟到 3：早退；4：缺勤 5：调派
-        const arrlen1 = res.info.work.filter(obj => {
-          return obj.work_state === 1
-        }).length
-        const arrlen2 = res.info.work.filter(obj => {
-          return obj.work_state === 2
-        }).length
-        const arrlen3 = res.info.work.filter(obj => {
-          return obj.work_state === 3
-        }).length
-        const arrlen4 = res.info.work.filter(obj => {
-          return obj.work_state === 4
-        }).length
-        const arrlen5 = res.info.work.filter(obj => {
-          return obj.work_state === 5
-        }).length
-        const arrlen6 = res.info.leave.length //  '请假'
+      // 获取昨日起始时间戳
+      const date = new Date()
+      date.setDate(date.getDate() - 1)
+      date.setHours(0)
+      date.setMinutes(0)
+      requestInfo.min_time = Math.floor(date.getTime() / 1000)
+      date.setHours(23)
+      date.setMinutes(59)
+      requestInfo.max_time = Math.floor(date.getTime() / 1000)
+      getdepStatistics(requestInfo).then(res => {
+        let _text = 0
+        let _img = 0
+        let _video = 0
+        let _audio = 0
+        res.info.list.forEach(item => {
+          _text += item.workLate
+          _img += item.workLeave
+          _video += item.wrokAbsence
+          _audio += item.workSuccess
+        })
         this.chart4.setOption({
           series: [
             {
               data: [
-                { value: arrlen4, name: '缺勤' },
-                { value: arrlen3, name: '早退' },
-                { value: arrlen2, name: '迟到' },
-                { value: arrlen1, name: '正常' },
-                { value: arrlen5, name: '调派' },
-                { value: arrlen6, name: '请假' }
+                { value: _text, name: '迟到' },
+                { value: _img, name: '早退' },
+                { value: _video, name: '缺勤' },
+                { value: _audio, name: '正常' }
               ]
             }
           ]
