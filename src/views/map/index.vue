@@ -7,7 +7,7 @@
       <!-- 点坐标 -->
       <el-amap-marker v-for="(marker, index) in markerArr" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :label="marker.label" :events="marker.events" :visible="marker.visible"  :draggable="marker.draggable"></el-amap-marker>
       <!-- 信息窗体 -->
-      <el-amap-info-window v-for="(window, index) in windows" :closeWhenClickMap="true" :ref="`window_${index}`" :key="index" :template="window.template" :position="window.position"  :visible="window.visible" :events="window.events">
+      <el-amap-info-window :closeWhenClickMap="true" :template="currentWindow.template" :position="currentWindow.position"  :visible="currentWindow.visible" :events="currentWindow.events">
       </el-amap-info-window>
     </el-amap>
     <div class="pottoolbar" >
@@ -79,7 +79,7 @@ export default {
       mapobj: null,
       seeting: {
         person: true,
-        allperson: true,
+        allperson: false,
         raido: true,
         region: true,
         event: true
@@ -121,18 +121,12 @@ export default {
         }
       }],
       polygons: [],
-      windows: [
-        {
-          position: [121.5273285, 31.21515044],
-          template: '<span>changed</span>',
-          visible: false,
-          events: {
-            close: () => {
-              this.windows[0].visible = false
-            }
-          }
-        }
-      ],
+      currentWindow: {
+        position: [109.103313, 18.385587],
+        template: '<span></span>',
+        events: {},
+        visible: true
+      },
       userArr: [],
       depArr: [],
       markerArr: [],
@@ -225,18 +219,18 @@ export default {
       this.mapobj.addMapControls(this.geolocations)
       this.geolocations.getCurrentPosition()
       // let countTimes = 0
-      this.timeer = setInterval(() => { // 上传位置信息
-        // countTimes++
-        // const newloc = this.locationPostion.newloc.toString()
-        // const oldloc = this.locationPostion.oldloc.toString()
-        // if (newloc !== oldloc || countTimes > 28) { // 位置不变则4分钟上传一次,
-        // countTimes = 0
-        this.locationPostion.oldloc = this.locationPostion.newloc
-        if (this.locationPostion.newloc.length) {
-          this.uploadCurLoc(this.locationPostion.newloc, this.locationPostion.address)
-        }
-        // }
-      }, 10000)
+      // this.timeer = setInterval(() => { // 上传位置信息
+      //   // countTimes++
+      //   // const newloc = this.locationPostion.newloc.toString()
+      //   // const oldloc = this.locationPostion.oldloc.toString()
+      //   // if (newloc !== oldloc || countTimes > 28) { // 位置不变则4分钟上传一次,
+      //   // countTimes = 0
+      //   this.locationPostion.oldloc = this.locationPostion.newloc
+      //   if (this.locationPostion.newloc.length) {
+      //     this.uploadCurLoc(this.locationPostion.newloc, this.locationPostion.address)
+      //   }
+      //   // }
+      // }, 10000)
       AMap.event.addListener(this.geolocations, 'complete', (data) => {
         setTimeout(() => { // 定时查询当前位置
           this.geolocations.getCurrentPosition()
@@ -255,7 +249,6 @@ export default {
         })
       }) // 返回定位信息
       AMap.event.addListener(this.geolocations, 'error', (data) => {
-        console.log(data)
         this.$message({
           message: '定位用户失败~',
           type: 'error',
@@ -299,8 +292,15 @@ export default {
           this.getSetting()
         }, 30000)
       } catch (error) {
+        if (this.intetime) {
+          clearInterval(this.intetime)
+        }
         console.log(error)
       }
+      // 不清楚刚加载,弹框为什么会显示，这里延迟关闭
+      setTimeout(() => {
+        this.currentWindow.visible = false
+      }, 300)
     },
     getRadomPt() {
       var resultPt = []
@@ -378,8 +378,8 @@ export default {
             click: (e) => {
               const obje = element
               const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
-              this.windows[0].position = [obje.location.lon, obje.location.lat]
-              this.windows[0].visible = true
+              this.currentWindow.position = [obje.location.lon, obje.location.lat]
+              this.currentWindow.visible = true
               let strtip = `<span class="ml15 f12 g9">离线 </span>`
               if (obje.state) {
                 strtip = `<span class="ml15 f12 blue">在线 </span>`
@@ -391,7 +391,7 @@ export default {
               地址：${obje.location.address}<br>更新时间：${uploadtime}<br>
               <a href="javascript:" style="color:blue">点击对话</a>
               </div></div>`
-              this.windows[0].template = ctstr
+              this.currentWindow.template = ctstr
             },
             dragend: (e) => {
             }
@@ -436,8 +436,8 @@ export default {
                   click: (e) => {
                     const obje = element
                     const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                    this.windows[0].position = [obje.location.lon, obje.location.lat]
-                    this.windows[0].visible = true
+                    this.currentWindow.position = [obje.location.lon, obje.location.lat]
+                    this.currentWindow.visible = true
                     let strtip = `<span class="ml15 f12 g9">离线 </span>`
                     if (obje.state) {
                       strtip = `<span class="ml15 f12 blue">在线 </span>`
@@ -449,7 +449,7 @@ export default {
                     地址：${obje.location.address}<br>更新时间：${uploadtime}<br>
                     <a href="javascript:" style="color:blue">点击对话</a>
                     </div></div>`
-                    this.windows[0].template = ctstr
+                    this.currentWindow.template = ctstr
                   },
                   dragend: (e) => {
                   }
@@ -457,7 +457,6 @@ export default {
               }
             })
             if (!flg) {
-              console.log('添加新的图标', flg)
               addLatlon(element)
             }
           })
@@ -465,7 +464,6 @@ export default {
           data.forEach((element, index) => {
             addLatlon(element)
           })
-          console.log(this.markerArr)
         }
         // setTimeout(() => {
         //   this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs, {
@@ -497,8 +495,8 @@ export default {
                 if (objc.update_time) {
                   update_time = parseTime(objc.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                 }
-                this.windows[0].position = [element.lon, element.lat]
-                this.windows[0].visible = true
+                this.currentWindow.position = [element.lon, element.lat]
+                this.currentWindow.visible = true
                 // <a href="javascript:" style="color:blue">点击查看事件</a>
                 const ctstr = `<div class="info">
                 <div class="info-top">${objc.name}</div>
@@ -509,7 +507,7 @@ export default {
                 发生时间：<span class="g6">${happen_time}</span><br>
                 更新时间：<span class="g6">${update_time}</span><br>
                 </div></div>`
-                this.windows[0].template = ctstr
+                this.currentWindow.template = ctstr
               },
               dragend: (e) => {
               }
@@ -543,8 +541,8 @@ export default {
                   if (obj.update_time) {
                     update_time = parseTime(obj.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                   }
-                  this.windows[0].position = [element.lon, element.lat]
-                  this.windows[0].visible = true
+                  this.currentWindow.position = [element.lon, element.lat]
+                  this.currentWindow.visible = true
                   // <a href="javascript:" style="color:blue">点击查看事件</a>
                   const ctstr = `<div class="info">
                   <div class="info-top">${obj.name}</div>
@@ -555,7 +553,7 @@ export default {
                   发生时间：<span class="g6">${happen_time}</span><br>
                   更新时间：<span class="g6">${update_time}</span><br>
                   </div></div>`
-                  this.windows[0].template = ctstr
+                  this.currentWindow.template = ctstr
                 }
                 els.events.dragend = (e) => {
                 }
@@ -569,7 +567,6 @@ export default {
           data.forEach((element, index) => {
             addEvent(element)
           })
-          console.log(this.markerArr)
         }
       }).catch(errs => {
         console.log('获取事件位置出错', errs)
