@@ -65,14 +65,14 @@
     <el-dialog title="显示配置信息" width="600px"  @close="stcloseCall" :visible.sync="seeting.dialogFormVisible"  >
       <div>
         <p class="mb10">
-          <span class="mr5">人员显示</span><el-switch on-text="" off-text="" v-model="seeting.person"></el-switch>
-          <span class="ml40 mr5">显示离线</span><el-switch on-text="" off-text="" v-model="seeting.allperson"></el-switch>
+          <span class="mr5">人员显示</span><el-switch  v-model="seeting.person"></el-switch>
+          <span class="ml40 mr5">显示离线</span><el-switch  v-model="seeting.allperson"></el-switch>
         </p>
         <p class="mt10">
-          <span class="mr5">区域显示</span><el-switch on-text="" off-text="" v-model="seeting.region"></el-switch>
-          <span class="ml40 mr5">摄像显示</span><el-switch on-text="" off-text="" v-model="seeting.raido"></el-switch>
+          <span class="mr5">区域显示</span><el-switch  v-model="seeting.region"></el-switch>
+          <span class="ml40 mr5">摄像显示</span><el-switch  v-model="seeting.raido"></el-switch>
         </p>
-        <p class="mt10"><span class="mr5">事件显示</span><el-switch on-text="" off-text="" v-model="seeting.event"></el-switch></p>
+        <p class="mt10"><span class="mr5">事件显示</span><el-switch  v-model="seeting.event"></el-switch></p>
       </div>
     </el-dialog>
     <!-- 人员轨迹查询 -->
@@ -186,6 +186,8 @@ export default {
       })
     },
     stcloseCall() {
+      this.seeting.dialogFormVisible = false
+      console.log(this.seeting)
       Cookies.set('seeting', this.seeting)
       this.$emit('seeting', this.seeting)
       // console.log(123)

@@ -1,5 +1,5 @@
 <template>
-  <div class="pht100 rel">
+  <div class="pht100 rel" >
     <el-amap vid="amapDemo" ref="map" :center="center" :map-manager="amapManager" :zoom="zoom" :plugin="plugin" :events="events" class="amap-demo">
       <!-- 区域 -->
       <el-amap-polygon v-for="(polygon, index) in polygons" :key="index" :vid="index" :ref="`polygon_${index}`" :strokeWeight="polygon.strokeWeight" :strokeOpacity="polygon.strokeOpacity" :strokeColor="polygon.strokeColor" :fillColor="polygon.fillColor" :fillOpacity="polygon.fillOpacity" :path="polygon.path" :events="polygon.events">
@@ -219,18 +219,18 @@ export default {
       this.mapobj.addMapControls(this.geolocations)
       this.geolocations.getCurrentPosition()
       // let countTimes = 0
-      // this.timeer = setInterval(() => { // 上传位置信息
-      //   // countTimes++
-      //   // const newloc = this.locationPostion.newloc.toString()
-      //   // const oldloc = this.locationPostion.oldloc.toString()
-      //   // if (newloc !== oldloc || countTimes > 28) { // 位置不变则4分钟上传一次,
-      //   // countTimes = 0
-      //   this.locationPostion.oldloc = this.locationPostion.newloc
-      //   if (this.locationPostion.newloc.length) {
-      //     this.uploadCurLoc(this.locationPostion.newloc, this.locationPostion.address)
-      //   }
-      //   // }
-      // }, 10000)
+      this.timeer = setInterval(() => { // 上传位置信息
+        // countTimes++
+        // const newloc = this.locationPostion.newloc.toString()
+        // const oldloc = this.locationPostion.oldloc.toString()
+        // if (newloc !== oldloc || countTimes > 28) { // 位置不变则4分钟上传一次,
+        // countTimes = 0
+        this.locationPostion.oldloc = this.locationPostion.newloc
+        if (this.locationPostion.newloc.length) {
+          this.uploadCurLoc(this.locationPostion.newloc, this.locationPostion.address)
+        }
+        // }
+      }, 10000)
       AMap.event.addListener(this.geolocations, 'complete', (data) => {
         setTimeout(() => { // 定时查询当前位置
           this.geolocations.getCurrentPosition()
@@ -288,9 +288,9 @@ export default {
         this.getRegion()
         this.getLatlon()
         this.getEventArr()
-        this.intetime = setInterval(() => {
-          this.getSetting()
-        }, 30000)
+        // this.intetime = setInterval(() => {
+        //   this.getSetting()
+        // }, 30000)
       } catch (error) {
         if (this.intetime) {
           clearInterval(this.intetime)
@@ -300,7 +300,7 @@ export default {
       // 不清楚刚加载,弹框为什么会显示，这里延迟关闭
       setTimeout(() => {
         this.currentWindow.visible = false
-      }, 300)
+      }, 1000)
     },
     getRadomPt() {
       var resultPt = []
@@ -328,7 +328,7 @@ export default {
             if (!colorArr[element.department_id]) {
               colorArr[element.department_id] = '#' + Math.floor(Math.random() * 0xffffff).toString(16)
             }
-            const obj = {
+            const objs = {
               path: element.latlon_list,
               editable: false,
               strokeColor: '#000',
@@ -355,9 +355,9 @@ export default {
               }
             }
             if (this.seeting.region) {
-              this.polygons.push(obj)
+              this.polygons.push(objs)
             }
-            this.polygonsArr.push(obj)
+            this.polygonsArr.push(objs)
           }
         }, this)
       }).catch(errs => {
