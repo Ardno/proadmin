@@ -5,6 +5,8 @@ import App from './App'
 import router from './router'
 import store from './store'
 import VueAMap from 'vue-amap'
+import _ from 'lodash'
+
 import * as filters from './filters' // 全局filter
 import './icons' // icon
 import './errorLog'// error log
@@ -15,6 +17,7 @@ Vue.use(ElementUI)
 Object.keys(filters).forEach(key => {
   Vue.filter(key, filters[key])
 })
+Vue.prototype._ = _
 VueAMap.initAMapApiLoader({
   key: '94b913821c7541316bbcc7653a96c19e',
   plugin: ['AMap.Scale', 'AMap.OverView', 'AMap.ToolBar', 'AMap.MapType',
