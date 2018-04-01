@@ -81,8 +81,8 @@
       <el-table-column align="center" label="操作" width="290">
         <template slot-scope="scope">
           <el-button size="small" type="primary" v-if="isAccess('32')" @click="handleUpdateDa(scope.row)">修改</el-button>
-          <el-button size="small" type="primary" v-if="isAccess('32')" @click="addUpdateInfo(scope.row)">更新</el-button>
-          <el-button size="small" type="success" v-if="isAccess('32')" @click="goOtherPage(scope.row._id)">记录</el-button>
+          <el-button size="small" type="primary" @click="addUpdateInfo(scope.row)">更新</el-button>
+          <el-button size="small" type="success" @click="goOtherPage(scope.row._id)">记录</el-button>
           <el-button size="small" type="danger" v-if="isAccess('33')" v-show="scope.row.status" @click="updateStaus(scope.row)">删除</el-button>
           <el-button size="small" type="info" v-if="isAccess('33')" v-show="!scope.row.status" @click="updateStaus(scope.row)">还原</el-button>
         </template>

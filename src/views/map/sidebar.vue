@@ -67,10 +67,12 @@
         <p class="mb10">
           <span class="mr5">人员显示</span><el-switch on-text="" off-text="" v-model="seeting.person"></el-switch>
           <span class="ml40 mr5">显示离线</span><el-switch on-text="" off-text="" v-model="seeting.allperson"></el-switch>
+          <span class="ml40 mr5">区域人员管理</span><el-switch on-text="" off-text="" v-model="seeting.areaperson"></el-switch>
         </p>
         <p class="mt10">
           <span class="mr5">区域显示</span><el-switch on-text="" off-text="" v-model="seeting.region"></el-switch>
           <span class="ml40 mr5">摄像显示</span><el-switch on-text="" off-text="" v-model="seeting.raido"></el-switch>
+          <span class="ml40 mr5">区域设施管理</span><el-switch on-text="" off-text="" v-model="seeting.construct"></el-switch>
         </p>
         <p class="mt10"><span class="mr5">事件显示</span><el-switch on-text="" off-text="" v-model="seeting.event"></el-switch></p>
       </div>
@@ -87,7 +89,7 @@
         <el-form-item label="日期范围" prop="daterange">
           <el-date-picker
             v-model="trajectory.daterange"
-            type="daterange" 
+            type="daterange"
             start-placeholder="开始日期"
             :picker-options="pickerOptions1"
             end-placeholder="结束日期" @change="formatDaterange">
@@ -151,7 +153,9 @@ export default {
         allperson: true,
         raido: true,
         region: true,
-        event: true
+        event: true,
+        areaperson: true,
+        construct: true
       },
       trajectory: {
         dialogFormVisible: false,
@@ -185,8 +189,12 @@ export default {
         duration: 4 * 1000
       })
     },
+    callMethod() {
+      console.log('调用成功')
+    },
     stcloseCall() {
       Cookies.set('seeting', this.seeting)
+      console.log(this.showpeizhi)
       this.$emit('seeting', this.seeting)
       // console.log(123)
     },

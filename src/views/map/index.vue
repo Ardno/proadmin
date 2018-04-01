@@ -5,7 +5,14 @@
       <el-amap-polygon v-for="(polygon, index) in polygons" :key="index" :vid="index" :ref="`polygon_${index}`" :strokeWeight="polygon.strokeWeight" :strokeOpacity="polygon.strokeOpacity" :strokeColor="polygon.strokeColor" :fillColor="polygon.fillColor" :fillOpacity="polygon.fillOpacity" :path="polygon.path" :events="polygon.events">
       </el-amap-polygon>
       <!-- 点坐标 -->
-      <el-amap-marker v-for="(marker, index) in markerArr" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :label="marker.label" :events="marker.events" :visible="marker.visible"  :draggable="marker.draggable"></el-amap-marker>
+      <!-- 同事的坐标 -->
+      <el-amap-marker v-for="(marker, index) in markerArr.person" v-if="seeting.person" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :label="marker.label" :events="marker.events" :visible="marker.visible"  :draggable="marker.draggable"></el-amap-marker>
+      <!-- 案件的坐标 -->
+      <el-amap-marker v-for="(marker, index) in markerArr.case" v-if="seeting.event" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :label="marker.label" :events="marker.events" :visible="marker.visible"  :draggable="marker.draggable"></el-amap-marker>
+      <!-- 人员管理的坐标 -->
+      <el-amap-marker v-for="(marker, index) in markerArr.areaperson" v-if="seeting.areaperson" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :label="marker.label" :events="marker.events" :visible="marker.visible"  :draggable="marker.draggable"></el-amap-marker>
+      <!-- 设施管理的坐标 -->
+      <el-amap-marker v-for="(marker, index) in markerArr.construct" v-if="seeting.construct" :ref="`marker_${index}`" :key="index" :position="marker.position" :icon="marker.icon" :title="marker.title" :label="marker.label" :events="marker.events" :visible="marker.visible"  :draggable="marker.draggable"></el-amap-marker>
       <!-- 信息窗体 -->
       <el-amap-info-window v-for="(window, index) in windows" :closeWhenClickMap="true" :ref="`window_${index}`" :key="index" :template="window.template" :position="window.position"  :visible="window.visible" :events="window.events">
       </el-amap-info-window>
@@ -14,7 +21,7 @@
         <!-- 经纬度: [{{ lng }}, {{ lat }}]  -->
         地址: {{ address }}
     </div>
-    <side-bar :mapobj="mapobj" :PathSimplifier='PathSimplifier' @seeting="loadInit"  @reloadMap="loadInit" @addRegion="getRegion"></side-bar>
+    <side-bar :mapobj="mapobj" :PathSimplifier='PathSimplifier' @seeting="isopen"  @reloadMap="loadInit" @addRegion="getRegion"></side-bar>
     <!-- 区域信息 -->
     <el-dialog title="区域信息" width="600px"  :visible.sync="regionobj.dialogFormVisible"  >
       <el-form class="small-space"  label-position="top">
@@ -51,23 +58,23 @@ import { getRegionArr, updateRegion, getLatlonArr } from '@/api/grid'
 import { parseTime } from '@/utils/index'
 import { getEventArr } from '@/api/depevent'
 import { uploadCurLoc } from '@/api/platform'
+import { GetPersonForId, GetFacilitiesForId } from '@/api/areaperson'
 import { isAccess, getDepCld } from '@/utils/auth'
 import personicon from '@/assets/icon/personicon.png'
 import pergray from '@/assets/icon/pergray.png'
 import eventicon from '@/assets/icon/zuob2.png'
+import areapersonicon from '@/assets/icon/constructmarker/personiconsmall.png'
+import facilitiesicon from '@/assets/icon/constructmarker/construct.png'
 import avatar from '@/assets/login_images/avatar.png'
 import { deepClone } from '@/utils/index'
 import Cookies from 'js-cookie'
 import Bus from '@/utils/bus'
 const amapManager = new VueAMap.AMapManager()
 export default {
-  components: {
-    SideBar
-  },
   data() {
     return {
-      zoom: 13,
-      center: [109.103313, 18.385587],
+      zoom: 9,
+      center: [116.388781, 39.914078], // [109.103313, 18.385587],
       amapManager,
       lng: 0,
       lat: 0,
@@ -82,7 +89,9 @@ export default {
         allperson: true,
         raido: true,
         region: true,
-        event: true
+        event: true,
+        areaperson: true,
+        construct: true
       },
       locationPostion: {
         oldloc: [],
@@ -102,6 +111,7 @@ export default {
           this.lat = lat
           // 这里通过高德 SDK 完成。
           this.locMark.setPosition([lng, lat])
+          console.log(lng + ',' + lat)
           this.geocoder.getAddress([lng, lat], (status, result) => {
             if (status === 'complete' && result.info === 'OK') {
               if (result && result.regeocode) {
@@ -135,7 +145,14 @@ export default {
       ],
       userArr: [],
       depArr: [],
-      markerArr: [],
+      markerArr: {
+        'person': [], // 用于存储对应点标记
+        'case': [],
+        'area': [],
+        'raido': [],
+        'areaperson': [],
+        'construct': []
+      },
       personArr: [],
       eventArr: [],
       intetime: null,
@@ -236,7 +253,7 @@ export default {
           this.uploadCurLoc(this.locationPostion.newloc, this.locationPostion.address)
         }
         // }
-      }, 10000)
+      }, 30000)
       AMap.event.addListener(this.geolocations, 'complete', (data) => {
         setTimeout(() => { // 定时查询当前位置
           this.geolocations.getCurrentPosition()
@@ -285,16 +302,26 @@ export default {
       const obj = Cookies.get('seeting')
       if (obj) {
         this.seeting = JSON.parse(obj)
+        console.log(this.seeting)
       }
       try {
         if (this.cluster) {
           this.cluster.setMap(null)
         }
-        this.markerArr = []
+        this.markerArr = {
+          'person': [], // 用于存储对应点标记
+          'case': [],
+          'area': [],
+          'raido': [],
+          'areaperson': [],
+          'construct': []
+        }
         this.markerRefs = []
         this.getRegion()
-        this.getLatlon()
+        // this.getLatlon() // 暂时隐藏获取人员
         this.getEventArr()
+        this.getAreaperson()
+        this.getFacilities()
         this.intetime = setInterval(() => {
           this.getSetting()
         }, 30000)
@@ -311,8 +338,10 @@ export default {
     getSetting(obj) {
       try {
         // this.getRegion(true)
-        this.getLatlon(true)
+        // this.getLatlon(true) // 暂时隐藏获取人员
         this.getEventArr(true)
+        this.getAreaperson(true)
+        this.getFacilities(true)
       } catch (error) {
         console.log(error)
       }
@@ -368,7 +397,7 @@ export default {
       const addLatlon = (element) => { // 添加图标
         element.type = 'people'
         const obj = {
-          position: [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001],
+          position: [element.location.lon, element.location.lat],
           label: {
             'content': element.name,
             'offset': [25, 22]
@@ -407,7 +436,7 @@ export default {
           }
         }
         if (this.seeting.person) {
-          this.markerArr.push(obj)
+          this.markerArr.person.push(obj)
         }
       }
       // 请求数据
@@ -424,40 +453,47 @@ export default {
         data = res.info
         if (updateFlg) { // 是否更新
           data.forEach(element => {
-            let flg = false
-            this.markerArr.forEach(els => {
-              if (els.extData.type === 'people' && els.extData._id === element._id && els.extData.location.uploadtime !== element.location.uploadtime) { // 覆盖数据
-                flg = true
-                els.position = [element.location.lon + Math.random() * 0.0001, element.location.lat + Math.random() * 0.0001]
-                els.extData = element
-                els.icon = element.state ? personicon : pergray
-                els.title = element.name
-                els.events = {
-                  click: (e) => {
-                    const obje = element
-                    const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                    this.windows[0].position = [obje.location.lon, obje.location.lat]
-                    this.windows[0].visible = true
-                    let strtip = `<span class="ml15 f12 g9">离线 </span>`
-                    if (obje.state) {
-                      strtip = `<span class="ml15 f12 blue">在线 </span>`
+            let flg = true
+            this.markerArr.person.forEach(els => {
+              if (els.extData.type === 'people') {
+                if (els.extData._id === element._id && els.extData.location.uploadtime !== element.location.uploadtime) { // 覆盖数据
+                  console.log('跟新gengxing')
+                  console.log(els)
+                  flg = false
+                  els.position = [element.location.lon, element.location.lat]
+                  els.extData = element
+                  els.icon = element.state ? personicon : pergray
+                  els.title = element.name
+                  els.events = {
+                    click: (e) => {
+                      const obje = element
+                      const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                      this.windows[0].position = [obje.location.lon, obje.location.lat]
+                      this.windows[0].visible = true
+                      let strtip = `<span class="ml15 f12 g9">离线 </span>`
+                      if (obje.state) {
+                        strtip = `<span class="ml15 f12 blue">在线 </span>`
+                      }
+                      const ctstr = `<div class="info">
+                      <div class="info-top">${obje.name}${strtip}</div>
+                      <div @click="handler('1','${obje._id}')" class="info-middle" style="background-color: white;">
+                      <img src="${process.env.upload_API}images/user/${obje.location.user_id}.jpg" onerror="this.onerror=null;this.src='${avatar}'">
+                      地址：${obje.location.address}<br>更新时间：${uploadtime}<br>
+                      <a href="javascript:" style="color:blue">点击对话</a>
+                      </div></div>`
+                      this.windows[0].template = ctstr
+                    },
+                    dragend: (e) => {
                     }
-                    const ctstr = `<div class="info">
-                    <div class="info-top">${obje.name}${strtip}</div>
-                    <div @click="handler('1','${obje._id}')" class="info-middle" style="background-color: white;">
-                    <img src="${process.env.upload_API}images/user/${obje.location.user_id}.jpg" onerror="this.onerror=null;this.src='${avatar}'">
-                    地址：${obje.location.address}<br>更新时间：${uploadtime}<br>
-                    <a href="javascript:" style="color:blue">点击对话</a>
-                    </div></div>`
-                    this.windows[0].template = ctstr
-                  },
-                  dragend: (e) => {
                   }
+                }
+                if (els.extData._id === element._id) {
+                  flg = false
+                  this.markerRefs.push(els.extData)
                 }
               }
             })
-            if (!flg) {
-              console.log('添加新的图标', flg)
+            if (flg) {
               addLatlon(element)
             }
           })
@@ -465,15 +501,18 @@ export default {
           data.forEach((element, index) => {
             addLatlon(element)
           })
-          console.log(this.markerArr)
         }
-        // setTimeout(() => {
-        //   this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs, {
-        //     gridSize: 80,
-        //     maxZoom: 16
-        //     // renderCluserMarker: this._renderCluserMarker
-        //   })
-        // }, 1000)
+        /*
+        setTimeout(() => {
+          console.log(this.$refs.map.$$getInstance())
+          console.log(this.markerRefs)
+          this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs, {
+            gridSize: 80,
+            maxZoom: 16,
+            renderCluserMarker: this._renderCluserMarker
+          })
+        }, 1000)
+        */
       }).catch(errs => {
         console.log('获取部门人员位置出错', errs)
       })
@@ -483,7 +522,7 @@ export default {
         element.type = 'event'
         if (element.lat) {
           const obj = {
-            position: [element.lon + Math.random() * 0.0001, element.lat + Math.random() * 0.0001],
+            position: [element.lon, element.lat],
             label: {
               'content': element.name,
               'offset': [25, 22]
@@ -519,7 +558,7 @@ export default {
             extData: element
           }
           if (this.seeting.event) {
-            this.markerArr.push(obj)
+            this.markerArr.case.push(obj)
           }
         }
       }
@@ -530,38 +569,44 @@ export default {
         if (updateFlg) { // 是否更新
           data.forEach(element => {
             let flg = false
-            this.markerArr.forEach(els => {
-              if (els.extData.type === 'event' && els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
-                flg = true
-                els.position = [element.lon, element.lat]
-                els.extData = element
-                els.title = element.name
-                els.events.click = (e) => {
-                  const obj = element
-                  const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                  let update_time = '暂无更新'
-                  if (obj.update_time) {
-                    update_time = parseTime(obj.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+            this.markerArr.case.forEach(els => {
+              if (els.extData.type === 'event') {
+                if (els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
+                  flg = true
+                  els.position = [element.lon, element.lat]
+                  els.extData = element
+                  els.title = element.name
+                  els.events.click = (e) => {
+                    const obj = element
+                    const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                    let update_time = '暂无更新'
+                    if (obj.update_time) {
+                      update_time = parseTime(obj.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                    }
+                    this.windows[0].position = [element.lon, element.lat]
+                    this.windows[0].visible = true
+                    // <a href="javascript:" style="color:blue">点击查看事件</a>
+                    const ctstr = `<div class="info">
+                    <div class="info-top">${obj.name}</div>
+                    <div class="info-middle"  style="background-color: white;">
+                    状态：<span class="g6">进行中...</span><br>
+                    地址：<span class="g6">${obj.address}</span><br>
+                    处理人：<span class="g6">${obj.username}</span> <br>
+                    发生时间：<span class="g6">${happen_time}</span><br>
+                    更新时间：<span class="g6">${update_time}</span><br>
+                    </div></div>`
+                    this.windows[0].template = ctstr
                   }
-                  this.windows[0].position = [element.lon, element.lat]
-                  this.windows[0].visible = true
-                  // <a href="javascript:" style="color:blue">点击查看事件</a>
-                  const ctstr = `<div class="info">
-                  <div class="info-top">${obj.name}</div>
-                  <div class="info-middle"  style="background-color: white;">
-                  状态：<span class="g6">进行中...</span><br>
-                  地址：<span class="g6">${obj.address}</span><br>
-                  处理人：<span class="g6">${obj.username}</span> <br>
-                  发生时间：<span class="g6">${happen_time}</span><br>
-                  更新时间：<span class="g6">${update_time}</span><br>
-                  </div></div>`
-                  this.windows[0].template = ctstr
+                  els.events.dragend = (e) => {
+                  }
                 }
-                els.events.dragend = (e) => {
+                if (els.extData._id === element._id) {
+                  flg = true
                 }
               }
             })
             if (!flg) {
+              console.log('添加新的图标', flg)
               addEvent(element)
             }
           })
@@ -569,10 +614,233 @@ export default {
           data.forEach((element, index) => {
             addEvent(element)
           })
-          console.log(this.markerArr)
         }
       }).catch(errs => {
         console.log('获取事件位置出错', errs)
+      })
+    },
+    getAreaperson(updateFlg) {
+      const addAreaperson = (element) => {
+        element.type = 'areaperson'
+        if (element.lat) {
+          const obj = {
+            position: [element.lng, element.lat],
+            label: {
+              'content': element.name,
+              'offset': [25, 22]
+            },
+            icon: areapersonicon,
+            events: {
+              click: (e) => {
+                const objc = element
+                const happen_time = parseTime(objc.create_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                let update_time = '暂无更新'
+                if (objc.update_time) {
+                  update_time = parseTime(objc.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                }
+                this.windows[0].position = [element.lng, element.lat]
+                this.windows[0].visible = true
+                // <a href="javascript:" style="color:blue">点击查看事件</a>
+                const ctstr = `<div class="info">
+                <div class="info-top">${objc.name}</div>
+                <div class="info-middle"  style="background-color: white;">
+                状态：<span class="g6">${objc.status}</span><br>
+                类型：<span class="g6">${objc.class}</span><br>
+                地址：<span class="g6">${objc.residence}</span><br>
+                处理人：<span class="g6">${objc.recorder_id}</span> <br>
+                添加时间：<span class="g6">${happen_time}</span><br>
+                更新时间：<span class="g6">${update_time}</span><br>
+                </div></div>`
+                this.windows[0].template = ctstr
+              },
+              dragend: (e) => {
+              }
+            },
+            title: element.name,
+            visible: true,
+            extData: element
+          }
+          if (this.seeting.event) {
+            this.markerArr.areaperson.push(obj)
+          }
+        }
+      }
+      GetPersonForId({ start_index: 0, length: 10000, department_id: getDepCld() }).then(res => {
+        var data = res.info.list
+        var classleb = res.info.classname
+        data.forEach(element => {
+          classleb.forEach(cl => {
+            if (element.class === cl.class) {
+              element.class = cl.name
+            }
+            if (element.status === cl.status) {
+              element.status = cl.name
+            }
+          })
+        })
+        if (updateFlg) { // 是否更新
+          data.forEach(element => {
+            let flg = false
+            this.markerArr.areaperson.forEach(els => {
+              if (els.extData.type === 'areaperson') {
+                if (els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
+                  flg = true
+                  els.position = [element.lng, element.lat]
+                  els.extData = element
+                  els.title = element.name
+                  els.events.click = (e) => {
+                    const objc = element
+                    const happen_time = parseTime(objc.create_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                    let update_time = '暂无更新'
+                    if (objc.update_time) {
+                      update_time = parseTime(objc.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                    }
+                    this.windows[0].position = [element.lng, element.lat]
+                    this.windows[0].visible = true
+                    // <a href="javascript:" style="color:blue">点击查看事件</a>
+                    const ctstr = `<div class="info">
+                <div class="info-top">${objc.name}</div>
+                <div class="info-middle"  style="background-color: white;">
+                状态：<span class="g6">${objc.status}</span><br>
+                类型：<span class="g6">${objc.class}</span><br>
+                地址：<span class="g6">${objc.residence}</span><br>
+                处理人：<span class="g6">${objc.recorder_id}</span> <br>
+                添加时间：<span class="g6">${happen_time}</span><br>
+                更新时间：<span class="g6">${update_time}</span><br>
+                </div></div>`
+                    this.windows[0].template = ctstr
+                  }
+                  els.events.dragend = (e) => {
+                  }
+                }
+                if (els.extData._id === element._id) {
+                  flg = true
+                }
+              }
+            })
+            if (!flg) {
+              console.log('添加新的图标', flg)
+              addAreaperson(element)
+            }
+          })
+        } else {
+          data.forEach((element, index) => {
+            addAreaperson(element)
+          })
+        }
+      }).catch(errs => {
+        console.log('获取区域人员管理位置出错', errs)
+      })
+    },
+    getFacilities(updateFlg) {
+      const addFacilities = (element) => {
+        element.type = 'facilities'
+        if (element.lat) {
+          const obj = {
+            position: [element.lng, element.lat],
+            label: {
+              'content': element.name,
+              'offset': [25, 22]
+            },
+            icon: facilitiesicon,
+            events: {
+              click: (e) => {
+                const objc = element
+                const happen_time = parseTime(objc.create_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                let update_time = '暂无更新'
+                if (objc.update_time) {
+                  update_time = parseTime(objc.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                }
+                this.windows[0].position = [element.lng, element.lat]
+                this.windows[0].visible = true
+                // <a href="javascript:" style="color:blue">点击查看事件</a>
+                const ctstr = `<div class="info">
+                <div class="info-top">${objc.name}</div>
+                <div class="info-middle"  style="background-color: white;">
+                状态：<span class="g6">${objc.status}</span><br>
+                地址：<span class="g6">${objc.address}</span><br>
+                处理人：<span class="g6">${objc.recorder_name}</span> <br>
+                添加时间：<span class="g6">${happen_time}</span><br>
+                更新时间：<span class="g6">${update_time}</span><br>
+                </div></div>`
+                this.windows[0].template = ctstr
+              },
+              dragend: (e) => {
+              }
+            },
+            title: element.name,
+            visible: true,
+            extData: element
+          }
+          if (this.seeting.event) {
+            this.markerArr.construct.push(obj)
+          }
+        }
+      }
+      GetFacilitiesForId({ start_index: 0, length: 10000, department_id: getDepCld() }).then(res => {
+        var data = res.info.list
+        var classleb = res.info.classname
+        data.forEach(element => {
+          classleb.forEach(cl => {
+            if (element.class === cl.class) {
+              element.class = cl.name
+            }
+            if (element.status === cl.status) {
+              element.status = cl.name
+            }
+          })
+        })
+        if (updateFlg) { // 是否更新
+          data.forEach(element => {
+            let flg = false
+            this.markerArr.construct.forEach(els => {
+              if (els.extData.type === 'facilities') {
+                if (els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
+                  flg = true
+                  els.position = [element.lng, element.lat]
+                  els.extData = element
+                  els.title = element.name
+                  els.events.click = (e) => {
+                    const objc = element
+                    const happen_time = parseTime(objc.create_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                    let update_time = '暂无更新'
+                    if (objc.update_time) {
+                      update_time = parseTime(objc.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                    }
+                    this.windows[0].position = [element.lng, element.lat]
+                    this.windows[0].visible = true
+                    // <a href="javascript:" style="color:blue">点击查看事件</a>
+                    const ctstr = `<div class="info">
+                    <div class="info-top">${objc.name}</div>
+                    <div class="info-middle"  style="background-color: white;">
+                    状态：<span class="g6">${objc.status}</span><br>
+                    地址：<span class="g6">${objc.address}</span><br>
+                    处理人：<span class="g6">${objc.recorder_name}</span> <br>
+                    添加时间：<span class="g6">${happen_time}</span><br>
+                    更新时间：<span class="g6">${update_time}</span><br>
+                    </div></div>`
+                    this.windows[0].template = ctstr
+                  }
+                  els.events.dragend = (e) => {
+                  }
+                }
+                if (els.extData._id === element._id) {
+                  flg = true
+                }
+              }
+            })
+            if (!flg) {
+              console.log('添加新的图标', flg)
+              addFacilities(element)
+            }
+          })
+        } else {
+          data.forEach((element, index) => {
+            addFacilities(element)
+          })
+        }
+      }).catch(errs => {
+        console.log('获取区域设施位置出错', errs)
       })
     },
     handler(type, val) {
@@ -661,12 +929,18 @@ export default {
       div.style.textAlign = 'center'
       context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2))
       context.marker.setContent(div)
+    },
+    isopen(e) { // 显示配置，打开关闭某一个部分
+      this.seeting = e
     }
   },
   computed: {
     ...mapGetters({
       useinfo: 'useinfo'
     })
+  },
+  components: {
+    sideBar: SideBar
   }
 }
 </script>
@@ -731,5 +1005,5 @@ export default {
       margin-right: 6px;
       max-width: 70px!important;
   }
-}     
+}
 </style>

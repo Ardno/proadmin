@@ -90,7 +90,7 @@
       </el-table-column>
       <el-table-column align="center" label="登记人">
         <template slot-scope="scope">
-          <span>{{selectuserid(scope.row.recorder_id)}}</span>
+          <span>{{scope.row.recorder_name}}</span>
         </template>
       </el-table-column>
       <el-table-column align="center" label="更新日期" width="150">
@@ -101,8 +101,8 @@
       <el-table-column align="center" label="操作" width="290">
         <template slot-scope="scope">
           <el-button size="small" type="primary" v-if="isAccess('32')" @click="handleUpdateDa(scope.row)">修改</el-button>
-          <el-button size="small" type="primary" v-if="isAccess('32')" @click="addUpdateInfo(scope.row)">更新</el-button>
-          <el-button size="small" type="success" v-if="isAccess('32')" @click="goOtherPage(scope.row._id)">记录
+          <el-button size="small" type="primary" @click="addUpdateInfo(scope.row)">更新</el-button>
+          <el-button size="small" type="success" @click="goOtherPage(scope.row._id)">记录
           </el-button>
           <el-button size="small" type="danger" v-if="isAccess('33')" v-show="scope.row.status"
                      @click="updateStaus(scope.row)">删除
@@ -562,7 +562,10 @@
       },
       comfirmLoc() {
         this.dialogVisible1 = false
+        console.log(this.positionObj)
         this.dataa.residence = this.positionObj.address
+        this.dataa.lng = this.positionObj.lnglat[0]
+        this.dataa.lat = this.positionObj.lnglat[1]
         this.$refs.infoForma.validate(valid => {
           console.log(this.dataa)
         })
