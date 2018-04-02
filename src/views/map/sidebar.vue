@@ -1,5 +1,16 @@
 <template>
   <div>
+    <div class="pottoolbar" style="margin-top: 45px" v-if="trajectory.showcontroller">
+      运动动画控制：
+      <el-radio-group v-model="radio4" size="small" @change="clearcontroller">
+        <el-radio-button label="开始"></el-radio-button>
+        <el-radio-button label="暂停"></el-radio-button>
+        <el-radio-button label="继续"></el-radio-button>
+        <el-radio-button label="加速"></el-radio-button>
+        <el-radio-button label="减速"></el-radio-button>
+        <el-radio-button label="关闭"></el-radio-button>
+      </el-radio-group>
+    </div>
     <ul class="rightbar">
       <li @click="reloadMap">
         <el-tooltip class="item" effect="dark" content="刷新地图" placement="left">
@@ -137,6 +148,7 @@ export default {
         name: '',
         list: []
       },
+      radio4: '暂停',
       depArr: [],
       userArr: [],
       regionobj: {
@@ -165,6 +177,7 @@ export default {
         start_time: '',
         end_time: '',
         num: '',
+        showcontroller: false,
         infoRules: {
           bind_id: [{ type: 'number', required: true, message: '请选择用户', trigger: 'blur' }],
           daterange: [{ required: true, message: '请选择时间范围', trigger: 'change' }]
@@ -345,6 +358,7 @@ export default {
       this.$refs.trajectoryForm.validate(valid => {
         if (valid) {
           getLocationsArr(this.trajectory).then(response => {
+            console.log(response.info)
             if (!response.info.length) {
               this.$message({
                 message: '当前时间段没有轨迹',
@@ -359,9 +373,19 @@ export default {
               })
               this.showHistoryguij(path)
             }
+            this.trajectory.showcontroller = true
           })
         }
       })
+    },
+    clearcontroller() {
+      switch (this.radio4) {
+        case '关闭':
+          this.trajectory.showcontroller = false
+          break
+        default:
+          console.log(this.radio4)
+      }
     },
     formatDaterange(val) {
       this.trajectory.start_time = new Date(val[0]).getTime() / 1000

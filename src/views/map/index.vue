@@ -99,21 +99,11 @@ export default {
         address: '未知'
       },
       cluster: null,
-      markerRefs: [],
+      areapersonster: null, // 区域人员的聚合
       events: {
         init: (map) => {
           this.mapobj = this.$refs.map
           this.getGeolocation()
-          /*
-          setTimeout(() => {
-            console.log(this.$refs.map.$$getInstance())
-            console.log(this.markerArr.areaperson)
-            this.cluster = new AMap.MarkerClusterer(this.mapobj, this.markerArr.areaperson, {
-              gridSize: 80,
-              renderCluserMarker: this._renderCluserMarker
-            })
-          }, 5000)
-          */
         },
         click: (e) => {
           const { lng, lat } = e.lnglat
@@ -230,7 +220,6 @@ export default {
   },
   mounted() {
     this.$nextTick(function() {
-
     })
   },
   methods: {
@@ -326,13 +315,22 @@ export default {
           'areaperson': [],
           'construct': []
         }
-        this.markerRefs = []
+        this.markerRefs = {
+          'person': [], // 用于存储聚合
+          'case': [],
+          'area': [],
+          'raido': [],
+          'areaperson': [],
+          'construct': []
+        }
         this.getRegion()
         this.getLatlon() // 暂时隐藏获取人员
         this.getEventArr()
         this.getAreaperson()
         this.getFacilities()
         this.intetime = setInterval(() => {
+          console.log(this.markerRefs)
+          console.log(this.markerArr)
           this.getSetting()
         }, 30000)
       } catch (error) {
@@ -414,6 +412,9 @@ export default {
           },
           icon: element.state ? personicon : pergray,
           events: {
+            init: (o) => {
+              this.markerRefs.person.push(o)
+            },
             click: (e) => {
               const obje = element
               const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
@@ -512,12 +513,13 @@ export default {
           })
         }
         setTimeout(() => {
-          console.log(this.$refs.map.$$getInstance())
-          console.log(this.markerArr.person)
-          this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerArr.person, {
+          if (this.cluster) {
+            this.cluster.setMap(null)
+          }
+          this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs.person, {
             gridSize: 80,
             maxZoom: 16,
-            renderCluserMarker: this._renderCluserMarker
+            renderCluserMarker: this._renderPersonMarker
           })
         }, 1000)
       }).catch(errs => {
@@ -536,6 +538,9 @@ export default {
             },
             icon: eventicon,
             events: {
+              init: (o) => {
+                this.markerRefs.case.push(o)
+              },
               click: (e) => {
                 const objc = element
                 const happen_time = parseTime(objc.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
@@ -622,6 +627,15 @@ export default {
             addEvent(element)
           })
         }
+        /*
+        setTimeout(() => {
+          this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs.case, {
+            gridSize: 80,
+            maxZoom: 16,
+            renderCluserMarker: this.__renderCaseMarker
+          })
+        }, 1000)
+        */
       }).catch(errs => {
         console.log('获取事件位置出错', errs)
       })
@@ -638,6 +652,9 @@ export default {
             },
             icon: areapersonicon,
             events: {
+              init: (o) => {
+                this.markerRefs.areaperson.push(o)
+              },
               click: (e) => {
                 const objc = element
                 const happen_time = parseTime(objc.create_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
@@ -735,6 +752,19 @@ export default {
             addAreaperson(element)
           })
         }
+        /*
+        setTimeout(() => {
+          if (this.areapersonster) {
+            this.areapersonster.setMap(null)
+          }
+          console.log(this.markerRefs.areaperson)
+          this.areapersonster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs.areaperson, {
+            gridSize: 80,
+            maxZoom: 16,
+            renderCluserMarker: this.__renderAreapersonMarker
+          })
+        }, 1000)
+        */
       }).catch(errs => {
         console.log('获取区域人员管理位置出错', errs)
       })
@@ -751,6 +781,9 @@ export default {
             },
             icon: facilitiesicon,
             events: {
+              init: (o) => {
+                this.markerRefs.construct.push(o)
+              },
               click: (e) => {
                 const objc = element
                 const happen_time = parseTime(objc.create_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
@@ -846,6 +879,15 @@ export default {
             addFacilities(element)
           })
         }
+        /*
+        setTimeout(() => {
+          this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs.construct, {
+            gridSize: 80,
+            maxZoom: 16,
+            renderCluserMarker: this.__renderConstructMarker
+          })
+        }, 1000)
+        */
       }).catch(errs => {
         console.log('获取区域设施位置出错', errs)
       })
@@ -915,7 +957,8 @@ export default {
       })
       return name
     },
-    _renderCluserMarker(context) {
+    _renderCluserMarker(context) { // 官方送的聚合样式
+      console.log(context)
       var factor = Math.pow(context.count / 16, 1 / 18)
       var div = document.createElement('div')
       var Hue = 180 - factor * 180
@@ -932,6 +975,70 @@ export default {
       div.innerHTML = context.count
       div.style.lineHeight = size + 'px'
       div.style.color = fontColor
+      div.style.fontSize = '14px'
+      div.style.textAlign = 'center'
+      context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2))
+      context.marker.setContent(div)
+    },
+    _renderPersonMarker(context) { // 同事聚合图标样式
+      var div = document.createElement('div')
+      div.style.backgroundColor = 'rgba(220, 106, 111, 0.7)'
+      var size = Math.round(30 + Math.pow(context.count / 16, 1 / 5) * 20)
+      div.style.width = div.style.height = size + 'px'
+      div.style.border = 'solid 1px rgba(220, 106, 111, 1)'
+      div.style.borderRadius = size / 2 + 'px'
+      div.style.boxShadow = '0 0 1px rgba(220, 106, 111, 0.3)'
+      div.innerHTML = context.count
+      div.style.lineHeight = size + 'px'
+      div.style.color = '#000'
+      div.style.fontSize = '14px'
+      div.style.textAlign = 'center'
+      context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2))
+      context.marker.setContent(div)
+    },
+    __renderCaseMarker(context) { // 案件聚合图标样式
+      var div = document.createElement('div')
+      div.style.backgroundColor = 'rgba(0, 0, 255, 0.7)'
+      var size = Math.round(30 + Math.pow(context.count / 16, 1 / 5) * 20)
+      div.style.width = div.style.height = size + 'px'
+      div.style.border = 'solid 1px rgba(0, 0, 255, 1)'
+      div.style.borderRadius = size / 2 + 'px'
+      div.style.boxShadow = '0 0 1px rgba(0, 0, 255, 0.3)'
+      div.innerHTML = context.count
+      div.style.lineHeight = size + 'px'
+      div.style.color = '#000'
+      div.style.fontSize = '14px'
+      div.style.textAlign = 'center'
+      context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2))
+      context.marker.setContent(div)
+    },
+    __renderAreapersonMarker(context) { // 区域人员管理聚合图标样式
+      var div = document.createElement('div')
+      div.style.backgroundColor = 'rgba(217, 83, 251, 0.7)'
+      var size = Math.round(30 + Math.pow(context.count / 16, 1 / 5) * 20)
+      div.style.width = div.style.height = size + 'px'
+      div.style.border = 'solid 1px rgba(217, 83, 251, 1)'
+      div.style.borderRadius = size / 2 + 'px'
+      div.style.boxShadow = '0 0 1px rgba(217, 83, 251, 0.3)'
+      div.innerHTML = context.count
+      div.style.lineHeight = size + 'px'
+      div.style.color = '#000'
+      div.style.fontSize = '14px'
+      div.style.textAlign = 'center'
+      context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2))
+      context.marker.setContent(div)
+    },
+    __renderConstructMarker(context) { // 区域设施管理聚合图标样式
+      var div = document.createElement('div')
+      div.style.backgroundColor = 'rgba(95, 245, 155, 0.7)'
+      var size = Math.round(30 + Math.pow(context.count / 16, 1 / 5) * 20)
+      div.style.width = div.style.height = size + 'px'
+      div.style.border = 'solid 1px rgba(95, 245, 155, 1)'
+      div.style.borderRadius = size / 2 + 'px'
+      div.style.boxShadow = '0 0 1px rgba(95, 245, 155, 0.3)'
+      div.innerHTML = context.count
+      div.style.lineHeight = size + 'px'
+      div.style.color = '#000'
       div.style.fontSize = '14px'
       div.style.textAlign = 'center'
       context.marker.setOffset(new AMap.Pixel(-size / 2, -size / 2))
