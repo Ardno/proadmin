@@ -104,6 +104,16 @@ export default {
         init: (map) => {
           this.mapobj = this.$refs.map
           this.getGeolocation()
+          /*
+          setTimeout(() => {
+            console.log(this.$refs.map.$$getInstance())
+            console.log(this.markerArr.areaperson)
+            this.cluster = new AMap.MarkerClusterer(this.mapobj, this.markerArr.areaperson, {
+              gridSize: 80,
+              renderCluserMarker: this._renderCluserMarker
+            })
+          }, 5000)
+          */
         },
         click: (e) => {
           const { lng, lat } = e.lnglat
@@ -318,7 +328,7 @@ export default {
         }
         this.markerRefs = []
         this.getRegion()
-        // this.getLatlon() // 暂时隐藏获取人员
+        this.getLatlon() // 暂时隐藏获取人员
         this.getEventArr()
         this.getAreaperson()
         this.getFacilities()
@@ -338,7 +348,7 @@ export default {
     getSetting(obj) {
       try {
         // this.getRegion(true)
-        // this.getLatlon(true) // 暂时隐藏获取人员
+        this.getLatlon(true) // 暂时隐藏获取人员
         this.getEventArr(true)
         this.getAreaperson(true)
         this.getFacilities(true)
@@ -489,7 +499,6 @@ export default {
                 }
                 if (els.extData._id === element._id) {
                   flg = false
-                  this.markerRefs.push(els.extData)
                 }
               }
             })
@@ -502,17 +511,15 @@ export default {
             addLatlon(element)
           })
         }
-        /*
         setTimeout(() => {
           console.log(this.$refs.map.$$getInstance())
-          console.log(this.markerRefs)
-          this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs, {
+          console.log(this.markerArr.person)
+          this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerArr.person, {
             gridSize: 80,
             maxZoom: 16,
             renderCluserMarker: this._renderCluserMarker
           })
         }, 1000)
-        */
       }).catch(errs => {
         console.log('获取部门人员位置出错', errs)
       })
