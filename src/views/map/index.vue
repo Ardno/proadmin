@@ -318,7 +318,7 @@ export default {
         }
         this.markerRefs = []
         this.getRegion()
-        // this.getLatlon() // 暂时隐藏获取人员
+        this.getLatlon() // 暂时隐藏获取人员
         this.getEventArr()
         this.getAreaperson()
         this.getFacilities()
@@ -404,6 +404,9 @@ export default {
           },
           icon: element.state ? personicon : pergray,
           events: {
+            init: o => {
+              this.markerRefs.push(o)
+            },
             click: (e) => {
               const obje = element
               const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
@@ -489,7 +492,7 @@ export default {
                 }
                 if (els.extData._id === element._id) {
                   flg = false
-                  this.markerRefs.push(els.extData)
+                  // this.markerRefs.push(els.extData)
                 }
               }
             })
@@ -502,17 +505,13 @@ export default {
             addLatlon(element)
           })
         }
-        /*
         setTimeout(() => {
-          console.log(this.$refs.map.$$getInstance())
-          console.log(this.markerRefs)
           this.cluster = new AMap.MarkerClusterer(this.$refs.map.$$getInstance(), this.markerRefs, {
             gridSize: 80,
-            maxZoom: 16,
-            renderCluserMarker: this._renderCluserMarker
+            maxZoom: 16
+            // renderCluserMarker: this._renderCluserMarker
           })
         }, 1000)
-        */
       }).catch(errs => {
         console.log('获取部门人员位置出错', errs)
       })
