@@ -189,12 +189,8 @@ export default {
         duration: 4 * 1000
       })
     },
-    callMethod() {
-      console.log('调用成功')
-    },
     stcloseCall() {
       Cookies.set('seeting', this.seeting)
-      console.log(this.showpeizhi)
       this.$emit('seeting', this.seeting)
       // console.log(123)
     },

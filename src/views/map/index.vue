@@ -104,6 +104,16 @@ export default {
         init: (map) => {
           this.mapobj = this.$refs.map
           this.getGeolocation()
+          /*
+          setTimeout(() => {
+            console.log(this.$refs.map.$$getInstance())
+            console.log(this.markerArr.areaperson)
+            this.cluster = new AMap.MarkerClusterer(this.mapobj, this.markerArr.areaperson, {
+              gridSize: 80,
+              renderCluserMarker: this._renderCluserMarker
+            })
+          }, 5000)
+          */
         },
         click: (e) => {
           const { lng, lat } = e.lnglat
@@ -338,7 +348,7 @@ export default {
     getSetting(obj) {
       try {
         // this.getRegion(true)
-        // this.getLatlon(true) // 暂时隐藏获取人员
+        this.getLatlon(true) // 暂时隐藏获取人员
         this.getEventArr(true)
         this.getAreaperson(true)
         this.getFacilities(true)
