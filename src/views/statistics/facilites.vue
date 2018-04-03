@@ -85,8 +85,8 @@
           console.log(res)
           if (res.code === 200) {
             var data = res.info.list
-            this.chart_chart2(data[0])
-            this.chart_chart7(data[1])
+            this.chart_chart2(data[1])
+            this.chart_chart7(data[0])
           }
         })
       })

@@ -411,8 +411,8 @@
           residence: '', // 住址
           recorder_id: '',
           areaperson_img: '',
-          idNum: 140702199602107111,
-          mobile: 18335410222
+          idNum: null,
+          mobile: null
         }
       },
       showImg(event) {

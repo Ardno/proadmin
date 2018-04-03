@@ -400,7 +400,9 @@
           facilities_class: null,
           status: null,
           mobile: 18335410222,
-          user_id: ''
+          user_id: '',
+          lng: null,
+          lat: null
         }
       },
       handleClick(tab, event) { // tab切换
@@ -554,6 +556,8 @@
       comfirmLoc() {
         this.dialogVisible1 = false
         this.dataa.address = this.positionObj.address
+        this.dataa.lat = this.positionObj.lnglat[1]
+        this.dataa.lng = this.positionObj.lnglat[0]
         this.$refs.infoForma.validate(valid => {
           console.log(this.dataa)
         })
