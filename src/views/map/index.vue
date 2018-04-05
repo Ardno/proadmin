@@ -134,7 +134,7 @@ export default {
       windows: [
         {
           position: [121.5273285, 31.21515044],
-          template: '<span>changed</span>',
+          template: '<span></span>',
           visible: false,
           events: {
             close: () => {
@@ -259,7 +259,7 @@ export default {
         }, 5000)
         if (!this.locationPostion.newloc) {
           this.locationPostion.newloc = [data.position.lng, data.position.lat]
-          this.mapobj.setZoomAndCenter(16, data.position)
+          // this.mapobj.setZoomAndCenter(16, data.position)
         } else {
           this.locationPostion.newloc = [data.position.lng, data.position.lat]
         }
@@ -432,6 +432,9 @@ export default {
               <a href="javascript:" style="color:blue">点击对话</a>
               </div></div>`
               this.windows[0].template = ctstr
+              setTimeout(() => {
+                this.center = [obje.location.lon, obje.location.lat]
+              }, 300)
             },
             dragend: (e) => {
             }
@@ -493,6 +496,9 @@ export default {
                       <a href="javascript:" style="color:blue">点击对话</a>
                       </div></div>`
                       this.windows[0].template = ctstr
+                      setTimeout(() => {
+                        this.center = [obje.location.lon, obje.location.lat]
+                      }, 300)
                     },
                     dragend: (e) => {
                     }

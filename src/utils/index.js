@@ -342,8 +342,12 @@ export function TreeUtil(data, key, parentKey, map) {
           pos[data[i][this.key]] = posArr.concat([obj.children.length - 1])
           data.splice(i, 1)
           i--
-        } else { // 异常处理，防止死循环
-          break
+        } else {
+          const _temp = this.copy(data[i])
+          tree.push(_temp)
+          pos[data[i][this.key]] = [tree.length - 1]
+          data.splice(i, 1)
+          i--
         }
       }
       i++

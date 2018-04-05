@@ -449,6 +449,9 @@ export default {
         }
       }).onFail((error) => {
         errorApiTip(error)
+        store.dispatch('FedLogOut').then(() => {
+          location.reload()// 为了重新实例化vue-router对象 避免bug
+        })
         // this.JIMregister()
       })
     },
@@ -472,7 +475,7 @@ export default {
       this.JIM.getUserInfo({ username: name, appkey: authPayload.appKey }).onSuccess((data) => {
         const user = data.user_info
         const item = {
-          avatar: user.avatar,
+          avatar: process.env.upload_API + 'images/user/' + store.getters.useinfo._id + '.jpg',
           mtime: user.mtime,
           name: user.username,
           nickname: store.getters.useinfo.name,
