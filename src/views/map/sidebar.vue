@@ -120,6 +120,7 @@
 import { addRegion, getLocationsArr } from '@/api/grid'
 import Cookies from 'js-cookie'
 import { isAccess } from '@/utils/auth'
+import { pickerOptions } from '@/utils/index'
 export default {
   name: 'SideBar',
   props: {
@@ -139,7 +140,8 @@ export default {
       pickerOptions1: {
         disabledDate(time) {
           return time.getTime() > Date.now()
-        }
+        },
+        shortcuts: pickerOptions
       },
       requestAdd: {
         userid: [],
