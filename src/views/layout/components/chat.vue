@@ -39,7 +39,7 @@
                           <p v-else-if="list.content.msg_type=='file'|| list.content.msg_type=='custom'">[文件]
                             <em v-if="list.unread_msg_count" class="count">{{list.unread_msg_count > 100 ? '99+': list.unread_msg_count}}</em>
                           </p>
-                          
+
                         </li>
                         <li v-if="!conversations.length" style="padding-top:30%;font-size: 12px;">你当前还没有任何消息~</li>
                       </ul>
@@ -60,7 +60,7 @@
                       <ul class="layui-layim-list">
                         <li @click="imCkPanle(clist)" v-for="(clist, index) in flist.list" :key="index">
                           <img :src="clist.avatar" :onerror="defaultImg(clist.avatarUrl)">
-                          <span>{{clist.nickname}}</span>
+                          <span :class="clist.isOnline?'isOnline':''">{{clist.nickname}}</span>
                           <p>{{clist.mobile}}</p>
                         </li>
                       </ul>
@@ -124,7 +124,6 @@
               </label>
             </div>
           </div>
-
         </div>
         <!-- 主体 -->
         <span class="layui-layer-setwin"  @click="colseIm=true">
@@ -523,12 +522,14 @@ export default {
               }
             })
             const obj = {
+              _id: element._id,
               username: 'yzwg_' + element._id,
               nickname: element.name,
               avatar: process.env.upload_API + 'images/user/' + element._id + '.jpg',
               avatarUrl: single_avatar,
               mobile: element.mobile,
               gender: element.sex + 1,
+              isOnline: false,
               type: 3,
               birthday: element.birthday * 1000,
               memo_others: element.dept_name
@@ -538,6 +539,40 @@ export default {
           this.searchList = arr
           this.getGropsUser(arr)
           const memo = {}
+          setInterval(() => { // 这一段是为了显示人员在线或离线的
+            var loca = store.getters.allpersonlocaltion
+            if (loca) {
+              var memoo = {}
+              arr.forEach((chatlist) => {
+                loca.forEach((localist) => {
+                  if (chatlist._id === localist._id) {
+                    if (localist.state === 1) {
+                      chatlist.isOnline = true
+                    } else {
+                      chatlist.isOnline = false
+                    }
+                  }
+                })
+                if (chatlist.memo_others) {
+                  if (memoo[chatlist.memo_others]) {
+                    memoo[chatlist.memo_others].push(chatlist)
+                  } else {
+                    memoo[chatlist.memo_others] = [chatlist]
+                  }
+                }
+              })
+              var nfriend_list = []
+              for (const key in memoo) { // 数据
+                const obj = {
+                  groupname: key,
+                  len: memoo[key].length,
+                  list: memoo[key]
+                }
+                nfriend_list.push(obj)
+              }
+              this.friend_list = nfriend_list
+            }
+          }, 10000)
           arr.forEach(function(element) {
             if (element.memo_others) {
               if (memo[element.memo_others]) {
@@ -561,6 +596,7 @@ export default {
             }
             this.friend_list.push(obj)
           }
+          console.log(this.friend_list)
         }))
     },
     JIMgetGroups() { // 获取群组列表
@@ -874,6 +910,9 @@ export default {
     margin-left: 10px;
     font-size: 12px;
   }
+  .isOnline {
+    color:blue!important;
+  }
 
   .el-tabs__nav {
     margin-top: 10px;
@@ -962,7 +1001,7 @@ export default {
       text-align: center;
       font-size: 12px;
       font-style: normal;
-      
+
     }
   }
 

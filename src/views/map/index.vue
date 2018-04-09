@@ -69,6 +69,7 @@ import avatar from '@/assets/login_images/avatar.png'
 import { deepClone } from '@/utils/index'
 import Cookies from 'js-cookie'
 import Bus from '@/utils/bus'
+import store from '@/store/index'
 const amapManager = new VueAMap.AMapManager()
 export default {
   data() {
@@ -329,10 +330,8 @@ export default {
         this.getAreaperson()
         this.getFacilities()
         this.intetime = setInterval(() => {
-          console.log(this.markerRefs)
-          console.log(this.markerArr)
           this.getSetting()
-        }, 30000)
+        }, 20000)
       } catch (error) {
         console.log(error)
       }
@@ -350,6 +349,7 @@ export default {
         this.getEventArr(true)
         this.getAreaperson(true)
         this.getFacilities(true)
+        console.log(this.markerArr)
       } catch (error) {
         console.log(error)
       }
@@ -436,6 +436,7 @@ export default {
                 this.center = [obje.location.lon, obje.location.lat]
               }, 300)
             },
+            _id: element._id,
             dragend: (e) => {
             }
           },
@@ -465,51 +466,48 @@ export default {
           }
         })
         data = res.info
+        store.getters.allpersonlocaltion = data
         if (updateFlg) { // 是否更新
           data.forEach(element => {
-            let flg = true
+            let flg = false
             this.markerArr.person.forEach(els => {
-              if (els.extData.type === 'people') {
-                if (els.extData._id === element._id && els.extData.location.uploadtime !== element.location.uploadtime) { // 覆盖数据
-                  console.log('跟新gengxing')
-                  console.log(els)
-                  flg = false
-                  els.position = [element.location.lon, element.location.lat]
-                  els.extData = element
-                  els.icon = element.state ? personicon : pergray
-                  els.title = element.name
-                  els.events = {
-                    click: (e) => {
-                      const obje = element
-                      const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                      this.windows[0].position = [obje.location.lon, obje.location.lat]
-                      this.windows[0].visible = true
-                      let strtip = `<span class="ml15 f12 g9">离线 </span>`
-                      if (obje.state) {
-                        strtip = `<span class="ml15 f12 blue">在线 </span>`
-                      }
-                      const ctstr = `<div class="info">
-                      <div class="info-top">${obje.name}${strtip}</div>
-                      <div @click="handler('1','${obje._id}')" class="info-middle" style="background-color: white;">
-                      <img src="${process.env.upload_API}images/user/${obje.location.user_id}.jpg" onerror="this.onerror=null;this.src='${avatar}'">
-                      地址：${obje.location.address}<br>更新时间：${uploadtime}<br>
-                      <a href="javascript:" style="color:blue">点击对话</a>
-                      </div></div>`
-                      this.windows[0].template = ctstr
-                      setTimeout(() => {
-                        this.center = [obje.location.lon, obje.location.lat]
-                      }, 300)
-                    },
-                    dragend: (e) => {
+              if (els.extData._id === element._id && els.extData.location.uploadtime !== element.location.uploadtime) { // 覆盖数据
+                console.log('跟新gengxing')
+                flg = true
+                els.position = [element.location.lon, element.location.lat]
+                els.extData = element
+                els.icon = element.state ? personicon : pergray
+                els.title = element.name
+                els.events = {
+                  click: (e) => {
+                    const obje = element
+                    const uploadtime = parseTime(obje.location.uploadtime, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                    this.windows[0].position = [obje.location.lon, obje.location.lat]
+                    this.windows[0].visible = true
+                    let strtip = `<span class="ml15 f12 g9">离线 </span>`
+                    if (obje.state) {
+                      strtip = `<span class="ml15 f12 blue">在线 </span>`
                     }
+                    const ctstr = `<div class="info">
+                    <div class="info-top">${obje.name}${strtip}</div>
+                    <div @click="handler('1','${obje._id}')" class="info-middle" style="background-color: white;">
+                    <img src="${process.env.upload_API}images/user/${obje.location.user_id}.jpg" onerror="this.onerror=null;this.src='${avatar}'">
+                    地址：${obje.location.address}<br>更新时间：${uploadtime}<br>
+                    <a href="javascript:" style="color:blue">点击对话</a>
+                    </div></div>`
+                    this.windows[0].template = ctstr
+                    setTimeout(() => {
+                      this.center = [obje.location.lon, obje.location.lat]
+                    }, 300)
                   }
                 }
-                if (els.extData._id === element._id) {
-                  flg = false
-                }
+              }
+              if (els.extData._id === element._id) {
+                flg = true
               }
             })
-            if (flg) {
+            if (!flg) {
+              console.log('添加新的图标', flg)
               addLatlon(element)
             }
           })
@@ -518,6 +516,7 @@ export default {
             addLatlon(element)
           })
         }
+        /*
         setTimeout(() => {
           if (this.cluster) {
             this.cluster.setMap(null)
@@ -528,6 +527,7 @@ export default {
             renderCluserMarker: this._renderPersonMarker
           })
         }, 1000)
+        */
       }).catch(errs => {
         console.log('获取部门人员位置出错', errs)
       })
@@ -588,39 +588,37 @@ export default {
           data.forEach(element => {
             let flg = false
             this.markerArr.case.forEach(els => {
-              if (els.extData.type === 'event') {
-                if (els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
-                  flg = true
-                  els.position = [element.lon, element.lat]
-                  els.extData = element
-                  els.title = element.name
-                  els.events.click = (e) => {
-                    const obj = element
-                    const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                    let update_time = '暂无更新'
-                    if (obj.update_time) {
-                      update_time = parseTime(obj.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                    }
-                    this.windows[0].position = [element.lon, element.lat]
-                    this.windows[0].visible = true
-                    // <a href="javascript:" style="color:blue">点击查看事件</a>
-                    const ctstr = `<div class="info">
-                    <div class="info-top">${obj.name}</div>
-                    <div class="info-middle"  style="background-color: white;">
-                    状态：<span class="g6">进行中...</span><br>
-                    地址：<span class="g6">${obj.address}</span><br>
-                    处理人：<span class="g6">${obj.username}</span> <br>
-                    发生时间：<span class="g6">${happen_time}</span><br>
-                    更新时间：<span class="g6">${update_time}</span><br>
-                    </div></div>`
-                    this.windows[0].template = ctstr
+              if (els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
+                flg = true
+                els.position = [element.lon, element.lat]
+                els.extData = element
+                els.title = element.name
+                els.events.click = (e) => {
+                  const obj = element
+                  const happen_time = parseTime(obj.happen_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                  let update_time = '暂无更新'
+                  if (obj.update_time) {
+                    update_time = parseTime(obj.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                   }
-                  els.events.dragend = (e) => {
-                  }
+                  this.windows[0].position = [element.lon, element.lat]
+                  this.windows[0].visible = true
+                  // <a href="javascript:" style="color:blue">点击查看事件</a>
+                  const ctstr = `<div class="info">
+                  <div class="info-top">${obj.name}</div>
+                  <div class="info-middle"  style="background-color: white;">
+                  状态：<span class="g6">进行中...</span><br>
+                  地址：<span class="g6">${obj.address}</span><br>
+                  处理人：<span class="g6">${obj.username}</span> <br>
+                  发生时间：<span class="g6">${happen_time}</span><br>
+                  更新时间：<span class="g6">${update_time}</span><br>
+                  </div></div>`
+                  this.windows[0].template = ctstr
                 }
-                if (els.extData._id === element._id) {
-                  flg = true
+                els.events.dragend = (e) => {
                 }
+              }
+              if (els.extData._id === element._id) {
+                flg = true
               }
             })
             if (!flg) {
@@ -712,40 +710,38 @@ export default {
           data.forEach(element => {
             let flg = false
             this.markerArr.areaperson.forEach(els => {
-              if (els.extData.type === 'areaperson') {
-                if (els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
-                  flg = true
-                  els.position = [element.lng, element.lat]
-                  els.extData = element
-                  els.title = element.name
-                  els.events.click = (e) => {
-                    const objc = element
-                    const happen_time = parseTime(objc.create_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                    let update_time = '暂无更新'
-                    if (objc.update_time) {
-                      update_time = parseTime(objc.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                    }
-                    this.windows[0].position = [element.lng, element.lat]
-                    this.windows[0].visible = true
-                    // <a href="javascript:" style="color:blue">点击查看事件</a>
-                    const ctstr = `<div class="info">
-                <div class="info-top">${objc.name}</div>
-                <div class="info-middle"  style="background-color: white;">
-                状态：<span class="g6">${objc.status}</span><br>
-                类型：<span class="g6">${objc.class}</span><br>
-                地址：<span class="g6">${objc.residence}</span><br>
-                处理人：<span class="g6">${objc.recorder_id}</span> <br>
-                添加时间：<span class="g6">${happen_time}</span><br>
-                更新时间：<span class="g6">${update_time}</span><br>
-                </div></div>`
-                    this.windows[0].template = ctstr
+              if (els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
+                flg = true
+                els.position = [element.lng, element.lat]
+                els.extData = element
+                els.title = element.name
+                els.events.click = (e) => {
+                  const objc = element
+                  const happen_time = parseTime(objc.create_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                  let update_time = '暂无更新'
+                  if (objc.update_time) {
+                    update_time = parseTime(objc.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                   }
-                  els.events.dragend = (e) => {
-                  }
+                  this.windows[0].position = [element.lng, element.lat]
+                  this.windows[0].visible = true
+                  // <a href="javascript:" style="color:blue">点击查看事件</a>
+                  const ctstr = `<div class="info">
+              <div class="info-top">${objc.name}</div>
+              <div class="info-middle"  style="background-color: white;">
+              状态：<span class="g6">${objc.status}</span><br>
+              类型：<span class="g6">${objc.class}</span><br>
+              地址：<span class="g6">${objc.residence}</span><br>
+              处理人：<span class="g6">${objc.recorder_id}</span> <br>
+              添加时间：<span class="g6">${happen_time}</span><br>
+              更新时间：<span class="g6">${update_time}</span><br>
+              </div></div>`
+                  this.windows[0].template = ctstr
                 }
-                if (els.extData._id === element._id) {
-                  flg = true
+                els.events.dragend = (e) => {
                 }
+              }
+              if (els.extData._id === element._id) {
+                flg = true
               }
             })
             if (!flg) {
@@ -840,39 +836,37 @@ export default {
           data.forEach(element => {
             let flg = false
             this.markerArr.construct.forEach(els => {
-              if (els.extData.type === 'facilities') {
-                if (els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
-                  flg = true
-                  els.position = [element.lng, element.lat]
-                  els.extData = element
-                  els.title = element.name
-                  els.events.click = (e) => {
-                    const objc = element
-                    const happen_time = parseTime(objc.create_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                    let update_time = '暂无更新'
-                    if (objc.update_time) {
-                      update_time = parseTime(objc.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
-                    }
-                    this.windows[0].position = [element.lng, element.lat]
-                    this.windows[0].visible = true
-                    // <a href="javascript:" style="color:blue">点击查看事件</a>
-                    const ctstr = `<div class="info">
-                    <div class="info-top">${objc.name}</div>
-                    <div class="info-middle"  style="background-color: white;">
-                    状态：<span class="g6">${objc.status}</span><br>
-                    地址：<span class="g6">${objc.address}</span><br>
-                    处理人：<span class="g6">${objc.recorder_name}</span> <br>
-                    添加时间：<span class="g6">${happen_time}</span><br>
-                    更新时间：<span class="g6">${update_time}</span><br>
-                    </div></div>`
-                    this.windows[0].template = ctstr
+              if (els.extData._id === element._id && els.extData.update_time !== element.update_time) { // 覆盖数据
+                flg = true
+                els.position = [element.lng, element.lat]
+                els.extData = element
+                els.title = element.name
+                els.events.click = (e) => {
+                  const objc = element
+                  const happen_time = parseTime(objc.create_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
+                  let update_time = '暂无更新'
+                  if (objc.update_time) {
+                    update_time = parseTime(objc.update_time, '{y}-{m}-{d} {h}:{i}:{s}', true)
                   }
-                  els.events.dragend = (e) => {
-                  }
+                  this.windows[0].position = [element.lng, element.lat]
+                  this.windows[0].visible = true
+                  // <a href="javascript:" style="color:blue">点击查看事件</a>
+                  const ctstr = `<div class="info">
+                  <div class="info-top">${objc.name}</div>
+                  <div class="info-middle"  style="background-color: white;">
+                  状态：<span class="g6">${objc.status}</span><br>
+                  地址：<span class="g6">${objc.address}</span><br>
+                  处理人：<span class="g6">${objc.recorder_name}</span> <br>
+                  添加时间：<span class="g6">${happen_time}</span><br>
+                  更新时间：<span class="g6">${update_time}</span><br>
+                  </div></div>`
+                  this.windows[0].template = ctstr
                 }
-                if (els.extData._id === element._id) {
-                  flg = true
+                els.events.dragend = (e) => {
                 }
+              }
+              if (els.extData._id === element._id) {
+                flg = true
               }
             })
             if (!flg) {

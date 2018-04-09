@@ -11,19 +11,31 @@
           <el-option v-for="item in  typeArr" :key="item._id" :label="item.name" :value="item._id">
           </el-option>
         </el-select>
-        <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.step_status" placeholder="事件状态">
+        <el-select clearable class="filter-item mr10" style="width: 130px" filterable @change="handleQuery" v-model="pageobj.step_status" placeholder="事件状态">
           <el-option v-for="item in  statusArr" :key="item._id" :label="item.name" :value="item._id">
           </el-option>
         </el-select>
-        <el-select clearable class="filter-item mr10" style="width: 130px" filterable v-model="pageobj.user_id" placeholder="用户">
+        <el-select clearable class="filter-item mr10" style="width: 130px" filterable @change="handleQuery" v-model="pageobj.user_id" placeholder="创建人">
           <el-option v-for="item in  commonInfo.userArr" :key="item._id" :label="item.name" :value="item._id">
           </el-option>
         </el-select>
       </p>
       <p>
-        <el-date-picker  type="datetime" v-model="start_time" placeholder="选择开始时间"></el-date-picker>
+        <el-date-picker
+          v-model="start_time"
+          align="right"
+          type="date"
+          placeholder="选择开始时间"
+          :picker-options="pickerOptions1">
+        </el-date-picker>
         <span>-</span>
-        <el-date-picker  type="datetime" v-model="end_time" placeholder="选择结束时间"></el-date-picker>
+        <el-date-picker
+          v-model="end_time"
+          align="right"
+          type="date"
+          placeholder="选择结束时间"
+          :picker-options="pickerOptions1">
+        </el-date-picker>
         <el-button class="filter-item" type="primary" icon="search" @click="handleQuery">搜索</el-button>
       </p>
     </div>
@@ -155,6 +167,7 @@ export default {
         currentPage: 1,
         user_id: '',
         type_id: '',
+        name: '',
         department_ids: [],
         department_id: getDepCld(),
         step_status: '',
@@ -187,7 +200,32 @@ export default {
         id: ''
       },
       mydepArr: [],
-      depArr: []
+      depArr: [],
+      pickerOptions1: {
+        disabledDate(time) {
+          return time.getTime() > Date.now()
+        },
+        shortcuts: [{
+          text: '今天',
+          onClick(picker) {
+            picker.$emit('pick', new Date())
+          }
+        }, {
+          text: '昨天',
+          onClick(picker) {
+            const date = new Date()
+            date.setTime(date.getTime() - 3600 * 1000 * 24)
+            picker.$emit('pick', date)
+          }
+        }, {
+          text: '一周前',
+          onClick(picker) {
+            const date = new Date()
+            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7)
+            picker.$emit('pick', date)
+          }
+        }]
+      }
     }
   },
   computed: {
@@ -211,7 +249,6 @@ export default {
     } catch (error) {
       console.log(error)
     }
-    console.log(this.userInfo)
     this.pageobj.department_ids.push(this.userInfo.department_id)
     this.pageobj.department_id = this.userInfo.department_id
     this.loadArr()
