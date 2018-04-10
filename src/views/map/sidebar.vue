@@ -174,7 +174,7 @@ export default {
       trajectory: {
         dialogFormVisible: false,
         bind_id: '',
-        daterange: '',
+        daterange: [new Date(), new Date().getTime() - 3600 * 1000 * 24 * 3],
         bind_type: '0',
         start_time: '',
         end_time: '',
