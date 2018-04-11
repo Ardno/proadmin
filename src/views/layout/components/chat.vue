@@ -439,6 +439,7 @@ export default {
           this.JIMgetFriendList()
           this.JIMgetGroups()
           this.onMsgReceive() // 消息监听
+          this.onDisconnect() // 断线监听
           this.onSyncConversation() // 消息监听
           this.onMsgReceiptChange()
           this.onMutiUnreadMsgUpdate()
@@ -732,6 +733,22 @@ export default {
     onMsgReceiptChange() { // 消息已读数变更事件实时监听
       this.JIM.onMsgReceiptChange((data) => {
         console.log('onMsgReceiptChange', data)
+      })
+    },
+    onDisconnect() { // 断线监听
+      this.JIM.onDisconnect((data) => {
+        this.$confirm('你已经掉线了, 是否重连?', '提示', {
+          confirmButtonText: '确定',
+          showCancelButton: false,
+          closeOnClickModal: false,
+          showClose: false,
+          type: 'warning',
+          center: true
+        }).then(() => {
+          location.reload()
+        }).catch(() => {
+
+        })
       })
     },
     resetUnreadCount(req) { // 重置单聊会话，调用则成功，无回调函数
