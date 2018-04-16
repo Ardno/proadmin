@@ -104,7 +104,7 @@
           </el-select> -->
         </el-form-item>
         <el-form-item label="考勤规则">
-          <el-select class="filter-item" v-model="depmentinfo.dance_config_id" placeholder="请选择">
+          <el-select class="filter-item" multiple v-model="depmentinfo.dance_config_arr" placeholder="请选择">
             <el-option v-for="item in  kaoqingArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
@@ -125,7 +125,7 @@
       </div>
     </el-dialog>
     <el-dialog title="设置部门考勤规则" :visible.sync="dialogFormVisiblec" width="600px" >
-      <el-select class="filter-item" v-model="dementrule.dance_config_id" placeholder="请选择">
+      <el-select class="filter-item" multiple v-model="dementrule.dance_config_arr" placeholder="请选择">
         <el-option v-for="item in  kaoqingArr" :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
@@ -219,11 +219,13 @@ export default {
         name: '',
         info: '',
         infoLink: '',
-        dance_config_id: ''
+        dance_config_id: '',
+        dance_config_arr: []
       },
       dementrule: {
         _id: '',
-        dance_config_id: ''
+        dance_config_id: '',
+        dance_config_arr: []
       },
       timeout: null,
       kaoqingArr: [],
@@ -383,6 +385,9 @@ export default {
     },
     getadcArray() { // 获取考勤规则集合
       getadcArr({ start_index: 0, length: 1000 }).then(response => {
+        response.info.list.forEach(element => {
+          element._id = element._id + ''
+        })
         this.kaoqingArr = response.info.list.filter(obj => {
           return !obj.status
         })
@@ -390,10 +395,14 @@ export default {
     },
     updateKaoqing() {
       this.dementrule._id = this.depInfo._id
-      this.dementrule.dance_config_id = this.depInfo.dance_config_id
+      this.dementrule.dance_config_id = this.depInfo.dance_config_id + ''
+      if (this.dementrule.dance_config_id) {
+        this.dementrule.dance_config_arr = this.dementrule.dance_config_id.split(',')
+      }
       this.dialogFormVisiblec = true
     },
     handleUpdateKaq() {
+      this.dementrule.dance_config_id = this.dementrule.dance_config_arr.join(',')
       updateDep(this.dementrule).then(response => {
         this.dialogFormVisiblec = false
         this.depInfo.dance_config_id = this.dementrule.dance_config_id
@@ -454,17 +463,17 @@ export default {
         })
       })
     },
-    kaoqFiler(val) {
-      for (const key in this.kaoqingArr) {
-        const obj = this.kaoqingArr[key]
-        for (const j in obj) {
-          if (j === '_id') {
-            if (obj[j] === val) {
-              return obj['name']
-            }
+    kaoqFiler(val) { // 转换考勤名称
+      const arr = (val + '').split(',')
+      const arr2 = []
+      arr.forEach(element => {
+        this.kaoqingArr.forEach(obj => {
+          if (element === obj._id) {
+            arr2.push(obj.name)
           }
-        }
-      }
+        })
+      })
+      return arr2.join(',')
     },
     depFilter(val) {
       for (const key in this.restaurants) {
@@ -532,6 +541,7 @@ export default {
         info: '',
         infoLink: '',
         dance_config_id: '',
+        dance_config_arr: [],
         create_time: '',
         count: 0
       }
@@ -710,7 +720,7 @@ export default {
       this.dialogFormVisibled = true
     },
     handleCreate() { // 创建部门
-      console.log(this.depmentinfo)
+      this.depmentinfo.dance_config_id = this.depmentinfo.dance_config_arr.join(',')
       this.$refs.infoForm.validate(valid => {
         if (valid) {
           createDep(this.depmentinfo).then(response => {

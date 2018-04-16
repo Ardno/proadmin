@@ -135,8 +135,8 @@
       </div>
     </el-dialog>
     <el-dialog title="设置考勤规则" width="600px"  :visible.sync="dialogFormVisiblek" class="customxing">
-      <el-select  class="filter-item" v-model="reqkaoq.dance_config_id" placeholder="默认规则">
-        <el-option v-for="item in  kaoqingArr" :key="item._id" :label="item.name" :value="item._id">
+      <el-select  class="filter-item" multiple v-model="reqkaoq.dance_config_arr" placeholder="默认规则">
+        <el-option v-for="item in  kaoqingArr"  :key="item._id" :label="item.name" :value="item._id">
         </el-option>
       </el-select>
       <div slot="footer" class="dialog-footer">
@@ -233,7 +233,8 @@ export default {
       },
       reqkaoq: {
         _id: '',
-        dance_config_id: ''
+        dance_config_id: '',
+        dance_config_arr: []
       },
       infoFormsq: {
         department_id: [{ required: true, trigger: 'change', message: '请选择部门' }],
@@ -349,6 +350,9 @@ export default {
         this.solerr = response.info
       })
       getadcArr({ start_index: 0, length: 10000 }).then(response => {
+        response.info.list.forEach(element => {
+          element._id = element._id + ''
+        })
         this.kaoqingArr = response.info.list.filter(obj => {
           return !obj.status
         })
@@ -394,6 +398,7 @@ export default {
       })
     },
     handleUpdateKq() { // 修改人员考勤规则
+      this.reqkaoq.dance_config_id = this.reqkaoq.dance_config_arr.join(',')
       updatePeInfo(this.reqkaoq).then(response => {
         this.dialogFormVisiblek = false
         this.$message({
@@ -442,6 +447,9 @@ export default {
       this.dialogFormVisiblek = true
       this.reqkaoq._id = item._id
       this.reqkaoq.dance_config_id = item.dance_config_id
+      if (item.dance_config_id) {
+        this.reqkaoq.dance_config_arr = (item.dance_config_id + '').split(',')
+      }
     },
     approval(item) { // 审核用户
       this.shenheq.dialogFormVisible = true
