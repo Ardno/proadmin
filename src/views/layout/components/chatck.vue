@@ -399,85 +399,101 @@ export default {
       }
     },
     sendMsgEmit(resl) { // 发送文本消息
-      const activePerson = this.activeItem
-      const data = resl || this.requstData
-      // repeatSend = true重发消息
-      /**
-        * success
-        * 取值 状态
-        * 1  正在发送
-        * 2  发送成功
-        * 3  发送失败
-        */
-      if (!data.content) {
-        return false
-      }
-      const msgs = {
-        content: {
-          create_time: new Date().getTime(),
-          msg_type: 'text',
-          from_id: this.userInfo.username,
-          msg_body: {
-            text: data.content,
-            extras: data.localExtras
+      try {
+        const activePerson = this.activeItem
+        const data = resl || this.requstData
+        // repeatSend = true重发消息
+        /**
+          * success
+          * 取值 状态
+          * 1  正在发送
+          * 2  发送成功
+          * 3  发送失败
+          */
+        if (!data.content) {
+          return false
+        }
+        const msgs = {
+          content: {
+            create_time: new Date().getTime(),
+            msg_type: 'text',
+            from_id: this.userInfo.username,
+            msg_body: {
+              text: data.content,
+              extras: data.localExtras
+            }
+          },
+          ctime_ms: new Date().getTime(),
+          success: 1,
+          msgKey: resl.msgKey || this.msgKey++
+        }
+        if (activePerson.type === 3) {
+          const singleMsg = {
+            target_username: activePerson.username,
+            content: data.content,
+            need_receipt: false
           }
-        },
-        ctime_ms: new Date().getTime(),
-        success: 1,
-        msgKey: resl.msgKey || this.msgKey++
-      }
-      if (activePerson.type === 3) {
-        const singleMsg = {
-          target_username: activePerson.username,
-          content: data.content,
-          need_receipt: false
-        }
-        if (data.extras) {
-          singleMsg.extras = data.extras
-        }
-        msgs.singleMsg = singleMsg
-        msgs.msg_type = 3
-        if (!data.repeatSend) {
-          this.requstData.content = ''
-        }
-        this.JIMsendSingleMsg(singleMsg, msgs)
-        // 发送群组消息
-      } else if (activePerson.type === 4) {
-        const groupMsg = {
-          target_gid: activePerson.gid,
-          content: data.content,
-          need_receipt: false
-        }
-        if (data.extras) {
-          groupMsg.extras = data.extras
-        }
-        if (data.isAtAll) {
-          groupMsg.at_list = []
-        } else if (data.atList && data.atList.length > 0) {
-          groupMsg.at_list = data.atList
-        }
-        msgs.groupMsg = groupMsg
-        msgs.msg_type = 4
-        if (!data.repeatSend) {
-          this.requstData.content = ''
-        }
-        this.sendGroupMsg(groupMsg, msgs)
-      }
-      if (!data.repeatSend) {
-        const msglist = this.messageList // 离线消息列表
-        if (msglist[activePerson.id]) {
-          msglist[activePerson.id].msgs.push(msgs)
-        } else {
-          msglist[activePerson.id] = { // 构造消息记录
-            from_appkey: '',
-            from_username: this.userInfo.username,
-            key: '',
-            msg_type: activePerson.type,
-            msgs: [msgs],
-            receipt_msgs: '',
-            unread_msg_count: 0
+          if (data.extras) {
+            singleMsg.extras = data.extras
           }
-          this.getActiveMsg()
+          msgs.singleMsg = singleMsg
+          msgs.msg_type = 3
+          if (!data.repeatSend) {
+            this.requstData.content = ''
+          }
+          this.JIMsendSingleMsg(singleMsg, msgs)
+          // 发送群组消息
+        } else if (activePerson.type === 4) {
+          const groupMsg = {
+            target_gid: activePerson.gid,
+            content: data.content,
+            need_receipt: false
+          }
+          if (data.extras) {
+            groupMsg.extras = data.extras
+          }
+          if (data.isAtAll) {
+            groupMsg.at_list = []
+          } else if (data.atList && data.atList.length > 0) {
+            groupMsg.at_list = data.atList
+          }
+          msgs.groupMsg = groupMsg
+          msgs.msg_type = 4
+          if (!data.repeatSend) {
+            this.requstData.content = ''
+          }
+          this.sendGroupMsg(groupMsg, msgs)
+        }
+        if (!data.repeatSend) {
+          const msglist = this.messageList // 离线消息列表
+          if (msglist[activePerson.id]) {
+            msglist[activePerson.id].msgs.push(msgs)
+          } else {
+            msglist[activePerson.id] = { // 构造消息记录
+              from_appkey: '',
+              from_username: this.userInfo.username,
+              key: '',
+              msg_type: activePerson.type,
+              msgs: [msgs],
+              receipt_msgs: '',
+              unread_msg_count: 0
+            }
+            this.getActiveMsg()
+          }
+        }
+      } catch (error) {
+        if (!this.JIM.isLogin()) {
+          this.$confirm('你已经掉线了, 是否重连?', '提示', {
+            confirmButtonText: '确定',
+            showCancelButton: false,
+            showClose: false,
+            type: 'warning',
+            center: true
+          }).then(() => {
+            location.reload()
+          }).catch(() => {
+
+          })
         }
       }
       // this.$store.dispatch('SetMsgList', msglist)
