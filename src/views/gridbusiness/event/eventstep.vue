@@ -48,6 +48,7 @@
 
 <script>
 import { fetchRoles } from '@/api/department'
+import { mapGetters } from 'vuex'
 import { getStepsArr } from '@/api/depevent'
 import { isAccess, getDepCld } from '@/utils/auth'
 import { deepClone } from '@/utils/index'
@@ -72,6 +73,7 @@ export default {
   created() {
     this.getEventsArr()
     this.getDepArr()
+    this.pageobj.department_id = this.userInfo.department_id
   },
   methods: {
     isAccess: isAccess,
@@ -139,6 +141,12 @@ export default {
       this.$store.dispatch('setStepId', val)
       this.$router.push({ path: '/event/editeventstep' })
     }
+  },
+  computed: {
+    ...mapGetters({
+      commonInfo: 'commonInfo',
+      userInfo: 'useinfo'
+    })
   }
 }
 </script>

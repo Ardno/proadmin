@@ -54,7 +54,7 @@
 import VueAMap from 'vue-amap'
 import SideBar from './sidebar'
 import { mapGetters } from 'vuex'
-import { getRegionArr, updateRegion, getLatlonArr } from '@/api/grid'
+import { getRegionArr, updateRegion, getLatlonArr, getUser_setting } from '@/api/grid'
 import { parseTime } from '@/utils/index'
 import { getEventArr } from '@/api/depevent'
 import { uploadCurLoc } from '@/api/platform'
@@ -324,14 +324,18 @@ export default {
           'areaperson': [],
           'construct': []
         }
+
         this.getRegion()
         this.getLatlon() // 暂时隐藏获取人员
         this.getEventArr()
         this.getAreaperson()
         this.getFacilities()
+        getUser_setting({ user_id: this.$store.getters.useinfo._id }).then(res => {
+          console.log(res)
+        })
         this.intetime = setInterval(() => {
           this.getSetting()
-        }, 20000)
+        }, 60000)
       } catch (error) {
         console.log(error)
       }
@@ -349,7 +353,6 @@ export default {
         this.getEventArr(true)
         this.getAreaperson(true)
         this.getFacilities(true)
-        console.log(this.markerArr)
       } catch (error) {
         console.log(error)
       }

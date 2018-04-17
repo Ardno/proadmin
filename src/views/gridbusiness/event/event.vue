@@ -458,12 +458,11 @@ export default {
       this.listLoading = true
       console.log(this.pageobj)
       getEventArr(this.pageobj).then(res => {
+        console.log(res.info)
         res.info.list.forEach(element => {
           element.dangqname = ''
         })
-        this.eventArr = res.info.list.filter(element => { // 过滤掉已删除的事件
-          return element.status !== 2
-        })
+        this.eventArr = res.info.list
         this.pageobj.totalPages = res.info.count
         this.listLoading = false
         this.eventArr.forEach(element => {

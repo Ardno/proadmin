@@ -16,7 +16,7 @@
         <!-- <el-tooltip effect="dark" content="换肤" placement="bottom">
           <theme-picker class="theme-switch right-menu-item"></theme-picker>
         </el-tooltip> -->
-        <el-dropdown class="avatar-container right-menu-item" @command="handleCommand">
+        <el-dropdown class="avatar-container right-menu-item" trigger="click" @command="handleCommand">
           <div class="avatar-wrapper">
             <img class="user-avatar" :src="upload_API+'images/user/'+avatar+'.jpg'" :onerror="defaultImg">
             <span class="dib vt">{{temp.name}}
@@ -37,37 +37,48 @@
 		<!-- 修改个人信息 -->
 		<el-dialog title="个人信息"  @close="closeCall" :visible.sync="dialogInfo">
 			<el-form class="small-space" :model="temp" :rules="infoRules" ref="infoForm" label-position="right"  label-width="80px" style='width: 400px; margin-left:50px;'>
-			<el-form-item label="姓名" prop="name">
-        <span>{{temp.name}}</span>
-        <!-- <el-input v-model="temp.name"></el-input> -->
-			</el-form-item>
-			<el-form-item label="性别">
-        <span>{{temp.sex? '女':'男'}}</span>
-        <!-- <el-radio class="radio" v-model="temp.sex" :label="0">男</el-radio>
-        <el-radio class="radio" v-model="temp.sex" :label="1">女</el-radio> -->
-			</el-form-item>
-			<el-form-item label="民族" prop="nation">
-        <span>{{temp.nation}}</span>
-				<!-- <el-input v-model="temp.nation"></el-input> -->
-			</el-form-item>
-			<el-form-item label="出生日期">
-        <span>{{temp.birthday | parseTime('{y}-{m}-{d}')}}</span>
-        <!-- <el-date-picker v-model="temp.birthday" type="date" :editable="false" :clearable="false"   placeholder="出生日期">
-        </el-date-picker> -->
-			</el-form-item>
-			<el-form-item label="身份证号" prop="idNum">
-        <span>{{temp.idNum}}</span>
-				<!-- <el-input v-model="temp.idNum"></el-input> -->
-			</el-form-item>
-			<el-form-item label="手机号码" prop="mobile">
-        <span>{{temp.mobile}}</span>
-        <!-- <el-input v-model="temp.mobile"></el-input> -->
-			</el-form-item>
+        <el-form-item label="姓名" prop="name">
+          <span>{{temp.name}}</span>
+          <!--<el-input v-model="temp.name"></el-input>-->
+        </el-form-item>
+        <el-form-item label="性别">
+          <!--<span>{{temp.sex? '女':'男'}}</span>-->
+          <el-radio class="radio" v-model="temp.sex" :label="0">男</el-radio>
+          <el-radio class="radio" v-model="temp.sex" :label="1">女</el-radio>
+        </el-form-item>
+        <el-form-item label="民族" prop="nation">
+          <!--<span>{{temp.nation}}</span>-->
+          <el-input v-model="temp.nation"></el-input>
+        </el-form-item>
+        <el-form-item label="出生日期">
+          <!--<span>{{temp.birthday | parseTime('{y}-{m}-{d}')}}</span>-->
+          <el-date-picker v-model="temp.birthday" type="date" :editable="false" :clearable="false"   placeholder="出生日期">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="身份证号" prop="idNum">
+          <span>{{temp.idNum}}</span>
+          <!-- <el-input v-model="temp.idNum"></el-input> -->
+        </el-form-item>
+        <el-form-item label="手机号码" prop="mobile">
+          <span>{{temp.mobile}}</span>
+          <!-- <el-input v-model="temp.mobile"></el-input> -->
+        </el-form-item>
+        <el-form-item label="所属单位">
+          <span>{{temp.dept_name}}</span>
+          <!--<el-input v-model="temp.name"></el-input>-->
+        </el-form-item>
+        <el-form-item label="职务">
+          <span>{{temp.role_name}}</span>
+        </el-form-item>
+        <el-form-item label="住址">
+          <!--<span>{{temp.residence}}</span>-->
+          <el-input v-model="temp.residence"></el-input>
+        </el-form-item>
 			</el-form>
-			<!-- <div slot="footer" class="dialog-footer">
-			<el-button @click="dialogInfo = false">取 消</el-button>
-			<el-button type="primary" @click="handleUpdate">确 定</el-button>
-			</div> -->
+			<div slot="footer" class="dialog-footer">
+        <el-button @click="dialogInfo = false">取 消</el-button>
+        <el-button type="primary" @click="handleUpdate">确 定</el-button>
+			</div>
     </el-dialog>
     <!-- 修改个人密码 -->
     <el-dialog title="修改密码" :visible.sync="dialogPwdInfo">
@@ -173,9 +184,11 @@ export default {
   },
   methods: {
     handleCommand(command) {
+      console.log(command)
       if (command === 'a') {
         this.$router.push({ path: '/index' })
       } else if (command === 'b') {
+        console.log(this.temp)
         this.dialogInfo = true
       } else if (command === 'c') {
         this.handlePwd(this.temp)
@@ -209,8 +222,12 @@ export default {
       this.$refs.infoForm.validate(valid => {
         if (valid) {
           this.$confirm('确认修改？').then(() => {
-            this.temp.birthday = Math.round(new Date(this.temp.birthday).getTime() / 1000)
-            updatePeInfo(this.temp).then(response => {
+            var newtemp = {}
+            newtemp.birthday = Math.round(new Date(this.temp.birthday).getTime() / 1000)
+            newtemp.nation = this.temp.nation
+            newtemp.residence = this.temp.residence
+            newtemp.sex = this.temp.sex
+            updatePeInfo(newtemp).then(response => {
               this.dialogInfo = false
               this.$message({
                 message: '信息修改成功！',

@@ -44,3 +44,11 @@ export function getLocationsArr(data) { // 查询最近坐标
     data: data
   })
 }
+
+export function getUser_setting(data) { // 获取用户个人设置信息
+  return fetch({
+    url: 'people/getUser_setting',
+    method: 'post',
+    data: data
+  })
+}
