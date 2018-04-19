@@ -207,7 +207,7 @@ export default {
     },
     handleQuery() {
       this.pageobj.start_index = 0
-      this.pageobj.length = 9
+      this.pageobj.length = 10
       this.loadLeavesArr()
     },
     loadLeavesArr() { // 获取请假列表
