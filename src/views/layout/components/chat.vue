@@ -740,7 +740,6 @@ export default {
         this.$confirm('你已经掉线了, 是否重连?', '提示', {
           confirmButtonText: '确定',
           showCancelButton: false,
-          closeOnClickModal: false,
           showClose: false,
           type: 'warning',
           center: true

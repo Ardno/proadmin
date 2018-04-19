@@ -69,7 +69,7 @@
           </el-button>
           <el-button size="small" v-if="isAccess('94')&&scope.row.status == '2'" type="primary" @click="approval(scope.row)">审核用户
           </el-button>
-          
+
           <el-button :plain="true" v-if="isAccess('92')&&scope.row.status != '2'" size="small" type="primary" @click="handlePwd(scope.row)">重置密码</el-button>
           <el-button :plain="true" v-if="isAccess('93')&&scope.row.status != '2'" size="small" type="primary" @click="handleKaoq(scope.row)">设置考勤</el-button>
         </template>
@@ -163,7 +163,7 @@
         <el-button @click="shenheq.dialogFormVisible= false">取 消</el-button>
         <el-button type="primary" @click="approvalStatus()">审核通过</el-button>
       </div>
-    </el-dialog> 
+    </el-dialog>
   </div>
 </template>
 
@@ -414,6 +414,7 @@ export default {
       this.$prompt('请输入密码', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
+        inputType: 'password',
         inputPattern: /^[a-zA-Z0-9]{6,}$/,
         inputErrorMessage: '至少输入6位密码'
       }).then(({ value }) => {
@@ -440,6 +441,7 @@ export default {
     },
     handleKaoq(item) { // 设置考勤规则
       this.dialogFormVisiblek = true
+      console.log(item)
       this.reqkaoq._id = item._id
       this.reqkaoq.dance_config_id = item.dance_config_id
     },

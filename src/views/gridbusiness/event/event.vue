@@ -339,6 +339,7 @@ export default {
       this.$prompt('请输入密码验证你的身份', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
+        inputType: 'password',
         inputPattern: /^[a-zA-Z0-9]{6,}$/,
         inputErrorMessage: '输入你的登录密码'
       }).then(({ value }) => {

@@ -157,6 +157,8 @@ export default {
       personArr: [],
       eventArr: [],
       intetime: null,
+      initpeoplelisttime: null, // 刷新人员设施的定时器
+      intusertime: null, // 刷新同事的定时器
       polygonsArr: [],
       regionobj: {
         name: '',
@@ -299,6 +301,12 @@ export default {
       if (this.intetime) {
         clearInterval(this.intetime)
       }
+      if (this.initpeoplelisttime) { // 刷新人员设施的定时器
+        clearInterval(this.initpeoplelisttime)
+      }
+      if (this.intusertime) { // 刷新同事的定时器
+        clearInterval(this.intusertime)
+      }
       const obj = Cookies.get('seeting')
       if (obj) {
         this.seeting = JSON.parse(obj)
@@ -331,11 +339,22 @@ export default {
         this.getAreaperson()
         this.getFacilities()
         getUser_setting({ user_id: this.$store.getters.useinfo._id }).then(res => {
-          console.log(res)
+          this.usersetting = res.info[0]
+          console.log(this.usersetting)
+          this.intusertime = setInterval(() => { // 刷新同事的定时器
+            this.getAreaperson(true)
+            this.getFacilities(true)
+          }, this.usersetting.map_person_facilities * 1000)
+          this.initpeoplelisttime = setInterval(() => { // 刷新人员设施的定时器
+            this.getLatlon(true)
+          }, this.usersetting.peoplelist_refresh_time * 1000)
         })
+        /*
         this.intetime = setInterval(() => {
           this.getSetting()
-        }, 60000)
+          console.log(this.usersetting)
+        }, 30000)
+        */
       } catch (error) {
         console.log(error)
       }
@@ -349,7 +368,7 @@ export default {
     getSetting(obj) {
       try {
         // this.getRegion(true)
-        this.getLatlon(true) // 暂时隐藏获取人员
+        this.getLatlon(true)
         this.getEventArr(true)
         this.getAreaperson(true)
         this.getFacilities(true)
