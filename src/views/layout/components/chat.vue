@@ -751,7 +751,21 @@ export default {
       })
     },
     resetUnreadCount(req) { // 重置单聊会话，调用则成功，无回调函数
-      this.JIM.resetUnreadCount(req)
+      if (this.JIM.isLogin()) {
+        this.JIM.resetUnreadCount(req)
+      } else {
+        this.$confirm('你已经掉线了, 是否重连?', '提示', {
+          confirmButtonText: '确定',
+          showCancelButton: false,
+          showClose: false,
+          type: 'warning',
+          center: true
+        }).then(() => {
+          location.reload()
+        }).catch(() => {
+
+        })
+      }
     },
     onSyncMsgReceipt() { // 消息已读数变更事件实时监听
       this.JIM.onSyncMsgReceipt((data) => {
