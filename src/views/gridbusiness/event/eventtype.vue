@@ -65,6 +65,9 @@
             </el-option>
           </el-select>
         </el-form-item>
+        <!-- <el-form-item label="事件步骤">
+          <step-selection></step-selection>
+        </el-form-item> -->
         <el-form-item label="事件状态">
           <el-select v-model="eventInfo.status">
             <el-option v-for="item in  statusArr" :key="item.id" :label="item.name" :value="item.id">
@@ -86,6 +89,7 @@
 <script>
 import { getEventTypeArr, addEventType, updateEventType, getStepsArr } from '@/api/depevent'
 import { isAccess, getDepCld } from '@/utils/auth'
+import StepSelection from '@/components/StepSelection'
 export default {
   data() {
     return {
@@ -123,6 +127,9 @@ export default {
         }
       ]
     }
+  },
+  components: {
+    StepSelection
   },
   created() {
     this.getEventTypeArr()
