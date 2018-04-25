@@ -1068,6 +1068,10 @@ export default {
     },
     isopen(e) { // 显示配置，打开关闭某一个部分
       this.seeting = e
+    },
+    centerpersonMap(e) {
+      this.center = e
+      this.zoom = 16
     }
   },
   computed: {

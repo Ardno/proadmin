@@ -325,6 +325,11 @@ export default {
       this.closechatck = false
       this.activeUser = item
       let req = {}
+      if (item.isOnline) {
+        if (this.$parent.$children[3].$el.className === 'app-main') {
+          this.$parent.$children[3].$children[0].centerpersonMap([item.region.lon, item.region.lat])
+        }
+      }
       if (item.type === 3) {
         req = {
           username: item.username
@@ -531,6 +536,10 @@ export default {
               mobile: element.mobile,
               gender: element.sex + 1,
               isOnline: false,
+              region: {
+                lat: null,
+                lon: null
+              },
               type: 3,
               birthday: element.birthday * 1000,
               memo_others: element.dept_name
@@ -549,6 +558,8 @@ export default {
                   if (chatlist._id === localist._id) {
                     if (localist.state === 1) {
                       chatlist.isOnline = true
+                      chatlist.region.lat = localist.location.lat
+                      chatlist.region.lon = localist.location.lon
                     } else {
                       chatlist.isOnline = false
                     }
@@ -942,6 +953,9 @@ export default {
   }
   .isOnline {
     color:blue!important;
+  }
+  .isOnline:after {
+    content: '(在线)';
   }
 
   .el-tabs__nav {
