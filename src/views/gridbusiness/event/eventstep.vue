@@ -94,7 +94,7 @@ export default {
     },
     handleQuery() {
       this.pageobj.start_index = 0
-      this.pageobj.length = 9
+      this.pageobj.length = 10
       this.getEventsArr()
     },
     getDepArr() { // 获取部门集合

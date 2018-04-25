@@ -51,7 +51,7 @@
       </template>
       </el-table-column>
     </el-table>
-    <el-dialog :title="titles" :visible.sync="dialogFormVisible" size="small">
+    <el-dialog :title="titles" :visible.sync="dialogFormVisible" width="700px">
       <el-form class="small-space" :model="eventInfo" :rules="infoRules" ref="infoForm" label-position="right" label-width="120px">
         <el-form-item label="部门" prop="dept_id">
           <el-select filterable v-model="eventInfo.dept_id" @change="changeStep" placeholder="请选择部门">
@@ -59,11 +59,14 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="事件步骤">
+        <!-- <el-form-item label="事件步骤">
           <el-select filterable v-model="eventInfo.steparr" @change="changeSteptype" multiple placeholder="请选择步骤">
             <el-option v-for="item in  StepsArr" :key="item._id" :label="item.name" :value="item._id">
             </el-option>
           </el-select>
+        </el-form-item> -->
+        <el-form-item label="事件步骤">
+          <step-selection :value.sync="eventInfo.steparr" :dataList="StepsArr" @change="changeSteptype"></step-selection>
         </el-form-item>
         <el-form-item label="事件状态">
           <el-select v-model="eventInfo.status">
@@ -86,6 +89,7 @@
 <script>
 import { getEventTypeArr, addEventType, updateEventType, getStepsArr } from '@/api/depevent'
 import { isAccess, getDepCld } from '@/utils/auth'
+import StepSelection from '@/components/StepSelection'
 export default {
   data() {
     return {
@@ -123,6 +127,9 @@ export default {
         }
       ]
     }
+  },
+  components: {
+    StepSelection
   },
   created() {
     this.getEventTypeArr()

@@ -75,7 +75,7 @@ export default {
   methods: {
     handleQuery() {
       this.pageobj.start_index = 0
-      this.pageobj.length = 9
+      this.pageobj.length = 10
       this.getLogArr()
     },
     getuserArr() { // 获取部门集合

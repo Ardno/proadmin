@@ -12,7 +12,20 @@
               <h4 class="ell mt5">{{filterUser(item.user_id)}}
                 <span class="r f12 g9 n ">{{ item.create_time | parseTime('{y}.{m}.{d} {h}:{i}', true) }}</span>
               </h4>
-              <p class="pt5">{{item.content}}</p>
+              <p class="pt5">{{item.content}}
+                <router-link v-if="item.type === 1" class='inlineBlock r blue' to="/schedule/index">
+                  查看
+                </router-link>
+                <router-link v-if="item.type === 2" class='inlineBlock r blue' to="/event/event">
+                  查看
+                </router-link>
+                <router-link v-if="item.type === 3" class='inlineBlock r blue' to="/schedule/shift">
+                  查看
+                </router-link>
+                <router-link v-if="item.type === 4" class='inlineBlock r blue' to="/schedule/leave">
+                  查看
+                </router-link>
+              </p>
             </div>
           </li>
         </ul>
@@ -27,7 +40,20 @@
               <h4 class="ell mt5">{{filterUser(item.user_id)}}
                 <span class="r f12 g9 n ">{{ item.create_time|parseTime('{y}.{m}.{d} {h}:{i}', true) }}</span>
               </h4>
-              <p class="pt5">{{item.content}}</p>
+              <p class="pt5">{{item.content}}
+                <router-link v-if="item.type === 1" class='inlineBlock r blue' to="/schedule/index">
+                  查看
+                </router-link>
+                <router-link v-if="item.type === 2" class='inlineBlock r blue' to="/event/event">
+                  查看
+                </router-link>
+                <router-link v-if="item.type === 3" class='inlineBlock r blue' to="/schedule/shift">
+                  查看
+                </router-link>
+                <router-link v-if="item.type === 4" class='inlineBlock r blue' to="/schedule/leave">
+                  查看
+                </router-link>
+              </p>
             </div>
           </li>
           <li class="tc" v-if="!nomore">
@@ -176,6 +202,12 @@ export default {
     padding: 150px 0;
   }
   .jiasfa{
+    color: #1496cc;
+    &:hover{
+      text-decoration: underline;
+    }
+  }
+  .blue{
     color: #1496cc;
     &:hover{
       text-decoration: underline;
