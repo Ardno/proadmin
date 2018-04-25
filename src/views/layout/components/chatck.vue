@@ -48,7 +48,7 @@
                     <cite >
                       {{ userInfo.username == list.content.from_id ? '':filterName(list.content.from_name)}}
                     <i >{{list.ctime_ms | parseTime('{y}-{m}-{d} {h}:{i}')}}</i></cite>
-                  </div>   
+                  </div>
                   <span v-if="list.success == 1" class="spinrose mr10 activespin"></span>
                   <span v-if="list.success == 3" title="重新发送" @click="repeatSendMsg(list)" class="dib f24 g9 mt30 poi mr10"><svg-icon icon-class="refresh" /></span>
                   <div class="layim-chat-text" v-if="list.content.msg_type=='text'" v-html="list.content.msg_body.text">
@@ -359,7 +359,6 @@ export default {
             }
           }
         }
-        console.log(this.msgs)
       } else {
         // 通知更新会话面板
       }
@@ -790,7 +789,6 @@ export default {
               arr[index].success = 3
             }
             arr[index].ctime_ms = msgs.ctime_ms
-            console.log(arr[index])
           }
         }
       }
@@ -1222,7 +1220,7 @@ export default {
             border-top-color: #5FB878;
           }
         }
-        
+
         cite {
           left: auto;
           right: 60px;
