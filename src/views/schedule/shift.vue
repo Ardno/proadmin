@@ -41,12 +41,12 @@
       </el-table-column>
       <el-table-column width="180" label="开始时间">
         <template slot-scope="scope">
-          <span>{{scope.row.start_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+          <span>{{scope.row.r_start_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
       <el-table-column width="180" label="结束时间">
         <template slot-scope="scope">
-          <span>{{scope.row.end_time | parseTime('{y}-{m}-{d} {h}:{i}')}}</span>
+          <span>{{scope.row.r_end_time | parseTime('{y}-{m}-{d} {h}:{i}', true)}}</span>
         </template>
       </el-table-column>
       <el-table-column width="180" label="换班区域">
@@ -88,7 +88,7 @@
       <el-form class="small-space" :model="requset" :rules="shiftobj.infoRules" ref="infoForm" label-position="right" label-width="120px" style='width: 400px; margin-left:50px;'>
         <el-form-item label="工作名称" prop="work_id">
           <el-select class="pct100" v-model="requset.work_id" filterable placeholder="请选择" @change="handleWorkClick">
-            <el-option v-for="item in workArr" :key="item._id" :label="item.regionname+' '+parseTime(item.start_time,'{m}-{d} {h}:{i}', true)+'~'+parseTime(item.end_time,'{m}-{d} {h}:{i}', true)" :value="item._id">
+            <el-option v-for="item in workArr" :key="item._id" :label="item.regionname+' '+parseTime(item.r_start_time,'{m}-{d} {h}:{i}', true)+'~'+parseTime(item.r_end_time,'{m}-{d} {h}:{i}', true)" :value="item._id">
             </el-option>
           </el-select>
         </el-form-item>
@@ -282,10 +282,6 @@ export default {
       }
       getShiftsArr(this.pageobj).then(response => {
         const lsArr = response.info.list
-        lsArr.forEach(function(element) {
-          element.start_time = Number(element.start_time) * 1000
-          element.end_time = Number(element.end_time) * 1000
-        }, this)
         this.shiftArr = lsArr
         this.totalPages = response.info.count
       }).catch(errs => {
