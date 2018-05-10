@@ -349,7 +349,6 @@ export default {
                 this.$set(this.msgs[index].content.msg_body, 'media_url', `${process.env.upload_API}images/im/${element.content.msg_body.name}`)
               }
               image.src = `${process.env.upload_API}images/im/${element.content.msg_body.name}`
-              console.log(`${process.env.upload_API}images/im/${element.content.msg_body.name}`)
             } else if (element.content.msg_body.type === 'video') {
               element.content.msg_type = 'file'
               this.$set(this.msgs[index].content.msg_body, 'media_url', `${process.env.upload_API}video/im/${element.content.msg_body.name}`)
@@ -763,7 +762,7 @@ export default {
         for (let index = 0; index < arr.length; index++) {
           if (msgs.msgKey === arr[index].msgKey) {
             if (flg) { // 发送成功
-              this.setHistoryIm(msgs)
+              this.setHistoryIm(msg, msgs)
               if (msg.content.msg_type === 'image' || msg.content.msg_type === 'file') {
                 this.JIM.getResource({ media_id: msg.content.msg_body.media_id })
                   .onSuccess((urlInfo) => {
@@ -793,7 +792,7 @@ export default {
         }
       }
     }, // end 完成消息发送
-    setHistoryIm(msgs) { // IM消息存储
+    setHistoryIm(msg, msgs) { // IM消息存储
       const requst = {
         user_id: msgs.content.from_id,
         im_type: 0,
@@ -804,14 +803,17 @@ export default {
       if (msgs.msg_type === 4) {
         requst.im_type = 1
       }
-      if (msgs.content.msg_type === 'text') {
-        requst.message_content = msgs.content.msg_body.text
-      } else if (msgs.content.msg_type === 'image') {
+      if (msg.content.msg_type === 'text') {
+        requst.message_content = msg.content.msg_body.text
+      } else if (msg.content.msg_type === 'image') {
         requst.message_type = 1
-        requst.message_content = msgs.content.msg_body.media_url
-      } else if (msgs.content.msg_type === 'file') {
+        requst.message_content = msg.content.msg_body.media_url
+      } else if (msg.content.msg_type === 'file') {
         requst.message_type = 4
-        requst.message_content = msgs.content.msg_body.fname
+        requst.message_content = msg.content.msg_body.fname
+      } else if (msg.content.msg_type === 'custom') {
+        requst.message_type = 1
+        requst.message_content = msg.content.msg_body.name
       }
       setHistoryIm(requst)
     },
@@ -824,7 +826,6 @@ export default {
           this.member_list.push(...data.member_list)
           for (let i = 0; i < data.member_list.length; i++) {
             this.member_list[i].nickname = this.filterName(this.member_list[i].username)
-            console.log(this.member_list[i].nickname)
             if (this.member_list[i].flag) {
               if (this.member_list[i].username === this.userInfo.username) {
                 this.isqunzhu = true
